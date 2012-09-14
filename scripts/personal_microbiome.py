@@ -119,13 +119,6 @@ def main():
 
 
 
-#something about making file paths? 
-    #try:
-     #   os.mkdir(data_dir_path)
-    #except OSError:
-    #    pass
-        
-#should I create a directory of the plots?
-
 if __name__ == "__main__":
     main()
+    
