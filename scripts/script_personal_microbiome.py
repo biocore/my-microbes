@@ -15,7 +15,8 @@ __status__ = "Development"
 from personal_microbiome import create_indiv_3d_plot
 from qiime.util import parse_command_line_parameters, make_option
 import os
-from os.path import join
+from os.path import exists, join
+from os import makedirs 
 
 script_info = {}
 script_info['brief_description'] = """Generate distinct 3d plots for unique individuals based on the metadata mapping file."""
@@ -45,16 +46,16 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-#     mapping_file = opts.mapping_fp
-#     distance_matrix = opts.coord_fname
-#     
-    if opts.output_dir: 
-        try:
-            os.makedirs(opts.output_dir)
-        except OSError:
-            pass # hopefully dir already exists
+    mapping_file = opts.mapping_fp
+    distance_matrix = opts.coord_fname
+    output_dir = opts.output_dir
     
-    #open(opts.output_dir).write(create_indiv_3d_plot(mapping_file, distance_matrix))
+    if exists(output_dir):
+        # don't overwrite existing output directory - make the user provide a different name or 
+        # move/delete the existing directory since it may have taken a while to create.
+        raise ValueError, "Output directory (%s) already exists. Won't overwrite." % output_dir
+
+    create_indiv_3d_plot(mapping_file, distance_matrix, output_dir)
     
 if __name__ == "__main__":
     main()
