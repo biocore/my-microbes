@@ -11,8 +11,7 @@ __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 __status__ = "Development"
  
-
-from personal_microbiome import create_indiv_3d_plot
+from personal_microbiome.util import  create_indiv_3d_plot
 from qiime.util import parse_command_line_parameters, make_option
 import os
 from os.path import exists, join
