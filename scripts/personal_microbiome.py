@@ -1,106 +1,60 @@
+#!/usr/bin/env python
+# File created on 13 Sep 2012
+#from __future__ import division
+
+__author__ = "John Chase"
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["John Chase"]
+__license__ = "GPL"
+__version__ = "1.5.0"
+__maintainer__ = "John Chase"
+__email__ = "jc33@nau.edu"
+__status__ = "Development"
+ 
+
+from personal_microbiome import create_indiv_3d_plot
+from qiime.util import parse_command_line_parameters, make_option
 import os
-from sys import argv
-from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import qiime_system_call
-from os import makedirs
-from os.path import join
+from os.path import exists, join
+from os import makedirs 
 
-#create color scheme for the individual. The individual of interest will be based on 
-#the special_colors. Everyone else will be colored by the 'standard_colors' 
-# kinemage_colors = ['hotpink','blue', 'lime','gold','red','sea','purple','green']
-def get_current_color(special_coloring,field_value):
-#define the colors for each body habitat. They are different for individual vs. other
-    standard_colors = {'armpit':'green',
-                       'palm':'green',
-                       'tongue':'blue',
-                       'gut':'gold',
-                       'forehead':'green'}
-    special_colors = {'armpit':'hotpink',
-                      'palm':'hotpink',
-                      'tongue':'red',
-                      'gut':'purple',
-                      'forehead':'hotpink'}
-#determine which color scheme will be used.
-    if special_coloring == True:
-        try:
-            return special_colors[field_value]
-        except KeyError:
-#this exception is for an individual that may not have data for a given habitat.
-            return 'grey'
-    else:
-        try:
-            return standard_colors[field_value]
-        except KeyError:
-            return 'grey'
+script_info = {}
+script_info['brief_description'] = """Generate distinct 3d plots for unique individuals based on the metadata mapping file."""
+script_info['script_description'] = """This script generates a prefs file which assigns a unique color to the individual and then generates a 3d plot based on that prefs file"""
+script_info['script_usage'] = [("""Basic usage with output directory""", """The distance matrix and mapping files are required. if no output file path is specified one will be created in the working directory. """, """%prog -i distance_matrix.txt -m mapping_file.txt -o out/""")]
+script_info['output_description'] = "A directory containing all of the 3d plots for each individual"
+script_info['required_options'] = [\
+    make_option('-m', '--mapping_fp', type='existing_filepath', 
+                help='Metadata mapping file filepath'),
+    make_option('-i', '--coord_fname',
+        help='Input principal coordinates filepath (i.e.,' \
+        ' resulting file from principal_coordinates.py). Alternatively,' \
+        ' a directory containing multiple principal coordinates files for' \
+        ' jackknifed PCoA results.',
+        type='existing_path'),
+    make_option('-o', '--output_dir',
+        help="Output directory. One will be created if it doesn't exist.",
+        type='new_dirpath')
+]
 
-#This function takes a mapping file, an output path for the prefs file, the
-#the personal_id_field and the other_field. it defaults to BodyHabitat, meaning the prefs
-#file created will contain coloring based on based on the individual and their body
-#habitat
-def personal_prefs_from_map(mapping_data, 
-                            output_fp,
-                            person_of_interest,
-                            personal_id_field='PersonalID', 
-                            other_field='BodyHabitat'):
-#make empty list to put all of the output. 
-    output_lines = []
-    output_field_id = "%s&&%s" % (personal_id_field, other_field)
-    output_lines.append("{'background_color':'black','sample_coloring':{")
-    output_lines.append("'%s':" % output_field_id)
-    output_lines.append('{')
-    output_lines.append("'column':'%s'," % output_field_id)
-    output_lines.append("'colors':{")
-#.items creates a list of the dictionary. Note mapping data is a two dimensional list
-# therefore this becomes a list of dictionarys. and allows for it to be looped through. 
-#sample_id was the key in the original dictionary,. d is that keys values which is a 
-#dictionary of  personalids
-    for sample_id, d in mapping_data.items():
-        if d[personal_id_field] == person_of_interest:
-#here the person_of_interest will determine the color scheme that was defined in 
-#get_current_color
-            current_entry_is_person_of_interest = True
-        else:
-            current_entry_is_person_of_interest = False
-        color = get_current_color(current_entry_is_person_of_interest,d[other_field])
-#create an entry for each individual and other_field.   
-        output_lines.append("'%s%s':'%s'," % (d[personal_id_field],d[other_field],color))
+script_info['optional_options'] = []
 
-    output_lines.append('}}}}')
-    output_f = open(output_fp,'w')
-    output_f.write('\n'.join(output_lines))
-    output_f.close()
-
-def create_PersonalID_list(mapping_data):
-    result = []
-    for sample_id, d in mapping_data.items():
-        if d['PersonalID'] not in result: 
-            result.append(d['PersonalID']) 
-        else: 
-            pass
-    return result
+script_info['version'] = __version__
 
 
-def create_indiv_3d_plot(mapping_fp, distance_matrix_fp, output_fp):
-    mapping_data = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
-    PersonalID_list  = create_PersonalID_list(mapping_data)  
-    output_directories = []
-    makedirs(output_fp)
-    for person_of_interest in PersonalID_list:
-        makedirs(join(output_fp, person_of_interest))
-        personal_output_dir = join(output_fp, person_of_interest, "%s_pcoa_plots" % person_of_interest)
-        output_directories.append(personal_output_dir)
-        personal_prefs_fp = join(output_fp, person_of_interest, "%s_prefs.txt" % person_of_interest)
-        personal_prefs_from_map(mapping_data, 
-                                personal_prefs_fp,
-                                person_of_interest,
-                                personal_id_field='PersonalID', 
-                                other_field='BodyHabitat')
-        cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (mapping_fp, 
-                                                            personal_prefs_fp, 
-                                                            distance_matrix_fp, 
-                                                            personal_output_dir)
-        stdout, stderr, return_code = qiime_system_call(cmd)
-        if return_code != 0:
-            print "Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-             (cmd, stdout, stderr)
-    return output_directories
+
+def main():
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    mapping_file = opts.mapping_fp
+    distance_matrix = opts.coord_fname
+    output_dir = opts.output_dir
+    
+    if exists(output_dir):
+        # don't overwrite existing output directory - make the user provide a different name or 
+        # move/delete the existing directory since it may have taken a while to create.
+        raise ValueError, "Output directory (%s) already exists. Won't overwrite." % output_dir
+
+    create_indiv_3d_plot(mapping_file, distance_matrix, output_dir)
+    
+if __name__ == "__main__":
+    main()
