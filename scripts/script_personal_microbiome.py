@@ -32,13 +32,12 @@ script_info['required_options'] = [\
         ' a directory containing multiple principal coordinates files for' \
         ' jackknifed PCoA results.',
         type='existing_path'),
-]
-
-script_info['optional_options'] = [\
     make_option('-o', '--output_dir',
         help="Output directory. One will be created if it doesn't exist.",
-        type='new_dirpath'),
+        type='new_dirpath')
 ]
+
+script_info['optional_options'] = []
 
 script_info['version'] = __version__
 

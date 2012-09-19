@@ -87,7 +87,6 @@ def create_indiv_3d_plot(mapping_fp, distance_matrix_fp, output_fp):
     makedirs(output_fp)
     for person_of_interest in PersonalID_list:
         makedirs(join(output_fp, person_of_interest))
-        #output = join(output_dir, name, name)
         personal_output_dir = join(output_fp, person_of_interest, "%s_pcoa_plots" % person_of_interest)
         output_directories.append(personal_output_dir)
         personal_prefs_fp = join(output_fp, person_of_interest, "%s_prefs.txt" % person_of_interest)
