@@ -18,10 +18,7 @@ def create_PersonalID_list(mapping_data):
         else: 
             pass
     return result
- 
-# I need to modify the create_personal_mapping_file to write to a file. This file path needs
-# to be defined in the create_indiv_rarefaction function so that it can be passed to the 
-# make_rarefaction_plots.py since it won't recognize an object.
+
 
 def create_personal_mapping_file(map_as_list, header, comments, personal_id_of_interest, output_fp):
     """ creates mapping file on a per-individual basis """
