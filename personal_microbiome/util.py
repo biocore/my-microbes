@@ -101,4 +101,3 @@ def create_personal_results(mapping_fp, distance_matrix_fp, collated_dir_fp, out
     
     
     
-'''seriously. "what the fuck"'''
