@@ -20,16 +20,21 @@ def create_personal_mapping_file(map_as_list,
                                  comments, 
                                  personal_id_of_interest, 
                                  output_fp, 
-                                 personal_id_index):
-    """ creates mapping file on a per-individual basis """   
+                                 personal_id_index, 
+                                 individual_titles):
+    """ creates mapping file on a per-individual basis """
+    if individual_titles == None: 
+        individual_titles = ['Self', 'Other']
+    else: 
+        individual_titles = individual_titles.split(',')   
     personal_map = []
     for line in map_as_list:
         personal_map.append(line[:])
     for i in personal_map:   
         if i[personal_id_index] == personal_id_of_interest: 
-            i.append('Self')
+            i.append(individual_titles[0])
         else: 
-            i.append('Other')
+            i.append(individual_titles[1])
     personal_mapping_file = format_mapping_file(header, personal_map, comments) 
     output_f = open(output_fp,'w')
     output_f.write(personal_mapping_file)
@@ -40,13 +45,19 @@ def create_personal_results(mapping_fp,
                             collated_dir_fp, 
                             output_fp, prefs_fp, 
                             personal_id_field, 
-                            personal_ids=None):
+                            personal_ids=None, 
+                            column_title=None, 
+                            individual_titles=None):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
         personal_id_index = header.index(personal_id_field)
     except ValueError:
-        raise ValueError, "personal id field (%s) is not a mapping file column header" % personal_id_field
-    header.append('Self')
+        raise ValueError("personal id field (%s) is not a mapping file column header" %
+                         personal_id_field)
+    if column_title == None: 
+        header.append('Self')
+    else: 
+        header.append(column_title)
     if personal_ids == None: 
         personal_ids  = get_personal_ids(map_as_list, personal_id_index)
     else:
@@ -69,7 +80,8 @@ def create_personal_results(mapping_fp,
                                      comments,
                                      person_of_interest,
                                      personal_mapping_file_fp, 
-                                     personal_id_index)
+                                     personal_id_index, 
+                                     individual_titles)
         create_index_html(person_of_interest, html_fp)
         cmd = "make_rarefaction_plots.py -i %s -m %s -p %s -o %s" % (collated_dir_fp, 
                                                                      personal_mapping_file_fp,
