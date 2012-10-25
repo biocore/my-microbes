@@ -20,7 +20,8 @@ def create_personal_mapping_file(map_as_list,
                                  comments, 
                                  personal_id_of_interest, 
                                  output_fp, 
-                                 personal_id_index):
+                                 personal_id_index, 
+                                 individ_title):
     """ creates mapping file on a per-individual basis """
     personal_map = []
     for line in map_as_list:
@@ -49,7 +50,10 @@ def create_personal_results(mapping_fp,
     header.append('Self')
     if PersonalIDs == None: 
         PersonalIDs  = create_PersonalIDs(map_as_list, personal_id_index)
-    else: 
+    else:
+        for id in PersonalIDs.split(','):
+            if id not in create_PersonalIDs(map_as_list, personal_id_index):
+                raise ValueError('%s is not an id in the mapping file.' %id)
         PersonalIDs = PersonalIDs.split(',')
     output_directories = []
     makedirs(output_fp)
