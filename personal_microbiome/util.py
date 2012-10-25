@@ -77,7 +77,7 @@ def create_personal_results(mapping_fp,
                                                                      rarefaction_dir)          
         stdout, stderr, return_code = qiime_system_call(cmd)
         if return_code != 0:
-            raise ValueError, ("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
             (cmd, stdout, stderr))
         cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
                                                             prefs_fp, 
@@ -85,7 +85,7 @@ def create_personal_results(mapping_fp,
                                                             pcoa_dir)
         stdout, stderr, return_code = qiime_system_call(cmd)
         if return_code != 0:
-            raise ValueError, ("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
              (cmd, stdout, stderr))
         
     return output_directories
