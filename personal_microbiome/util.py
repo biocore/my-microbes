@@ -6,7 +6,7 @@ from qiime.parse import parse_mapping_file
 from qiime.format import format_mapping_file
 from personal_microbiome.format import create_index_html
 
-def create_PersonalIDs(mapping_data, personal_id_index):
+def get_personal_ids(mapping_data, personal_id_index):
     result = []
     for i in mapping_data:
         if i[personal_id_index] not in result: 
@@ -20,9 +20,8 @@ def create_personal_mapping_file(map_as_list,
                                  comments, 
                                  personal_id_of_interest, 
                                  output_fp, 
-                                 personal_id_index, 
-                                 individ_title):
-    """ creates mapping file on a per-individual basis """
+                                 personal_id_index):
+    """ creates mapping file on a per-individual basis """   
     personal_map = []
     for line in map_as_list:
         personal_map.append(line[:])
@@ -41,23 +40,23 @@ def create_personal_results(mapping_fp,
                             collated_dir_fp, 
                             output_fp, prefs_fp, 
                             personal_id_field, 
-                            PersonalIDs=None):
+                            personal_ids=None):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
         personal_id_index = header.index(personal_id_field)
     except ValueError:
         raise ValueError, "personal id field (%s) is not a mapping file column header" % personal_id_field
     header.append('Self')
-    if PersonalIDs == None: 
-        PersonalIDs  = create_PersonalIDs(map_as_list, personal_id_index)
+    if personal_ids == None: 
+        personal_ids  = get_personal_ids(map_as_list, personal_id_index)
     else:
-        for id in PersonalIDs.split(','):
-            if id not in create_PersonalIDs(map_as_list, personal_id_index):
+        for id in personal_ids.split(','):
+            if id not in get_personal_ids(map_as_list, personal_id_index):
                 raise ValueError('%s is not an id in the mapping file.' %id)
-        PersonalIDs = PersonalIDs.split(',')
+        personal_ids = personal_ids.split(',')
     output_directories = []
     makedirs(output_fp)
-    for person_of_interest in PersonalIDs:
+    for person_of_interest in personal_ids:
         makedirs(join(output_fp, person_of_interest))
         pcoa_dir = join(output_fp, person_of_interest, "beta_diversity")
         rarefaction_dir = join(output_fp, person_of_interest, "alpha_rarefaction")
