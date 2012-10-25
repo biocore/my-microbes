@@ -24,7 +24,7 @@ script_info['script_usage'] = [("""Basic usage with output directory""", """The 
 script_info['output_description'] = "A directory containing all of the 3d plots for each individual"
 script_info['required_options'] = [\
     make_option('-m', '--mapping_fp', type='existing_filepath', 
-                help='Metadata mapping file filepath'),
+        help='Metadata mapping file filepath'),
     make_option('-i', '--coord_fname',
         help='Input principal coordinates filepath (i.e.,' \
         ' resulting file from principal_coordinates.py). Alternatively,' \
@@ -44,7 +44,17 @@ script_info['required_options'] = [\
         type='existing_path')
 ]
 
-script_info['optional_options'] = []
+script_info['optional_options'] = [\
+   make_option('-n','--personal_id_column', \
+        default='PersonalID', type='string',\
+        help='Name of the column in the header that denotes the individual ' +\
+        'of interest, default is PersonalID.'),
+   make_option('-l','--personal_ids', \
+        default=None, type='string',\
+        help='A comma seperated list of individual ids ' +\
+        'the default will create a list of all of the individuals '\
+        'in the mapping file.')
+        ]   
 
 script_info['version'] = __version__
 
@@ -57,13 +67,21 @@ def main():
     collated_dir = opts.collated_dir
     output_dir = opts.output_dir
     prefs = opts.prefs_fp
+    personal_id_column = opts.personal_id_column
+    personal_ids = opts.personal_ids
     
     if exists(output_dir):
         # don't overwrite existing output directory - make the user provide a different name or 
         # move/delete the existing directory since it may have taken a while to create.
         raise ValueError, "Output directory (%s) already exists. Won't overwrite." % output_dir
 
-    create_personal_results(mapping_file, distance_matrix, collated_dir, output_dir, prefs)
+    create_personal_results(mapping_file, 
+                            distance_matrix, 
+                            collated_dir, 
+                            output_dir, 
+                            prefs, 
+                            personal_id_column, 
+                            personal_ids)
     
 if __name__ == "__main__":
     main()

@@ -17,3 +17,4 @@ def create_index_html(personal_id, output_fp):
     output_f.write('</body>')
     output_f.write('</html>')
     output_f.close()
+    
