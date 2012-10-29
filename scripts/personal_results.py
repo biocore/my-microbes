@@ -20,9 +20,21 @@ from os import makedirs
 script_info = {}
 script_info['brief_description'] = """Generate distinct 3d plots for unique individuals based on the metadata mapping file."""
 script_info['script_description'] = """This script generates a prefs file which assigns a unique color to the individual and then generates a 3d plot based on that prefs file"""
-script_info['script_usage'] = [("""Basic usage with output directory""", """The distance matrix and mapping files are required. if no output file path is specified one will be created in the working directory. """, """%prog -i distance_matrix.txt -m mapping_file.txt -o out/""")]
-script_info['output_description'] = "A directory containing all of the 3d plots for each individual"
-script_info['required_options'] = [
+script_info['script_usage'] = [("""Basic usage""", 
+                                """The required options are a mapping file, a distance matrix, a directory of collated alpha files, an output directory, and a preferences file. This will create alpha and beta diversity plots for all of the individuals. """, 
+                                """%prog  -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o personal_micro_out -p universal_prefs.txt"""),
+                            ("""Limit output""",
+                                """If the user wishes to limit the output so that plots are not created for every individual in the mapping file they can pass a list of the desired individual ids. For instance to create output for CUB027 and NAU113 the user would pass:""",
+                                """%prog  -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o limited_results_out -p universal_prefs.txt -l CUB027,NAU113"""),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+                            ("""Change default id column title""",
+                                """If the column indicating the individual is named something other than 'PersonalID' the user can indicate the name of that column. This will however require the updating the example prefs file to reflect the mapping file that is being used.""",
+                                """%prog -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o personal_micro_out -p universal_prefs.txt -n title_of_column"""),
+                            ("""Change default titles for new column in mapping file""", 
+                                """By default the new column will be titles "Self" and the categories are "Self" and "Other" if the user wishes to change this they can specify the new titles. These changes will have to be made manually in the prefs file as well.""",
+                                """%prog -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o def_cat_out -p universal_prefs_2.txt -l CUB027,NAU113 -t individual -r yes,no""")]
+
+script_info['output_description'] = "A directory containing all of the 3d and rarefaction plots for each individual"
+script_info['required_options'] = [ 
     make_option('-m', '--mapping_fp', type='existing_filepath', 
         help='Metadata mapping file filepath'),
     make_option('-i', '--coord_fname',
