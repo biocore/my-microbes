@@ -53,20 +53,23 @@ script_info['required_options'] = [
     make_option('-p', '--prefs_fp',
         help='Input prefs filepath, this is user generated (i.e.,'
         'not currently created from any qiime function)',
+        type='existing_path'),
+    make_option('-a', '--otu_table',
+        help='Input otu table filepath',
         type='existing_path')
 ]
 
 script_info['optional_options'] = [
-   make_option('-n','--personal_id_column',
+    make_option('-n','--personal_id_column',
         default='PersonalID', type='string',
         help='Name of the column in the header that denotes the individual '
         'of interest, default is PersonalID.'),
-   make_option('-l','--personal_ids',
+    make_option('-l','--personal_ids',
         default=None, type='string',
         help='A comma seperated list of individual ids '
         'the default will create a list of all of the individuals '
         'in the mapping file.'),
-   make_option('-t','--column_title',
+    make_option('-t','--column_title',
         default=None, type='string',
         help='Name of the column.'
         'A new column will be created to indicate '
@@ -74,7 +77,7 @@ script_info['optional_options'] = [
         'or from a differeent individual. This option defines '
         'the name of that column. Default is "Self" '
         'This change requires that the prefs file is modified as well '),
-   make_option('-r','--individual_titles',
+    make_option('-r','--individual_titles',
         default=None, type='string',
         help='Comma seperated values, i.e(Self,Other). '
         'The "self" title should be listed first. '
@@ -82,8 +85,27 @@ script_info['optional_options'] = [
         'if the sample is from the individual of interest ' 
         'and "Other" if the sample is not from the person '
         'of interest. Currently this requires modifying '
-        'the prefs file to match the indicated titles. ')
-        ]   
+        'the prefs file to match the indicated titles. '),
+    make_option('--category_to_split',
+        default=None, type='string',
+        help='This is the second category that the otu table '
+        'will be split on. The first is "column_title" '
+        'a new otu table will be created for each value ' 
+        'in each category.'),
+    make_option('--time_series_category',
+        default=None, type='string',
+        help='path to the parameter file, which specifies changes to '
+        'the default behavior. See '
+        'http://www.qiime.org/documentation/file_formats.html '
+        '#qiime-parameters. [if omitted, default values will be '
+        'used]'),
+    make_option('--parameter_fp',
+        default=None, type='string',
+        help='This is the category that will be graphed in ' 
+        'the area plot along the x-axis. The default is ' 
+        '"WeeksSinceStart" if the time series has a different ' 
+        'name it wil need to be provided.')
+]
 
 script_info['version'] = __version__
 
@@ -100,6 +122,10 @@ def main():
     personal_ids = opts.personal_ids
     column_title = opts.column_title
     individual_titles = opts.individual_titles
+    otu_table = opts.otu_table
+    category_to_split = opts.category_to_split
+    time_series_category = opts.time_series_category
+    parameter_fp = opts.parameter_fp
     
     if exists(output_dir):
         # don't overwrite existing output directory - make the user provide a different name or 
@@ -111,10 +137,14 @@ def main():
                             collated_dir, 
                             output_dir, 
                             prefs, 
-                            personal_id_column, 
+                            personal_id_column,
+                            otu_table,
+                            parameter_fp, 
                             personal_ids, 
                             column_title, 
-                            individual_titles)
+                            individual_titles,
+                            category_to_split, 
+                            time_series_category)
     
 if __name__ == "__main__":
     main()
