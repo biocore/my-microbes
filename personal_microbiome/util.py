@@ -50,21 +50,20 @@ def create_personal_results(mapping_fp,
                             otu_table,
                             parameter_fp, 
                             personal_ids=None, 
-                            column_title=None, 
+                            column_title='Self', 
                             individual_titles=None,
-                            category_to_split=None,
-                            time_series_category=None):
+                            category_to_split='BodySite',
+                            time_series_category='WeeksSinceStart',
+                            suppress_alpha_rarefaction=False,
+                            verbose=False):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
         personal_id_index = header.index(personal_id_field)
     except ValueError:
         raise ValueError("personal id field (%s) is not a mapping file column header" %
                          personal_id_field)
-    if column_title == None:
-        column_title = 'Self' 
-        header.append(column_title)
-    else: 
-        header.append(column_title)
+    header.append(column_title)
+    
     if personal_ids == None: 
         personal_ids  = get_personal_ids(map_as_list, personal_id_index)
     else:
@@ -72,14 +71,7 @@ def create_personal_results(mapping_fp,
             if id not in get_personal_ids(map_as_list, personal_id_index):
                 raise ValueError('%s is not an id in the mapping file.' %id)
         personal_ids = personal_ids.split(',')
-    if category_to_split == None:
-        category_to_split = 'BodySite' 
-    else: 
-        pass
-    if time_series_category == None:
-        time_series_category = 'WeeksSinceStart' 
-    else: 
-        pass        
+        
     output_directories = []
     makedirs(output_fp)
     otu_table_title = otu_table.split('/')[-1].split('.')
@@ -105,54 +97,77 @@ def create_personal_results(mapping_fp,
         column_title_values = set([e[column_title_index] for e in personal_map])
         cat_index = header.index(category_to_split)
         cat_values = set([e[cat_index] for e in personal_map])
-        cmd = "make_rarefaction_plots.py -i %s -m %s -p %s -o %s" % (collated_dir_fp, 
-                                                                     personal_mapping_file_fp,
-                                                                     prefs_fp, 
-                                                                     rarefaction_dir)          
-        stdout, stderr, return_code = qiime_system_call(cmd)
-        if return_code != 0:
-            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-            (cmd, stdout, stderr))
+        
+        ## Alpha rarefaction steps
+        if not suppress_alpha_rarefaction:
+            cmd = "make_rarefaction_plots.py -i %s -m %s -p %s -o %s" % (collated_dir_fp, 
+                                                                         personal_mapping_file_fp,
+                                                                         prefs_fp, 
+                                                                         rarefaction_dir)
+            if verbose:
+                print cmd          
+            stdout, stderr, return_code = qiime_system_call(cmd)
+            if return_code != 0:
+                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                (cmd, stdout, stderr))
+        
+        ## Beta diversity steps
         cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
                                                             prefs_fp, 
                                                             distance_matrix_fp, 
                                                             pcoa_dir)
+        if verbose:
+            print cmd
         stdout, stderr, return_code = qiime_system_call(cmd)
         if return_code != 0:
             raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
             (cmd, stdout, stderr))
+        
+        ## Split OTU table into self/other per-body-site tables
         cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (otu_table,
                                                               personal_mapping_file_fp,
                                                               column_title, 
-                                                              area_plots_dir)         
+                                                              area_plots_dir)
+        if verbose:
+            print cmd
         stdout, stderr, return_code = qiime_system_call(cmd)
         if return_code != 0:
             raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
             (cmd, stdout, stderr))
+            
+        
         for column_title_value in column_title_values:
+            print column_title_value
             biom_fp = join(area_plots_dir, '%s_%s.%s' % (otu_table_title[0], column_title_value, otu_table_title[1]))
             body_site_dir = join(area_plots_dir, column_title_value)
             cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (biom_fp,
                                                                   personal_mapping_file_fp,
                                                                   category_to_split, 
                                                                   body_site_dir)
+            if verbose:
+                print cmd
             stdout, stderr, return_code = qiime_system_call(cmd)
             if return_code != 0:
                 raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
                 (cmd, stdout, stderr))
+                
             for cat_value in cat_values:
-                otu_table_fp = join(body_site_dir, "closed_ref_otu_table_%s_%s.biom" % (column_title, cat_value))
+                otu_table_fp = join(body_site_dir, "otu_table_%s_%s.biom" % (column_title_value, cat_value))
+                print otu_table_fp
                 if exists(otu_table_fp):
-                    if parame   ter_fp == None:
-                        parameter_fp = ''
-                    else:
-                        parameter_fp = '-p %s' %parameter_fp
-                    plots = join(area_plots_dir, "area_plots")
-                    cmd = "summarize_taxa_through_plots.py -i %s -o %s -c %s -m %s -s %s" % (otu_table_fp,
+                    # Not supporting parameter files yet
+                    #if parameter_fp == None:
+                    #    parameter_fp = ''
+                    #else:
+                    #    parameter_fp = '-p %s' %parameter_fp
+                    plots = join(area_plots_dir, "taxa_plots_%s_%s" % (column_title_value, cat_value))
+                    cmd = "summarize_taxa_through_plots.py -i %s -o %s -c %s -m %s -s" % (otu_table_fp,
                                                                                                 plots,
                                                                                                 time_series_category, 
-                                                                                                personal_mapping_file_fp, 
-                                                                                                parameter_fp)
+                                                                                                personal_mapping_file_fp)
+                                                                                                #parameter_fp)
+                    if verbose:
+                        print cmd
                     stdout, stderr, return_code = qiime_system_call(cmd)
                     if return_code != 0:
                         raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\

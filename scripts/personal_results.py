@@ -70,12 +70,12 @@ script_info['optional_options'] = [
         'the default will create a list of all of the individuals '
         'in the mapping file.'),
     make_option('-t','--column_title',
-        default=None, type='string',
+        default="Self", type='string',
         help='Name of the column.'
         'A new column will be created to indicate '
         'whether a sample is from the specified individual '
         'or from a differeent individual. This option defines '
-        'the name of that column. Default is "Self" '
+        'the name of that column. [default: %default]'
         'This change requires that the prefs file is modified as well '),
     make_option('-r','--individual_titles',
         default=None, type='string',
@@ -87,13 +87,13 @@ script_info['optional_options'] = [
         'of interest. Currently this requires modifying '
         'the prefs file to match the indicated titles. '),
     make_option('--category_to_split',
-        default=None, type='string',
+        default="BodySite", type='string',
         help='This is the second category that the otu table '
         'will be split on. The first is "column_title" '
         'a new otu table will be created for each value ' 
         'in each category.'),
     make_option('--time_series_category',
-        default=None, type='string',
+        default="WeeksSinceStart", type='string',
         help='path to the parameter file, which specifies changes to '
         'the default behavior. See '
         'http://www.qiime.org/documentation/file_formats.html '
@@ -104,7 +104,11 @@ script_info['optional_options'] = [
         help='This is the category that will be graphed in ' 
         'the area plot along the x-axis. The default is ' 
         '"WeeksSinceStart" if the time series has a different ' 
-        'name it wil need to be provided.')
+        'name it will need to be provided.'),
+    make_option('--suppress_alpha_rarefaction',
+         default=False,action='store_true',
+         help=('Suppress generation of alpha rarefaction data'
+               ' [default: %default]'))
 ]
 
 script_info['version'] = __version__
@@ -144,7 +148,9 @@ def main():
                             column_title, 
                             individual_titles,
                             category_to_split, 
-                            time_series_category)
+                            time_series_category,
+                            suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
+                            verbose=opts.verbose)
     
 if __name__ == "__main__":
     main()

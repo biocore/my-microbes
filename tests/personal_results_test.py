@@ -16,9 +16,15 @@ from util import get_personal_ids, create_personal_mapping_file
 
 class ExampleTests(TestCase):
 
+    def setUp(self):
+        # Define some data here...
+        self.mapping_data = parse_mapping_file(mapping_str.split('\n'))
+
 ##Test that indiv_snp_variation returns a list of the allele variation information. 
     def test_get_personal_ids(self): 
         """Does the function return correct output when given correct output"""
+        obs = get_personal_ids(self.mapping_data
+        
         column = 'PersonalID'
         input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
                   ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
@@ -51,7 +57,11 @@ class ExampleTests(TestCase):
         personal_id_index = 8
         individual_titles=None
         
-
+mapping_str = """
+S1
+S2
+S3
+"""
 
 if __name__ == "__main__":
     main()
