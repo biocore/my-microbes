@@ -10,6 +10,7 @@ __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
 from unittest import TestCase, main
+from qiime.parse import parse_mapping_file
 from personal_microbiome.util import get_personal_ids, create_personal_mapping_file
 
 class ExampleTests(TestCase):
@@ -21,7 +22,7 @@ class ExampleTests(TestCase):
 ##Test that indiv_snp_variation returns a list of the allele variation information. 
     def test_get_personal_ids(self): 
         """Does the function return correct output when given correct output"""
-        obs = get_personal_ids(self.mapping_data
+        obs = get_personal_ids(self.mapping_data)
         
         column = 'PersonalID'
         input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
