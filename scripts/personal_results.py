@@ -1,15 +1,13 @@
 #!/usr/bin/env python
-# File created on 13 Sep 2012
-#from __future__ import division
+from __future__ import division
 
 __author__ = "John Chase"
-__copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["John Chase"]
+__copyright__ = "Copyright 2013, The QIIME project"
+__credits__ = ["John Chase", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
-__status__ = "Development"
  
 from personal_microbiome.util import create_personal_results
 from qiime.util import parse_command_line_parameters, make_option
