@@ -49,11 +49,25 @@ text = """
 				</td>
 				<td>
 					<b>Beta diversity</b><br>
+					Beta diversity refers to the variation in species composition among sites or within a site through time. In ecology, there are numerous metrics to measure beta diversity with some accounting only for presence/absence of species (unweighted) and others that also account for species abundances (weighted). The metric used here is known as UniFrac and differs from most other beta diversity metrics because it incorporates phylogenetic information into the calculation. For details on the UniFrac metric please refer to XXXX.
+                    <p>
+                    Once a beta diversity matrix is constructed of all the pairwise comparisons of samples, any number of ordination techniques can be used to condense the multidimensional data in order to visualize the results. Here we present the principal coordinate analysis results of the UniFrac distance matrices to visualize how microbial communities differ between body sites and individuals through time. How you interpret these figures is that each point represents the microbial community of one sample and points closer together in space are more similar in composition than points further apart. We have colored these ordination plots so that forehead samples are XXX, palm samples are XXX, gut samples are XXX and tongue samples are XXX with your samples being lighter (or darker) shades of each of those colors. As you can see, gut and tongue samples generally form distinct clusters while the two skin habitats have some overlap. After running some statistical tests to verify these observations, we can conclude that gut, tongue, and skin communities are distinct. While these observations were expected, we are using these beta diversity results to run other more sophisticated analyses. For example, we can use these results to ask the question; are gut communities of males or females more variable through time? Or, are there differences in community composition between the three universities? Or, what are the affects of antibiotic usage on the composition of tongue communities? These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 				</td>
 			</tr>
 			<tr>
 				<td width=25%% align=center valign=center>
-					<a href="">Comparative taxonomy plots</a> (not yet available)
+					<table>
+						<tr><td colspan=3>Comparative taxonomic summary plots</td></tr>
+						<tr>
+							<td>Tongue</td><td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html">Other</a></td>
+						</tr>
+							<td>Palm</td><td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html">Other</a></td>
+						</tr>
+							<td>Gut</td><td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html">Other</a></td>
+						</tr>
+							<td>Forehead</td><td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html">Other</a></td>
+						</tr>
+					</table>
 				</td>
 				<td>
 					Taxonomy plots:
