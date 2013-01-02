@@ -17,7 +17,7 @@ index_text = """
 	<tr>
 		<td>
 			<h3>Personal microbiome results: %s</h3>
-			Below are links to your personal microbiome results, along with descriptions that should help you interpret those results. As our analysis progresses, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. 
+			Below are links to your personal microbiome results, along with descriptions that should help you interpret those results. As our analysis progresses, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. If you have questions about your results, you can get in touch by email at <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
 		</td>
 		<td><img src="https://s3.amazonaws.com/my-microbes/my_microbes_logo.png"></td>
 	</tr>
@@ -49,9 +49,20 @@ index_text = """
 				</td>
 				<td>
 					<b>Beta diversity</b><br>
-					Beta diversity refers to the variation in species composition among sites or within a site through time. In ecology, there are numerous metrics to measure beta diversity with some accounting only for presence/absence of species (unweighted) and others that also account for species abundances (weighted). The metric used here is known as UniFrac and differs from most other beta diversity metrics because it incorporates phylogenetic information into the calculation. For details on the UniFrac metric please refer to XXXX.
+					Beta diversity refers to the variation in species composition across samples, in contrast to alpha (i.e., within-sample) diversity, and is often computed as a distance between samples. If you have three samples, for example a sample from your tongue, another indivdual's tongue, and your palm, you could compute the beta diveristy or distance between all pairs of these three samples and determine if your tongue microbial community was more similar in composition to someone else's tongue microbial community, or to your palm microbial community. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
+					<p>
+					Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In these ordination plots, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
                     <p>
-                    Once a beta diversity matrix is constructed of all the pairwise comparisons of samples, any number of ordination techniques can be used to condense the multidimensional data in order to visualize the results. Here we present the principal coordinate analysis results of the UniFrac distance matrices to visualize how microbial communities differ between body sites and individuals through time. How you interpret these figures is that each point represents the microbial community of one sample and points closer together in space are more similar in composition than points further apart. We have colored these ordination plots so that forehead samples are XXX, palm samples are XXX, gut samples are XXX and tongue samples are XXX with your samples being lighter (or darker) shades of each of those colors. As you can see, gut and tongue samples generally form distinct clusters while the two skin habitats have some overlap. After running some statistical tests to verify these observations, we can conclude that gut, tongue, and skin communities are distinct. While these observations were expected, we are using these beta diversity results to run other more sophisticated analyses. For example, we can use these results to ask the question; are gut communities of males or females more variable through time? Or, are there differences in community composition between the three universities? Or, what are the affects of antibiotic usage on the composition of tongue communities? These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
+                    The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are XXX, palm samples are XXX, gut samples are XXX and tongue samples are XXX. You can tell your samples from those of the rest of the participants as yours are colored in a lighter shade of the same colors.
+                    <p>
+                    You should be able to answer several questions from these plots:
+                    <ol>
+                        <li>Which is more similar: microbial communities from the same body site but from different individuals, or microbial communities from different body sites but from the same individual? 
+                        <li>Do your microbial communities look typical of each body site, or are they outliers?
+                        <li>Which body sites exhibit the most variability in composition across individuals?
+                    </ol>
+                    <p>
+                    While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 				</td>
 			</tr>
 			<tr>
@@ -78,7 +89,7 @@ index_text = """
 	<tr>
 		<td colspan=2>
 			<hr>
-			Thanks for participating in the study! Please direct any questions to ...
+			Thanks for participating in the study! Please direct any questions to <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>
 		</td>
  </body>
 </html>
