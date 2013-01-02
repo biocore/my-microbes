@@ -9,7 +9,7 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-text = """
+index_text = """
 <html>
  <head><title>Personal Microbiome Results: %s</title></head>
  <body>
@@ -57,15 +57,15 @@ text = """
 			<tr>
 				<td width=25%% align=center valign=center>
 					<table>
-						<tr><td colspan=3>Comparative taxonomic summary plots</td></tr>
+						<tr><td colspan=4>Comparative taxonomic summary plots</td></tr>
 						<tr>
-							<td>Tongue</td><td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html">Other</a></td>
+							<td>Tongue</td><td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html">Other</a></td><td><a href="time_series/tongue_comparative.html">Self v Other</a></td>
 						</tr>
-							<td>Palm</td><td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html">Other</a></td>
+							<td>Palm</td><td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html">Other</a></td><td><a href="time_series/palm_comparative.html">Self v Other</a></td>
 						</tr>
-							<td>Gut</td><td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html">Other</a></td>
+							<td>Gut</td><td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html">Other</a></td><td><a href="time_series/gut_comparative.html">Self v Other</a></td>
 						</tr>
-							<td>Forehead</td><td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html">Other</a></td>
+							<td>Forehead</td><td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html">Self</a></td><td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html">Other</a></td><td><a href="time_series/forehead_comparative.html">Self v Other</a></td>
 						</tr>
 					</table>
 				</td>
@@ -86,6 +86,22 @@ text = """
 
 def create_index_html(personal_id, output_fp):
     output_f = open(output_fp,'w')
-    output_f.write(text % (personal_id,personal_id))
+    output_f.write(index_text % (personal_id,personal_id))
+    output_f.close()
+
+comparative_taxa_plots_text = """<html>
+<head></head>
+<body>
+<h3>%s taxonomic composition by weeks since experiment start (self)</h3>
+<div style="margin: 0 auto; width:90%%; height:48%%"><object type="text/html" data="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html" style="width:100%%; height:100%%; margin:1%%;"></object></div>
+<h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
+<div style="margin: 0 auto; width:90%%; height:48%%;"><object type="text/html" data="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html" style="width:100%%; height:100%%; margin:1%%;"></object></div>
+</body>
+</html>
+"""
+
+def create_comparative_taxa_plots_html(category, output_fp):
+    output_f = open(output_fp,'w')
+    output_f.write(comparative_taxa_plots_text % (category.title(), category, category.title(), category))
     output_f.close()
     

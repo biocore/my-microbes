@@ -16,7 +16,7 @@ from os.path import join
 from os.path import exists
 from qiime.parse import parse_mapping_file
 from qiime.format import format_mapping_file
-from personal_microbiome.format import create_index_html
+from personal_microbiome.format import create_index_html, create_comparative_taxa_plots_html
 
 def get_personal_ids(mapping_data, personal_id_index):
     result = []
@@ -183,6 +183,8 @@ def create_personal_results(mapping_fp,
                     if return_code != 0:
                         raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
                         (cmd, stdout, stderr))
+                    create_comparative_taxa_plots_html(cat_value, 
+                                                       join(area_plots_dir,'%s_comparative.html' % cat_value))
     return output_directories
     
     
