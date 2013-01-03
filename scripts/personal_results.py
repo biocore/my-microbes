@@ -1,15 +1,13 @@
 #!/usr/bin/env python
-# File created on 13 Sep 2012
-#from __future__ import division
+from __future__ import division
 
 __author__ = "John Chase"
-__copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["John Chase"]
+__copyright__ = "Copyright 2013, The QIIME project"
+__credits__ = ["John Chase", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.5.0"
+__version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
-__status__ = "Development"
  
 from personal_microbiome.util import create_personal_results
 from qiime.util import parse_command_line_parameters, make_option
@@ -63,48 +61,36 @@ script_info['optional_options'] = [
     make_option('-n','--personal_id_column',
         default='PersonalID', type='string',
         help='Name of the column in the header that denotes the individual '
-        'of interest, default is PersonalID.'),
+        'of interest [default: %default]'),
     make_option('-l','--personal_ids',
         default=None, type='string',
         help='A comma seperated list of individual ids '
-        'the default will create a list of all of the individuals '
-        'in the mapping file.'),
+        'to generate results for [default: all]'),
     make_option('-t','--column_title',
         default="Self", type='string',
-        help='Name of the column.'
-        'A new column will be created to indicate '
-        'whether a sample is from the specified individual '
-        'or from a differeent individual. This option defines '
-        'the name of that column. [default: %default]'
-        'This change requires that the prefs file is modified as well '),
+        help='Name of new column will be created to indicate '
+        'whether a sample is from the specified personal_id '
+        'or from a differeent personal_id. This option defines '
+        'the name of that column. This must correspond to the name '
+        'of a column in prefs_fp [default: %default]'),
     make_option('-r','--individual_titles',
-        default=None, type='string',
-        help='Comma seperated values, i.e(Self,Other). '
-        'The "self" title should be listed first. '
-        'The default is "Self" '
-        'if the sample is from the individual of interest ' 
-        'and "Other" if the sample is not from the person '
-        'of interest. Currently this requires modifying '
-        'the prefs file to match the indicated titles. '),
+        default="Self,Other", type='string',
+        help='Comma seperated values describing how to name '
+        'the individuals in the new column_title column '
+        '[default: %default]'),
     make_option('--category_to_split',
         default="BodySite", type='string',
         help='This is the second category that the otu table '
         'will be split on. The first is "column_title" '
         'a new otu table will be created for each value ' 
-        'in each category.'),
+        'in each category [default: %default].'),
     make_option('--time_series_category',
         default="WeeksSinceStart", type='string',
-        help='path to the parameter file, which specifies changes to '
-        'the default behavior. See '
-        'http://www.qiime.org/documentation/file_formats.html '
-        '#qiime-parameters. [if omitted, default values will be '
-        'used]'),
+        help='Header in mapping_fp describing the timeseries column '
+        '[default: %default]'),
     make_option('--parameter_fp',
         default=None, type='string',
-        help='This is the category that will be graphed in ' 
-        'the area plot along the x-axis. The default is ' 
-        '"WeeksSinceStart" if the time series has a different ' 
-        'name it will need to be provided.'),
+        help='Path to the parameter files'),
     make_option('--suppress_alpha_rarefaction',
          default=False,action='store_true',
          help=('Suppress generation of alpha rarefaction data'

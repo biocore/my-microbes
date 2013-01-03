@@ -1,18 +1,17 @@
-
-# File created on 08 Feb 2012
+#!/usr/bin/env python
 from __future__ import division
 
-__author__ = ""
-__copyright__ = ""
-__credits__ = ""
-__license__ = ""
-__version__ = ""
-__maintainer__ = ""
-__email__ = ""
-__status__ = ""
+__author__ = "John Chase"
+__copyright__ = "Copyright 2013, The QIIME project"
+__credits__ = ["John Chase", "Greg Caporaso"]
+__license__ = "GPL"
+__version__ = "0.0.0-dev"
+__maintainer__ = "John Chase"
+__email__ = "jc33@nau.edu"
 
 from unittest import TestCase, main
-from util import get_personal_ids, create_personal_mapping_file
+from qiime.parse import parse_mapping_file
+from personal_microbiome.util import get_personal_ids, create_personal_mapping_file
 
 class ExampleTests(TestCase):
 
@@ -23,7 +22,7 @@ class ExampleTests(TestCase):
 ##Test that indiv_snp_variation returns a list of the allele variation information. 
     def test_get_personal_ids(self): 
         """Does the function return correct output when given correct output"""
-        obs = get_personal_ids(self.mapping_data
+        obs = get_personal_ids(self.mapping_data)
         
         column = 'PersonalID'
         input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
