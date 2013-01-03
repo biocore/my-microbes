@@ -1,0 +1,15 @@
+
+{'background_color':'black','sample_coloring':{
+'Self&&BodySite':
+{
+'column':'Self&&BodySite',
+'colors':{
+'Othergut':'pink1',
+'Selfgut':'red1',
+'Othermouth':'gray1',
+'Selfmouth':'yellow1',
+'Otherforehead':'purple1',
+'Selfforehead':'purple2',
+'Otherpalm':'orange1',
+'Selfpalm':'orange2',
+}}}}
