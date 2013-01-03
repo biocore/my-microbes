@@ -81,7 +81,15 @@ index_text = """
 					</table>
 				</td>
 				<td>
-					Taxonomy plots:
+					<b>Taxonomic composition</b><br>
+					Here we present the composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
+					<p>
+					You should be able to answer several questions from these plots:
+					<ol>
+					    <li>What was the dominant phylum in your gut on the first week thatyou donated a sample?
+					    <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time? 
+					    <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals? 
+					</ol>
 				</td>
 			</tr>
 		</table>
