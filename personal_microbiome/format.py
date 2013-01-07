@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -108,13 +108,57 @@ def create_index_html(personal_id, output_fp):
     output_f.write(index_text % (personal_id,personal_id))
     output_f.close()
 
+# This javascript synchronizes the scrolling of the two iframes. It has been
+# tested in Chrome, Safari, and Firefox. It will work in all browsers when
+# hosted (i.e. not opened locally). If opened locally, Chrome will not support
+# synchronized scrolling because it does not allow javascript to access
+# properties of the iframes on the local machine for security reasons. In this
+# case, all other aspects of the page continue to function, but synchronized
+# scrolling is disabled. This issue can be circumvented in Chrome by starting
+# it with the --allow-file-access-from-files flag. Firefox and Safari support
+# synchronized scrolling when run locally.
+#
+# See http://stackoverflow.com/a/5664399 for more details.
 comparative_taxa_plots_text = """<html>
-<head></head>
-<body>
-<h3>%s taxonomic composition by weeks since experiment start (self)</h3>
-<div style="margin: 0 auto; width:90%%; height:48%%"><object type="text/html" data="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html" style="width:100%%; height:100%%; margin:1%%;"></object></div>
-<h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
-<div style="margin: 0 auto; width:90%%; height:48%%;"><object type="text/html" data="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html" style="width:100%%; height:100%%; margin:1%%;"></object></div>
+<head>
+  <script language="javascript" type="text/javascript">
+    function init() {
+      document.getElementById("selfIFrame").contentWindow.onscroll = syncOther;
+      document.getElementById("otherIFrame").contentWindow.onscroll = syncSelf;
+    }
+
+    function syncSelf() {
+      selfContent = document.getElementById("selfIFrame").contentWindow;
+      otherContent = document.getElementById("otherIFrame").contentWindow;
+      selfContent.scrollTo(otherContent.scrollX, otherContent.scrollY);
+    }
+
+    function syncOther() {
+      selfContent = document.getElementById("selfIFrame").contentWindow;
+      otherContent = document.getElementById("otherIFrame").contentWindow;
+      otherContent.scrollTo(selfContent.scrollX, selfContent.scrollY);
+    }
+  </script>
+</head>
+
+<body onload="init()">
+    <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
+    <div style="margin: 0 auto; width:90%%; height:48%%">
+        <iframe id="selfIFrame"
+                src="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html"
+                frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
+                scrolling="auto">
+        </iframe>
+    </div>
+
+    <h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
+    <div style="margin: 0 auto; width:90%%; height:48%%;">
+        <iframe id="otherIFrame"
+                src="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html"
+                frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
+                scrolling="auto">
+        </iframe>
+    </div>
 </body>
 </html>
 """
