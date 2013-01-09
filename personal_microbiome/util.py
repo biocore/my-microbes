@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -186,14 +186,60 @@ def create_personal_results(mapping_fp,
                     create_comparative_taxa_plots_html(cat_value, 
                                                        join(area_plots_dir,'%s_comparative.html' % cat_value))
     return output_directories
-    
-    
 
+def notify_participants(recipients_f, email_settings_f, dry_run=True):
+    recipients = parse_recipients(recipients_f)
+    email_settings = parse_email_settings(email_settings_f)
 
-    
-    
-    
-    
-    
-    
-    
+def send_email(host, port, sender, password, recipients, subject, body,
+               attachments=None):
+    """Sends an email (optionally with attachments).
+
+    This function does not return anything. It is not unit tested because it
+    sends an actual email, and thus is difficult to test.
+
+    This code is largely based on the code found here:
+    http://www.blog.pythonlibrary.org/2010/05/14/how-to-send-email-with-python/
+    http://segfault.in/2010/12/sending-gmail-from-python/
+
+    Taken from Clout's (https://github.com/qiime/clout) util module.
+
+    Arguments:
+        host - the STMP server to send the email with
+        port - the port number of the SMTP server to connect to
+        sender - the sender email address (i.e. who this message is from). This
+            will be used as the username when logging into the SMTP server
+        password - the password to log into the SMTP server with
+        recipients - a list of email addresses to send the email to
+        subject - the subject of the email
+        body - the body of the email
+        attachments - a list of 2-element tuples, where the first element is
+            the filename that will be used for the email attachment (as the
+            recipient will see it), and the second element is the file to be
+            attached
+    """
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ', '.join(recipients)
+    msg['Subject'] = subject
+    msg['Date'] = formatdate(localtime=True)
+ 
+    if attachments is not None:
+        for attachment_name, attachment_f in attachments:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment_f.read())
+            encode_base64(part)
+            part.add_header('Content-Disposition',
+                            'attachment; filename="%s"' % attachment_name)
+            msg.attach(part)
+    part = MIMEText('text', 'plain')
+    part.set_payload(body)
+    msg.attach(part)
+ 
+    server = SMTP(host, port)
+    server.ehlo()
+    server.starttls()
+    server.ehlo
+    server.login(sender, password)
+    server.sendmail(sender, recipients, msg.as_string())
+    server.quit()
