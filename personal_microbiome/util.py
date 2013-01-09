@@ -191,6 +191,17 @@ def create_personal_results(mapping_fp,
     return output_directories
 
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
+    """Sends an email to each participant in the study.
+
+    Arguments:
+        recipients_f - file containing email recipients (see
+            parse.parse_recipients for more details)
+        email_settings_f - file containing settings for sending emails (see
+            parse.parse_email_settings for more details)
+        dry_run - if True, no emails are sent and information of what would
+            have been done is printed to stdout. If False, no output is printed
+            and emails are sent
+    """
     recipients = parse_recipients(recipients_f)
     email_settings = parse_email_settings(email_settings_f)
 
@@ -201,6 +212,7 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
 
     if dry_run:
         num_recipients = len(recipients)
+
         print("Running script in dry-run mode. No emails will be sent. Here's "
               "what I would have done:\n")
         print("Sender information:\n\nFrom address: %s\nPassword: %s\nSMTP "
