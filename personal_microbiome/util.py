@@ -3,18 +3,20 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
 import os
-from qiime.util import qiime_system_call
+from glob import glob
+from qiime.util import MetadataMap, qiime_system_call
 from os import makedirs
-from os.path import join
+from os.path import basename, join
 from os.path import exists
-from qiime.parse import parse_mapping_file
+from qiime.parse import parse_mapping_file, parse_rarefaction
+from qiime.pycogent_backports.distribution_plots import generate_box_plots
 from qiime.format import format_mapping_file
 from personal_microbiome.format import create_index_html, create_comparative_taxa_plots_html
 
@@ -66,6 +68,7 @@ def create_personal_results(mapping_fp,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
                             suppress_alpha_rarefaction=False,
+                            adiv_boxplots_rarefaction_depth=10000,
                             verbose=False):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
@@ -88,14 +91,21 @@ def create_personal_results(mapping_fp,
     otu_table_title = otu_table.split('/')[-1].split('.')
     for person_of_interest in personal_ids:
         makedirs(join(output_fp, person_of_interest))
+
         pcoa_dir = join(output_fp, person_of_interest, "beta_diversity")
         rarefaction_dir = join(output_fp, person_of_interest, "alpha_rarefaction")
         area_plots_dir = join(output_fp, person_of_interest, "time_series")
+        adiv_boxplots_dir = join(output_fp, person_of_interest, "adiv_boxplots")
+
         output_directories.append(pcoa_dir)
         output_directories.append(rarefaction_dir)
         output_directories.append(area_plots_dir)
-        personal_mapping_file_fp = join(output_fp, person_of_interest, "mapping_file.txt")
+        output_directories.append(adiv_boxplots_dir)
+
+        personal_mapping_file_fp = join(output_fp, person_of_interest,
+                                        "mapping_file.txt")
         html_fp = join(output_fp, person_of_interest, "index.html")
+
         personal_map = create_personal_mapping_file(map_as_list,
                                      header,
                                      comments,
@@ -185,15 +195,52 @@ def create_personal_results(mapping_fp,
                         (cmd, stdout, stderr))
                     create_comparative_taxa_plots_html(cat_value, 
                                                        join(area_plots_dir,'%s_comparative.html' % cat_value))
+        
+        # Generate alpha diversity boxplots, one per body site per metric.
+        _generate_alpha_diversity_boxplots(collated_dir,
+                                           personal_mapping_file_fp,
+                                           category_to_split,
+                                           column_title,
+                                           adiv_boxplots_rarefaction_depth,
+                                           adiv_boxplots_dir)
+
     return output_directories
-    
-    
 
 
-    
-    
-    
-    
-    
-    
-    
+def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
+                                       split_category, individual_category,
+                                       rarefaction_depth, output_dir):
+    metadata_map = MetadataMap.parseMetadataMap(open(map_fp, 'U'))
+    collated_adiv_fps = glob(join(collated_adiv_dir, '*.txt'))
+    split_category_vals = set(metadata_map.getCategoryValues(
+            metadata_map.SampleIds, split_category))
+
+    for collated_adiv_fp in collated_adiv_fps:
+        adiv_metric = splitext(basename(collated_adiv_fp))[0]
+
+        rarefaction = parse_rarefaction(open(collated_adiv_fp, 'U'))
+        sample_ids = rarefaction[0][3:]
+        rarefaction_data = [row for row in rarefaction[3]
+                            if row[0] == rarefaction_depth]
+
+        plot_data = defaultdict(lambda: defaultdict(list))
+        for row in rarefaction_data:
+            for sample_id, adiv_val in zip(sample_ids, row):
+                split_cat_val = metadata_map.getCategoryValue(sample_id,
+                                                              split_category)
+                indiv_cat_val = metadata_map.getCategoryValue(
+                        sample_id, individual_category)
+
+                plot_data[split_cat_val][indiv_cat_val].append(adiv_val)
+
+        for split_cat_val, dists in plot_data.items():
+            plot_title = 'Alpha diversity at %d seqs/sample (%s)' % (
+                    rarefaction_depth, split_cat_val)
+            plot_figure = generate_box_plots(dists.values(),
+                                             x_tick_labels=dists.keys(),
+                                             title=plot_title,
+                                             x_label='Grouping',
+                                             y_label=adiv_metric)
+            plot_figure.savefig(join(output_dir,
+                                     '%s_%s.png' % (adiv_metric,
+                                                    split_cat_val)))

@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -78,6 +78,10 @@ script_info['optional_options'] = [
         help='Comma seperated values describing how to name '
         'the individuals in the new column_title column '
         '[default: %default]'),
+    make_option('-d','--adiv_boxplots_rarefaction_depth',
+        default=10000, type='int',
+        help='single rarefaction depth (seqs/sample) to use when generating '
+        'alpha diversity boxplots of self versus other [default: %default]'),
     make_option('--category_to_split',
         default="BodySite", type='string',
         help='This is the second category that the otu table '
@@ -136,7 +140,9 @@ def main():
                             category_to_split, 
                             time_series_category,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
+                            adiv_boxplots_rarefaction_depth=opts.adiv_boxplots_rarefaction_depth,
                             verbose=opts.verbose)
-    
+
+
 if __name__ == "__main__":
     main()
