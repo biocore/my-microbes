@@ -29,6 +29,14 @@ everything before executing it. For this reason, the script will not send any
 emails by default, and will only print useful information about what it *would*
 have done. When you are sure you want to run the script for real, execute it
 with the --really option.
+
+When executed with --really, a line will be printed to stdout for each
+participant that is successfully emailed. The line will say something like:
+    Sending email to <personal ID> (<email addresses>)... success!
+
+If there is a problem during the email sending process, you will be able to see
+which recipients (if any) were emailed successfully, so that you'll know not to
+email them again when you rerun the script.
 """
 
 script_info['script_usage'] = []
@@ -42,8 +50,8 @@ script_info['script_usage'].append((
 
 script_info['output_description'] = """
 The script does not produce any output files. It will print useful information
-to stdout by default unless --really is used, in which case the script will not
-print anything.
+to stdout by default unless --really is used, in which case the script will
+print a line for each recipient that is successfully emailed.
 """
 
 script_info['required_options'] = [

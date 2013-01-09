@@ -9,13 +9,20 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-import os
-from qiime.util import qiime_system_call
+from email.Encoders import encode_base64
+from email.MIMEBase import MIMEBase
+from email.MIMEMultipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.Utils import formatdate
 from os import makedirs
 from os.path import join
 from os.path import exists
-from qiime.parse import parse_mapping_file
+from smtplib import SMTP
+
 from qiime.format import format_mapping_file
+from qiime.parse import parse_mapping_file
+from qiime.util import qiime_system_call
+
 from personal_microbiome.format import (create_index_html,
         create_comparative_taxa_plots_html, notification_email_subject,
         get_personalized_notification_email_text)
@@ -231,7 +238,14 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
             print "Body:\n%s\n" % get_personalized_notification_email_text(
                     sample_recipient[0])
     else:
-        pass
+        for personal_id, addresses in recipients.items():
+            personalized_text = \
+                    get_personalized_notification_email_text(personal_id)
+            print "Sending email to %s (%s)... " % (personal_id,
+                                                    ', '.join(addresses)),
+            send_email(server, port, sender, password, addresses,
+                       notification_email_subject, personalized_text)
+            print "success!"
 
 def send_email(host, port, sender, password, recipients, subject, body,
                attachments=None):
