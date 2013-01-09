@@ -16,7 +16,10 @@ from os.path import join
 from os.path import exists
 from qiime.parse import parse_mapping_file
 from qiime.format import format_mapping_file
-from personal_microbiome.format import create_index_html, create_comparative_taxa_plots_html
+from personal_microbiome.format import (create_index_html,
+        create_comparative_taxa_plots_html, notification_email_subject,
+        get_personalized_notification_email_text)
+from personal_microbiome.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
     result = []
@@ -190,6 +193,33 @@ def create_personal_results(mapping_fp,
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
     recipients = parse_recipients(recipients_f)
     email_settings = parse_email_settings(email_settings_f)
+
+    sender = email_settings['sender']
+    password = email_settings['password']
+    server = email_settings['smtp_server']
+    port = email_settings['smtp_port']
+
+    if dry_run:
+        num_recipients = len(recipients)
+        print("Running script in dry-run mode. No emails will be sent. Here's "
+              "what I would have done:\n")
+        print("Sender information:\n\nFrom address: %s\nPassword: %s\nSMTP "
+              "server: %s\nPort: %s\n" % (sender, password, server, port))
+        print "Sending emails to %d recipient(s)." % num_recipients
+
+        if num_recipients > 0:
+            # Sort so that we will grab the same recipient each time this is
+            # run over the same input files.
+            sample_recipient = sorted(recipients.items())[0]
+
+            print "\nSample email:\n"
+            print "To: %s" % ', '.join(sample_recipient[1])
+            print "From: %s" % sender
+            print "Subject: %s" % notification_email_subject
+            print "Body:\n%s\n" % get_personalized_notification_email_text(
+                    sample_recipient[0])
+    else:
+        pass
 
 def send_email(host, port, sender, password, recipients, subject, body,
                attachments=None):
