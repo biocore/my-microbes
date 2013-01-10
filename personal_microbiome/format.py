@@ -103,6 +103,34 @@ index_text = """
 </html>
 """
 
+notification_email_subject = "Your personal microbiome results are ready!"
+
+notification_email_text = """
+Dear participant,
+
+We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
+
+https://s3.amazonaws.com/my-microbes/index.html
+
+Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
+
+Your personal ID is %s.
+
+To view your personalized results, please visit the following link:
+
+https://s3.amazonaws.com/my-microbes/%s/index.html
+
+The website has additional details on how to view and interpret your results.  If you have any questions, please send an email to student.microbiome@gmail.com.
+
+Thanks for participating in the study!
+
+The Student Microbiome Project Team
+"""
+
+def get_personalized_notification_email_text(personal_id):
+    """Returns the text for the body of an email based on personal ID."""
+    return notification_email_text % (personal_id, personal_id)
+
 def create_index_html(personal_id, output_fp):
     output_f = open(output_fp,'w')
     output_f.write(index_text % (personal_id,personal_id))

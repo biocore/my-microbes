@@ -3,20 +3,30 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-import os
-from qiime.util import qiime_system_call
+from email.Encoders import encode_base64
+from email.MIMEBase import MIMEBase
+from email.MIMEMultipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.Utils import formatdate
 from os import makedirs
 from os.path import join
 from os.path import exists
-from qiime.parse import parse_mapping_file
+from smtplib import SMTP
+
 from qiime.format import format_mapping_file
-from personal_microbiome.format import create_index_html, create_comparative_taxa_plots_html
+from qiime.parse import parse_mapping_file
+from qiime.util import qiime_system_call
+
+from personal_microbiome.format import (create_index_html,
+        create_comparative_taxa_plots_html, notification_email_subject,
+        get_personalized_notification_email_text)
+from personal_microbiome.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
     result = []
@@ -186,14 +196,106 @@ def create_personal_results(mapping_fp,
                     create_comparative_taxa_plots_html(cat_value, 
                                                        join(area_plots_dir,'%s_comparative.html' % cat_value))
     return output_directories
-    
-    
 
+def notify_participants(recipients_f, email_settings_f, dry_run=True):
+    """Sends an email to each participant in the study.
 
-    
-    
-    
-    
-    
-    
-    
+    Arguments:
+        recipients_f - file containing email recipients (see
+            parse.parse_recipients for more details)
+        email_settings_f - file containing settings for sending emails (see
+            parse.parse_email_settings for more details)
+        dry_run - if True, no emails are sent and information of what would
+            have been done is printed to stdout. If False, no output is printed
+            and emails are sent
+    """
+    recipients = parse_recipients(recipients_f)
+    email_settings = parse_email_settings(email_settings_f)
+
+    sender = email_settings['sender']
+    password = email_settings['password']
+    server = email_settings['smtp_server']
+    port = email_settings['smtp_port']
+
+    if dry_run:
+        num_recipients = len(recipients)
+
+        print("Running script in dry-run mode. No emails will be sent. Here's "
+              "what I would have done:\n")
+        print("Sender information:\n\nFrom address: %s\nPassword: %s\nSMTP "
+              "server: %s\nPort: %s\n" % (sender, password, server, port))
+        print "Sending emails to %d recipient(s)." % num_recipients
+
+        if num_recipients > 0:
+            # Sort so that we will grab the same recipient each time this is
+            # run over the same input files.
+            sample_recipient = sorted(recipients.items())[0]
+
+            print "\nSample email:\n"
+            print "To: %s" % ', '.join(sample_recipient[1])
+            print "From: %s" % sender
+            print "Subject: %s" % notification_email_subject
+            print "Body:\n%s\n" % get_personalized_notification_email_text(
+                    sample_recipient[0])
+    else:
+        for personal_id, addresses in recipients.items():
+            personalized_text = \
+                    get_personalized_notification_email_text(personal_id)
+            print "Sending email to %s (%s)... " % (personal_id,
+                                                    ', '.join(addresses)),
+            send_email(server, port, sender, password, addresses,
+                       notification_email_subject, personalized_text)
+            print "success!"
+
+def send_email(host, port, sender, password, recipients, subject, body,
+               attachments=None):
+    """Sends an email (optionally with attachments).
+
+    This function does not return anything. It is not unit tested because it
+    sends an actual email, and thus is difficult to test.
+
+    This code is largely based on the code found here:
+    http://www.blog.pythonlibrary.org/2010/05/14/how-to-send-email-with-python/
+    http://segfault.in/2010/12/sending-gmail-from-python/
+
+    Taken from Clout's (https://github.com/qiime/clout) util module.
+
+    Arguments:
+        host - the STMP server to send the email with
+        port - the port number of the SMTP server to connect to
+        sender - the sender email address (i.e. who this message is from). This
+            will be used as the username when logging into the SMTP server
+        password - the password to log into the SMTP server with
+        recipients - a list of email addresses to send the email to
+        subject - the subject of the email
+        body - the body of the email
+        attachments - a list of 2-element tuples, where the first element is
+            the filename that will be used for the email attachment (as the
+            recipient will see it), and the second element is the file to be
+            attached
+    """
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ', '.join(recipients)
+    msg['Subject'] = subject
+    msg['Date'] = formatdate(localtime=True)
+ 
+    if attachments is not None:
+        for attachment_name, attachment_f in attachments:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment_f.read())
+            encode_base64(part)
+            part.add_header('Content-Disposition',
+                            'attachment; filename="%s"' % attachment_name)
+            msg.attach(part)
+    part = MIMEText('text', 'plain')
+    part.set_payload(body)
+    msg.attach(part)
+ 
+    server = SMTP(host, port)
+    server.ehlo()
+    server.starttls()
+    server.ehlo
+    server.login(sender, password)
+    server.sendmail(sender, recipients, msg.as_string())
+    server.quit()
