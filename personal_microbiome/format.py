@@ -9,6 +9,8 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
+from os.path import basename, splitext
+
 index_text = """
 <html>
  <head><title>Personal Microbiome Results: %s</title></head>
@@ -92,6 +94,7 @@ index_text = """
 					</ol>
 				</td>
 			</tr>
+            %s
 		</table>
 	</tr>
 	<tr>
@@ -131,9 +134,11 @@ def get_personalized_notification_email_text(personal_id):
     """Returns the text for the body of an email based on personal ID."""
     return notification_email_text % (personal_id, personal_id)
 
-def create_index_html(personal_id, output_fp):
+def create_index_html(personal_id, output_fp,
+                      alpha_diversity_boxplots_html=''):
     output_f = open(output_fp,'w')
-    output_f.write(index_text % (personal_id,personal_id))
+    output_f.write(index_text % (personal_id, personal_id,
+                                 alpha_diversity_boxplots_html))
     output_f.close()
 
 # This javascript synchronizes the scrolling of the two iframes. It has been
@@ -195,4 +200,39 @@ def create_comparative_taxa_plots_html(category, output_fp):
     output_f = open(output_fp,'w')
     output_f.write(comparative_taxa_plots_text % (category.title(), category, category.title(), category))
     output_f.close()
-    
+
+def create_alpha_diversity_boxplots_html_table_row(plot_fps):
+    plot_links_text = ''
+
+    for plot_fp in plot_fps:
+        adiv_metric = splitext(basename(plot_fp))[0]
+        plot_links_text += '<li><a href="%s">%s</a></li>' % (plot_fp,
+                                                             adiv_metric)
+
+    return alpha_diversity_boxplots_text % plot_links_text
+
+alpha_diversity_boxplots_text = """
+<tr>
+    <td width=25%% align=center valign=center>
+        Alpha diversity boxplots
+        <table>
+            <tr>
+                <td>
+                    <ul>
+                        %s
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </td>
+    <td>
+        <b>Alpha diversity boxplots:</b><br>
+        Here we present a series of comparative boxplots showing the
+        distributions of your alpha diversity (<i>Self</i>) versus all other
+        individuals' alpha diversity (<i>Other</i>) for each body site.
+        Separate boxplots are provided for each alpha diversity metric. For
+        more details about alpha diversity, please refer to the <b>Alpha
+        rarefaction</b> description.
+    </td>
+</tr>
+"""

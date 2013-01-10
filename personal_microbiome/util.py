@@ -17,8 +17,10 @@ from email.mime.text import MIMEText
 from email.Utils import formatdate
 from glob import glob
 from os import makedirs
-from os.path import basename, exists, join, splitext
+from os.path import basename, exists, join, normpath, splitext
 from smtplib import SMTP
+
+from numpy import isnan
 
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file, parse_rarefaction
@@ -26,6 +28,7 @@ from qiime.pycogent_backports.distribution_plots import generate_box_plots
 from qiime.util import create_dir, MetadataMap, qiime_system_call
 
 from personal_microbiome.format import (create_index_html,
+        create_alpha_diversity_boxplots_html_table_row,
         create_comparative_taxa_plots_html, notification_email_subject,
         get_personalized_notification_email_text)
 from personal_microbiome.parse import parse_email_settings, parse_recipients
@@ -117,7 +120,6 @@ def create_personal_results(mapping_fp,
                                      personal_mapping_file_fp, 
                                      personal_id_index, 
                                      individual_titles)
-        create_index_html(person_of_interest, html_fp)
         column_title_index = header.index(column_title)
         column_title_values = set([e[column_title_index] for e in personal_map])
         cat_index = header.index(category_to_split)
@@ -213,6 +215,7 @@ def create_personal_results(mapping_fp,
         
         # Generate alpha diversity boxplots, split by body site, one per
         # metric.
+        alpha_diversity_boxplots_html = ''
         if not suppress_alpha_diversity_boxplots:
             adiv_boxplots_dir = join(output_fp, person_of_interest,
                                      "adiv_boxplots")
@@ -222,64 +225,111 @@ def create_personal_results(mapping_fp,
             if verbose:
                 print "Generating alpha diversity boxplots."
 
-            _generate_alpha_diversity_boxplots(collated_dir_fp,
-                                               personal_mapping_file_fp,
-                                               category_to_split,
-                                               column_title,
-                                               adiv_boxplots_rarefaction_depth,
-                                               adiv_boxplots_dir)
+            plot_filenames = _generate_alpha_diversity_boxplots(
+                    collated_dir_fp, personal_mapping_file_fp,
+                    category_to_split, column_title,
+                    adiv_boxplots_rarefaction_depth, adiv_boxplots_dir)
+
+            # Create relative paths for use with the index page.
+            rel_boxplot_dir = basename(normpath(adiv_boxplots_dir))
+            plot_fps = [join(rel_boxplot_dir, plot_filename)
+                        for plot_filename in plot_filenames]
+
+            alpha_diversity_boxplots_html = \
+                    create_alpha_diversity_boxplots_html_table_row(plot_fps)
+
+        create_index_html(person_of_interest, html_fp,
+                alpha_diversity_boxplots_html=alpha_diversity_boxplots_html)
 
     return output_directories
 
 def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
-                                       split_category, individual_category,
+                                       split_category, comparison_category,
                                        rarefaction_depth, output_dir):
+    """Generates per-body-site self vs. other alpha diversity boxplots.
+
+    Creates a plot for each input collated alpha diversity file (i.e. metric)
+    in collated_adiv_dir. Returns a list of plot filenames that were created in
+    output_dir.
+
+    Arguments:
+        collated_adiv_dir - path to directory containing one or more collated
+            alpha diversity files
+        map_fp - filepath to metadata mapping file
+        split_category - category to split on, e.g. body site. A boxplot will
+            be created for each category value (e.g. tongue, palm, etc.)
+        comparison_category - category to split on within each of the split
+            categories (e.g. self, other)
+        rarefaction_depth - rarefaction depth to use when pulling data from
+            rarefaction files
+        output_dir - directory to write output plot images to
+    """
     metadata_map = MetadataMap.parseMetadataMap(open(map_fp, 'U'))
     collated_adiv_fps = glob(join(collated_adiv_dir, '*.txt'))
+    plot_title = 'Alpha diversity (%d seqs/sample)' % rarefaction_depth
 
     # Generate a plot for each collated alpha diversity metric file.
+    created_files = []
     for collated_adiv_fp in collated_adiv_fps:
         adiv_metric = splitext(basename(collated_adiv_fp))[0]
 
-        # Pull out rarefaction data for the specified depth.
-        rarefaction = parse_rarefaction(open(collated_adiv_fp, 'U'))
-
-        # First three vals are part of the header, so ignore them.
-        sample_ids = rarefaction[0][3:]
-
-        # First two vals are depth and iteration number, so ignore them.
-        rarefaction_data = [row[2:] for row in rarefaction[3]
-                            if row[0] == rarefaction_depth]
-
-        # Build up dict mapping (body site, [self|other]) -> distribution.
-        plot_data = defaultdict(list)
-        for row in rarefaction_data:
-            assert len(sample_ids) == len(row)
-            for sample_id, adiv_val in zip(sample_ids, row):
-                split_cat_val = metadata_map.getCategoryValue(sample_id,
-                                                              split_category)
-                indiv_cat_val = metadata_map.getCategoryValue(
-                        sample_id, individual_category)
-
-                plot_data[split_cat_val, indiv_cat_val].append(adiv_val)
-
-        # Plot a distribution for each (body site, [self|other]) combo.
-        plot_title = 'Alpha diversity (%d seqs/sample)' % rarefaction_depth
-        plot_data = sorted(map(lambda e: ('%s (%s)' %
-                                          (e[0][0], e[0][1]), e[1]),
-                               plot_data.items()))
-        x_tick_labels = []
-        dists = []
-        for label, dist in plot_data:
-            x_tick_labels.append(label)
-            dists.append(dist)
+        x_tick_labels, dists = _collect_alpha_diversity_boxplot_data(
+                open(collated_adiv_fp, 'U'), metadata_map, rarefaction_depth,
+                split_category, comparison_category)
 
         plot_figure = generate_box_plots(dists,
                                          x_tick_labels=x_tick_labels,
                                          title=plot_title,
                                          x_label='Grouping',
                                          y_label=adiv_metric)
-        plot_figure.savefig(join(output_dir, '%s.png' % adiv_metric))
+        plot_fp = join(output_dir, '%s.png' % adiv_metric)
+        plot_figure.savefig(plot_fp)
+        created_files.append(basename(plot_fp))
+
+    return created_files
+
+def _collect_alpha_diversity_boxplot_data(rarefaction_f, metadata_map,
+                                          rarefaction_depth, split_category,
+                                          comparison_category):
+    """Pulls data from rarefaction file based on supplied categories."""
+    # Pull out rarefaction data for the specified depth.
+    rarefaction = parse_rarefaction(rarefaction_f)
+
+    # First three vals are part of the header, so ignore them.
+    sample_ids = rarefaction[0][3:]
+
+    # First two vals are depth and iteration number, so ignore them.
+    rarefaction_data = [row[2:] for row in rarefaction[3]
+                        if row[0] == rarefaction_depth]
+
+    if not rarefaction_data:
+        raise ValueError("Rarefaction depth of %d could not be found in "
+                         "collated alpha diversity file." % rarefaction_depth)
+
+    # Build up dict mapping (body site, [self|other]) -> distribution.
+    plot_data = defaultdict(list)
+    for row in rarefaction_data:
+        assert len(sample_ids) == len(row)
+        for sample_id, adiv_val in zip(sample_ids, row):
+            if not isnan(adiv_val):
+                split_cat_val = metadata_map.getCategoryValue(sample_id,
+                                                              split_category)
+                comp_cat_val = metadata_map.getCategoryValue(sample_id,
+                        comparison_category)
+
+                plot_data[split_cat_val, comp_cat_val].append(adiv_val)
+
+    # Format tick labels as '<body site> (self|other)' and sort alphabetically.
+    plot_data = sorted(map(lambda e: ('%s (%s)' %
+                                      (e[0][0], e[0][1]), e[1]),
+                           plot_data.items()))
+    x_tick_labels = []
+    dists = []
+    for label, dist in plot_data:
+        x_tick_labels.append(label)
+        dists.append(dist)
+
+    return x_tick_labels, dists
 
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
     """Sends an email to each participant in the study.
