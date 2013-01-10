@@ -67,8 +67,11 @@ def create_personal_results(mapping_fp,
                             individual_titles=None,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
-                            suppress_alpha_rarefaction=False,
                             adiv_boxplots_rarefaction_depth=10000,
+                            suppress_alpha_rarefaction=False,
+                            suppress_beta_diversity=False,
+                            suppress_taxa_summary_plots=False,
+                            suppress_alpha_diversity_boxplots=False,
                             verbose=False):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
@@ -133,38 +136,24 @@ def create_personal_results(mapping_fp,
                 (cmd, stdout, stderr))
         
         ## Beta diversity steps
-        cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
-                                                            prefs_fp, 
-                                                            distance_matrix_fp, 
-                                                            pcoa_dir)
-        if verbose:
-            print cmd
-        stdout, stderr, return_code = qiime_system_call(cmd)
-        if return_code != 0:
-            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-            (cmd, stdout, stderr))
+        if not suppress_beta_diversity:
+            cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
+                                                                prefs_fp, 
+                                                                distance_matrix_fp, 
+                                                                pcoa_dir)
+            if verbose:
+                print cmd
+            stdout, stderr, return_code = qiime_system_call(cmd)
+            if return_code != 0:
+                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                (cmd, stdout, stderr))
         
         ## Split OTU table into self/other per-body-site tables
-        cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (otu_table,
-                                                              personal_mapping_file_fp,
-                                                              column_title, 
-                                                              area_plots_dir)
-        if verbose:
-            print cmd
-        stdout, stderr, return_code = qiime_system_call(cmd)
-        if return_code != 0:
-            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-            (cmd, stdout, stderr))
-            
-        
-        for column_title_value in column_title_values:
-            print column_title_value
-            biom_fp = join(area_plots_dir, '%s_%s.%s' % (otu_table_title[0], column_title_value, otu_table_title[1]))
-            body_site_dir = join(area_plots_dir, column_title_value)
-            cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (biom_fp,
+        if not suppress_taxa_summary_plots:
+            cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (otu_table,
                                                                   personal_mapping_file_fp,
-                                                                  category_to_split, 
-                                                                  body_site_dir)
+                                                                  column_title, 
+                                                                  area_plots_dir)
             if verbose:
                 print cmd
             stdout, stderr, return_code = qiime_system_call(cmd)
@@ -172,40 +161,60 @@ def create_personal_results(mapping_fp,
                 raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
                 (cmd, stdout, stderr))
                 
-            for cat_value in cat_values:
-                otu_table_fp = join(body_site_dir, "otu_table_%s_%s.biom" % (column_title_value, cat_value))
-                print otu_table_fp
-                if exists(otu_table_fp):
-                    # Not supporting parameter files yet
-                    #if parameter_fp == None:
-                    #    parameter_fp = ''
-                    #else:
-                    #    parameter_fp = '-p %s' %parameter_fp
-                    plots = join(area_plots_dir, "taxa_plots_%s_%s" % (column_title_value, cat_value))
-                    cmd = "summarize_taxa_through_plots.py -i %s -o %s -c %s -m %s -s" % (otu_table_fp,
-                                                                                                plots,
-                                                                                                time_series_category, 
-                                                                                                personal_mapping_file_fp)
-                                                                                                #parameter_fp)
-                    if verbose:
-                        print cmd
-                    stdout, stderr, return_code = qiime_system_call(cmd)
-                    if return_code != 0:
-                        raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                        (cmd, stdout, stderr))
-                    create_comparative_taxa_plots_html(cat_value, 
-                                                       join(area_plots_dir,'%s_comparative.html' % cat_value))
+            
+            for column_title_value in column_title_values:
+                print column_title_value
+                biom_fp = join(area_plots_dir, '%s_%s.%s' % (otu_table_title[0], column_title_value, otu_table_title[1]))
+                body_site_dir = join(area_plots_dir, column_title_value)
+                cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (biom_fp,
+                                                                      personal_mapping_file_fp,
+                                                                      category_to_split, 
+                                                                      body_site_dir)
+                if verbose:
+                    print cmd
+                stdout, stderr, return_code = qiime_system_call(cmd)
+                if return_code != 0:
+                    raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                    (cmd, stdout, stderr))
+                    
+                for cat_value in cat_values:
+                    otu_table_fp = join(body_site_dir, "otu_table_%s_%s.biom" % (column_title_value, cat_value))
+                    print otu_table_fp
+                    if exists(otu_table_fp):
+                        # Not supporting parameter files yet
+                        #if parameter_fp == None:
+                        #    parameter_fp = ''
+                        #else:
+                        #    parameter_fp = '-p %s' %parameter_fp
+                        plots = join(area_plots_dir, "taxa_plots_%s_%s" % (column_title_value, cat_value))
+                        cmd = "summarize_taxa_through_plots.py -i %s -o %s -c %s -m %s -s" % (otu_table_fp,
+                                                                                                    plots,
+                                                                                                    time_series_category, 
+                                                                                                    personal_mapping_file_fp)
+                                                                                                    #parameter_fp)
+                        if verbose:
+                            print cmd
+                        stdout, stderr, return_code = qiime_system_call(cmd)
+                        if return_code != 0:
+                            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                            (cmd, stdout, stderr))
+                        create_comparative_taxa_plots_html(cat_value, 
+                                                           join(area_plots_dir,'%s_comparative.html' % cat_value))
         
-        # Generate alpha diversity boxplots, one per body site per metric.
-        _generate_alpha_diversity_boxplots(collated_dir,
-                                           personal_mapping_file_fp,
-                                           category_to_split,
-                                           column_title,
-                                           adiv_boxplots_rarefaction_depth,
-                                           adiv_boxplots_dir)
+        # Generate alpha diversity boxplots, split by body site, one per
+        # metric.
+        if not suppress_alpha_diversity_boxplots:
+            if verbose:
+                print "Generating alpha diversity boxplots."
+
+            _generate_alpha_diversity_boxplots(collated_dir,
+                                               personal_mapping_file_fp,
+                                               category_to_split,
+                                               column_title,
+                                               adiv_boxplots_rarefaction_depth,
+                                               adiv_boxplots_dir)
 
     return output_directories
-
 
 def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
                                        split_category, individual_category,
