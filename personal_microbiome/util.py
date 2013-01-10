@@ -9,7 +9,7 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-import os
+from collections import defaultdict
 from email.Encoders import encode_base64
 from email.MIMEBase import MIMEBase
 from email.MIMEMultipart import MIMEMultipart
@@ -17,14 +17,13 @@ from email.mime.text import MIMEText
 from email.Utils import formatdate
 from glob import glob
 from os import makedirs
-from os.path import basename, join
-from os.path import exists
+from os.path import basename, exists, join, splitext
 from smtplib import SMTP
 
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file, parse_rarefaction
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
-from qiime.util import MetadataMap, qiime_system_call
+from qiime.util import create_dir, MetadataMap, qiime_system_call
 
 from personal_microbiome.format import (create_index_html,
         create_comparative_taxa_plots_html, notification_email_subject,
@@ -99,22 +98,13 @@ def create_personal_results(mapping_fp,
             if id not in get_personal_ids(map_as_list, personal_id_index):
                 raise ValueError('%s is not an id in the mapping file.' %id)
         personal_ids = personal_ids.split(',')
-        
-    output_directories = []
-    makedirs(output_fp)
+
     otu_table_title = otu_table.split('/')[-1].split('.')
+        
+    makedirs(output_fp)
+    output_directories = []
     for person_of_interest in personal_ids:
         makedirs(join(output_fp, person_of_interest))
-
-        pcoa_dir = join(output_fp, person_of_interest, "beta_diversity")
-        rarefaction_dir = join(output_fp, person_of_interest, "alpha_rarefaction")
-        area_plots_dir = join(output_fp, person_of_interest, "time_series")
-        adiv_boxplots_dir = join(output_fp, person_of_interest, "adiv_boxplots")
-
-        output_directories.append(pcoa_dir)
-        output_directories.append(rarefaction_dir)
-        output_directories.append(area_plots_dir)
-        output_directories.append(adiv_boxplots_dir)
 
         personal_mapping_file_fp = join(output_fp, person_of_interest,
                                         "mapping_file.txt")
@@ -135,6 +125,9 @@ def create_personal_results(mapping_fp,
         
         ## Alpha rarefaction steps
         if not suppress_alpha_rarefaction:
+            rarefaction_dir = join(output_fp, person_of_interest, "alpha_rarefaction")
+            output_directories.append(rarefaction_dir)
+
             cmd = "make_rarefaction_plots.py -i %s -m %s -p %s -o %s" % (collated_dir_fp, 
                                                                          personal_mapping_file_fp,
                                                                          prefs_fp, 
@@ -148,6 +141,9 @@ def create_personal_results(mapping_fp,
         
         ## Beta diversity steps
         if not suppress_beta_diversity:
+            pcoa_dir = join(output_fp, person_of_interest, "beta_diversity")
+            output_directories.append(pcoa_dir)
+
             cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
                                                                 prefs_fp, 
                                                                 distance_matrix_fp, 
@@ -161,6 +157,9 @@ def create_personal_results(mapping_fp,
         
         ## Split OTU table into self/other per-body-site tables
         if not suppress_taxa_summary_plots:
+            area_plots_dir = join(output_fp, person_of_interest, "time_series")
+            output_directories.append(area_plots_dir)
+
             cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (otu_table,
                                                                   personal_mapping_file_fp,
                                                                   column_title, 
@@ -215,10 +214,15 @@ def create_personal_results(mapping_fp,
         # Generate alpha diversity boxplots, split by body site, one per
         # metric.
         if not suppress_alpha_diversity_boxplots:
+            adiv_boxplots_dir = join(output_fp, person_of_interest,
+                                     "adiv_boxplots")
+            create_dir(adiv_boxplots_dir, fail_on_exist=True)
+            output_directories.append(adiv_boxplots_dir)
+
             if verbose:
                 print "Generating alpha diversity boxplots."
 
-            _generate_alpha_diversity_boxplots(collated_dir,
+            _generate_alpha_diversity_boxplots(collated_dir_fp,
                                                personal_mapping_file_fp,
                                                category_to_split,
                                                column_title,
@@ -232,38 +236,50 @@ def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
                                        rarefaction_depth, output_dir):
     metadata_map = MetadataMap.parseMetadataMap(open(map_fp, 'U'))
     collated_adiv_fps = glob(join(collated_adiv_dir, '*.txt'))
-    split_category_vals = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, split_category))
 
+    # Generate a plot for each collated alpha diversity metric file.
     for collated_adiv_fp in collated_adiv_fps:
         adiv_metric = splitext(basename(collated_adiv_fp))[0]
 
+        # Pull out rarefaction data for the specified depth.
         rarefaction = parse_rarefaction(open(collated_adiv_fp, 'U'))
+
+        # First three vals are part of the header, so ignore them.
         sample_ids = rarefaction[0][3:]
-        rarefaction_data = [row for row in rarefaction[3]
+
+        # First two vals are depth and iteration number, so ignore them.
+        rarefaction_data = [row[2:] for row in rarefaction[3]
                             if row[0] == rarefaction_depth]
 
-        plot_data = defaultdict(lambda: defaultdict(list))
+        # Build up dict mapping (body site, [self|other]) -> distribution.
+        plot_data = defaultdict(list)
         for row in rarefaction_data:
+            assert len(sample_ids) == len(row)
             for sample_id, adiv_val in zip(sample_ids, row):
                 split_cat_val = metadata_map.getCategoryValue(sample_id,
                                                               split_category)
                 indiv_cat_val = metadata_map.getCategoryValue(
                         sample_id, individual_category)
 
-                plot_data[split_cat_val][indiv_cat_val].append(adiv_val)
+                plot_data[split_cat_val, indiv_cat_val].append(adiv_val)
 
-        for split_cat_val, dists in plot_data.items():
-            plot_title = 'Alpha diversity at %d seqs/sample (%s)' % (
-                    rarefaction_depth, split_cat_val)
-            plot_figure = generate_box_plots(dists.values(),
-                                             x_tick_labels=dists.keys(),
-                                             title=plot_title,
-                                             x_label='Grouping',
-                                             y_label=adiv_metric)
-            plot_figure.savefig(join(output_dir,
-                                     '%s_%s.png' % (adiv_metric,
-                                                    split_cat_val)))
+        # Plot a distribution for each (body site, [self|other]) combo.
+        plot_title = 'Alpha diversity (%d seqs/sample)' % rarefaction_depth
+        plot_data = sorted(map(lambda e: ('%s (%s)' %
+                                          (e[0][0], e[0][1]), e[1]),
+                               plot_data.items()))
+        x_tick_labels = []
+        dists = []
+        for label, dist in plot_data:
+            x_tick_labels.append(label)
+            dists.append(dist)
+
+        plot_figure = generate_box_plots(dists,
+                                         x_tick_labels=x_tick_labels,
+                                         title=plot_title,
+                                         x_label='Grouping',
+                                         y_label=adiv_metric)
+        plot_figure.savefig(join(output_dir, '%s.png' % adiv_metric))
 
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
     """Sends an email to each participant in the study.
