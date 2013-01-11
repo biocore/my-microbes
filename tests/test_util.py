@@ -11,17 +11,24 @@ __email__ = "jc33@nau.edu"
 
 import sys
 from StringIO import StringIO
-from unittest import TestCase, main
+from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
-from personal_microbiome.util import (get_personal_ids,
+from qiime.util import MetadataMap
+
+from personal_microbiome.util import (_collect_alpha_diversity_boxplot_data,
                                       create_personal_mapping_file,
+                                      get_personal_ids,
                                       notify_participants)
 
 class UtilTests(TestCase):
 
     def setUp(self):
         # Define some data here...
-        #self.mapping_data = parse_mapping_file(mapping_str.split('\n'))
+        self.metadata_map = MetadataMap.parseMetadataMap(
+                mapping_str.split('\n'))
+
+        self.rarefaction_lines = collated_alpha_div_str.split('\n')
+        self.na_rarefaction_lines = collated_alpha_div_na_str.split('\n')
 
         self.recipients = ["# a comment", " ", " foo1\tfoo1@bar.baz  ",
                             "foo2\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
@@ -30,41 +37,41 @@ class UtilTests(TestCase):
                 "smtp_server\tsome.smtp.server", "smtp_port\t42",
                 "sender\tfrom@foobarbaz.com", "password\t424242!"]
 
-    def test_get_personal_ids(self): 
-        """Does the function return correct output when given correct output"""
-        obs = get_personal_ids(self.mapping_data)
-        
-        column = 'PersonalID'
-        input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
-                  ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
-                  ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
-                  ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
-                  ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
-                  ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
-                  ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
-                  ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
-                  ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
-        expected = ['CUB027', 'NAU113', 'NAU133', 'NAU144', 'NCS210', 'NCS214', 'CUB000', 'CUB003', 'CUB004']
-        self.assertEqual(get_personal_ids(input, 8), expected)
-        
-    def test_create_personal_mapping_file(self): 
-        """Does the function return correct output when given correct input?"""
-        map_as_list = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
-                       ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
-                       ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
-                       ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
-                       ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
-                       ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
-                       ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
-                       ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
-                       ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
-        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Study', 'HouseZipCode', 'SamplingLocation', 'BodyHabitat', 'University', 'PersonalID']
-        comments = [] 
-        personal_id_of_interest = 'CUB027'
-        "So how do I write something out to file here and then check to make sure that is correct?"
-        output_fp
-        personal_id_index = 8
-        individual_titles=None
+#    def test_get_personal_ids(self): 
+#        """Does the function return correct output when given correct output"""
+#        obs = get_personal_ids(self.mapping_data)
+#        
+#        column = 'PersonalID'
+#        input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
+#                  ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
+#                  ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
+#                  ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
+#                  ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
+#                  ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
+#                  ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
+#                  ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
+#                  ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
+#        expected = ['CUB027', 'NAU113', 'NAU133', 'NAU144', 'NCS210', 'NCS214', 'CUB000', 'CUB003', 'CUB004']
+#        self.assertEqual(get_personal_ids(input, 8), expected)
+#        
+#    def test_create_personal_mapping_file(self): 
+#        """Does the function return correct output when given correct input?"""
+#        map_as_list = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
+#                       ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
+#                       ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
+#                       ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
+#                       ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
+#                       ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
+#                       ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
+#                       ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
+#                       ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
+#        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Study', 'HouseZipCode', 'SamplingLocation', 'BodyHabitat', 'University', 'PersonalID']
+#        comments = [] 
+#        personal_id_of_interest = 'CUB027'
+#        "So how do I write something out to file here and then check to make sure that is correct?"
+#        output_fp
+#        personal_id_index = 8
+#        individual_titles=None
 
     def test_notify_participants(self):
         """Tests the dry-run capability of notify_participants."""
@@ -83,12 +90,48 @@ class UtilTests(TestCase):
         finally:
             sys.stdout = saved_stdout
 
+    def test_collect_alpha_diversity_boxplot_data(self):
+        """Tests collecting data for creating boxplots."""
+        exp = (['Palm (Other)', 'Palm (Self)', 'Tongue (Other)',
+                'Tongue (Self)'], [[3.0, 8.0, 11.0, 16.0],
+                [1.0, 4.0, 9.0, 12.0], [2.0, 6.0, 10.0, 14.0],
+                [5.0, 7.0, 13.0, 15.0]])
 
-mapping_str = """
-S1
-S2
-S3
-"""
+        obs = _collect_alpha_diversity_boxplot_data(self.rarefaction_lines,
+                self.metadata_map, 10, 'BodySite', 'Self')
+        self.assertFloatEqual(obs, exp)
+
+    def test_collect_alpha_diversity_boxplot_data_invalid_depth(self):
+        """Tests throws error on invalid rarefaction depth."""
+        self.assertRaises(ValueError, _collect_alpha_diversity_boxplot_data,
+                self.rarefaction_lines, self.metadata_map, 42, 'BodySite',
+                'Self')
+
+    def test_collect_alpha_diversity_boxplot_data_na_values(self):
+        """Tests correctly ignores n/a values in rarefaction file."""
+        obs = _collect_alpha_diversity_boxplot_data(
+                self.na_rarefaction_lines, self.metadata_map, 10, 'BodySite',
+                'Self')
+        self.assertEqual(obs, ([], []))
+
+
+mapping_str = """#SampleID\tBodySite\tSelf\tDescription
+S1\tPalm\tSelf\tS1
+S2\tTongue\tOther\tS2
+S3\tPalm\tOther\tS3
+S4\tPalm\tSelf\tS4
+S5\tTongue\tSelf\tS5
+S6\tTongue\tOther\tS6
+S7\tTongue\tSelf\tS7
+S8\tPalm\tOther\tS8"""
+
+collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
+alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8
+alpha_rarefaction_10_1.biom\t10\t1\t9\t10\t11\t12\t13\t14\t15\t16"""
+
+collated_alpha_div_na_str = """\tsequences per sample\titeration\tS1\tS2\tS3
+alpha_rarefaction_10_0.biom\t10\t0\tn/a\tn/a\tn/a
+alpha_rarefaction_10_1.biom\t10\t1\tn/a\tn/a\tn/a"""
 
 exp_dry_run_output = """Running script in dry-run mode. No emails will be sent. Here's what I would have done:
 
