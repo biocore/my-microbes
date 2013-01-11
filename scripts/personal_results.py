@@ -78,10 +78,11 @@ script_info['optional_options'] = [
         help='Comma seperated values describing how to name '
         'the individuals in the new column_title column '
         '[default: %default]'),
-    make_option('-d','--adiv_boxplots_rarefaction_depth',
+    make_option('-d','--rarefaction_depth',
         default=10000, type='int',
         help='single rarefaction depth (seqs/sample) to use when generating '
-        'alpha diversity boxplots of self versus other [default: %default]'),
+        'alpha diversity boxplots of self versus other, as well as otu '
+        'category significance tables [default: %default]'),
     make_option('--category_to_split',
         default="BodySite", type='string',
         help='This is the second category that the otu table '
@@ -110,12 +111,14 @@ script_info['optional_options'] = [
     make_option('--suppress_alpha_diversity_boxplots',
          default=False,action='store_true',
          help=('Suppress generation of alpha diversity boxplots '
+               '[default: %default]')),
+    make_option('--suppress_otu_category_significance',
+         default=False,action='store_true',
+         help=('Suppress generation of otu category significance tables '
                '[default: %default]'))
 ]
 
 script_info['version'] = __version__
-
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -151,11 +154,12 @@ def main():
                             individual_titles,
                             category_to_split, 
                             time_series_category,
-                            adiv_boxplots_rarefaction_depth=opts.adiv_boxplots_rarefaction_depth,
+                            rarefaction_depth=opts.rarefaction_depth,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,
                             suppress_taxa_summary_plots=opts.suppress_taxa_summary_plots,
                             suppress_alpha_diversity_boxplots=opts.suppress_alpha_diversity_boxplots,
+                            suppress_otu_category_significance=opts.suppress_otu_category_significance,
                             verbose=opts.verbose)
 
 

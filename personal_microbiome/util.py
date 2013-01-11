@@ -25,7 +25,8 @@ from numpy import isnan
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file, parse_rarefaction
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
-from qiime.util import create_dir, MetadataMap, qiime_system_call
+from qiime.util import (add_filename_suffix, create_dir, MetadataMap,
+                        qiime_system_call)
 
 from personal_microbiome.format import (create_index_html,
         create_alpha_diversity_boxplots_html_table_row,
@@ -80,11 +81,12 @@ def create_personal_results(mapping_fp,
                             individual_titles=None,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
-                            adiv_boxplots_rarefaction_depth=10000,
+                            rarefaction_depth=10000,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
                             suppress_taxa_summary_plots=False,
                             suppress_alpha_diversity_boxplots=False,
+                            suppress_otu_category_significance=False,
                             verbose=False):
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
@@ -227,8 +229,8 @@ def create_personal_results(mapping_fp,
 
             plot_filenames = _generate_alpha_diversity_boxplots(
                     collated_dir_fp, personal_mapping_file_fp,
-                    category_to_split, column_title,
-                    adiv_boxplots_rarefaction_depth, adiv_boxplots_dir)
+                    category_to_split, column_title, rarefaction_depth,
+                    adiv_boxplots_dir)
 
             # Create relative paths for use with the index page.
             rel_boxplot_dir = basename(normpath(adiv_boxplots_dir))
@@ -238,6 +240,59 @@ def create_personal_results(mapping_fp,
             alpha_diversity_boxplots_html = \
                     create_alpha_diversity_boxplots_html_table_row(plot_fps)
 
+        # Generate OTU category significance tables (per body site).
+        if not suppress_otu_category_significance:
+            otu_cat_sig_dir = join(output_fp, person_of_interest,
+                                   'otu_category_significance')
+            create_dir(otu_cat_sig_dir, fail_on_exist=True)
+            output_directories.append(otu_cat_sig_dir)
+
+            rarefied_otu_table_fp = join(otu_cat_sig_dir,
+                    add_filename_suffix(otu_table,
+                                        '_even%d' % rarefaction_depth))
+
+            # Rarefy OTU table (based on otu_category_significance.py
+            # recommendataion).
+            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table,
+                    rarefied_otu_table_fp, rarefaction_depth)
+            if verbose:
+                print cmd
+            stdout, stderr, return_code = qiime_system_call(cmd)
+            if return_code != 0:
+                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                (cmd, stdout, stderr))
+
+            # Split OTU table into per-body-site tables.
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                    rarefied_otu_table_fp, personal_mapping_file_fp,
+                    category_to_split, otu_cat_sig_dir)
+            if verbose:
+                print cmd
+            stdout, stderr, return_code = qiime_system_call(cmd)
+            if return_code != 0:
+                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                (cmd, stdout, stderr))
+
+            # For each body-site OTU table, run otu_category_significance.py
+            # using self versus other category.
+            for cat_value in cat_values:
+                body_site_otu_table_fp = join(otu_cat_sig_dir,
+                        add_filename_suffix(rarefied_otu_table_fp,
+                                            '_%s' % cat_value))
+                otu_cat_output_fp = join(otu_cat_sig_dir,
+                                         'otu_cat_sig_%s.txt' % cat_value)
+
+                cmd = 'otu_category_significance.py -i %s -m %s -c %s -o %s' % (
+                        body_site_otu_table_fp, personal_mapping_file_fp,
+                        column_title, otu_cat_output_fp)
+                if verbose:
+                    print cmd
+                stdout, stderr, return_code = qiime_system_call(cmd)
+                if return_code != 0:
+                    raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
+                    (cmd, stdout, stderr))
+
+        # Create the index.html file for the current individual.
         create_index_html(person_of_interest, html_fp,
                 alpha_diversity_boxplots_html=alpha_diversity_boxplots_html)
 
