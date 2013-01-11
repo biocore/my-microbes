@@ -9,11 +9,14 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
  
-from personal_microbiome.util import create_personal_results
-from qiime.util import parse_command_line_parameters, make_option
-import os
-from os.path import exists, join
 from os import makedirs 
+from os.path import exists, join
+
+from qiime.util import parse_command_line_parameters, make_option
+from qiime.workflow import (call_commands_serially, no_status_updates,
+                            print_commands, print_to_stdout)
+
+from personal_microbiome.util import create_personal_results
 
 script_info = {}
 script_info['brief_description'] = """Generate distinct 3d plots for unique individuals based on the metadata mapping file."""
@@ -115,7 +118,10 @@ script_info['optional_options'] = [
     make_option('--suppress_otu_category_significance',
          default=False,action='store_true',
          help=('Suppress generation of otu category significance tables '
-               '[default: %default]'))
+               '[default: %default]')),
+    make_option('-w', '--print_only', action='store_true',
+        help='Print the commands but don\'t call them -- useful for debugging '
+        '[default: %default]', default=False)
 ]
 
 script_info['version'] = __version__
@@ -139,7 +145,18 @@ def main():
     if exists(output_dir):
         # don't overwrite existing output directory - make the user provide a different name or 
         # move/delete the existing directory since it may have taken a while to create.
-        raise ValueError, "Output directory (%s) already exists. Won't overwrite." % output_dir
+        option_parser.error("Output directory (%s) already exists. "
+                            "Won't overwrite." % output_dir)
+
+    if opts.print_only:
+        command_handler = print_commands
+    else:
+        command_handler = call_commands_serially
+
+    if opts.verbose:
+        status_update_callback = print_to_stdout
+    else:
+        status_update_callback = no_status_updates
 
     create_personal_results(mapping_file, 
                             distance_matrix, 
@@ -160,7 +177,8 @@ def main():
                             suppress_taxa_summary_plots=opts.suppress_taxa_summary_plots,
                             suppress_alpha_diversity_boxplots=opts.suppress_alpha_diversity_boxplots,
                             suppress_otu_category_significance=opts.suppress_otu_category_significance,
-                            verbose=opts.verbose)
+                            command_handler=command_handler,
+                            status_update_callback=status_update_callback)
 
 
 if __name__ == "__main__":
