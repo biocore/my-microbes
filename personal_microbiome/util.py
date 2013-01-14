@@ -191,6 +191,7 @@ def create_personal_results(mapping_fp,
         ## Time series taxa summary plots steps
         if not suppress_taxa_summary_plots:
             area_plots_dir = join(output_fp, person_of_interest, 'time_series')
+            create_dir(area_plots_dir, fail_on_exist=True)
             output_directories.append(area_plots_dir)
 
             ## Split OTU table into self/other per-body-site tables
@@ -217,25 +218,25 @@ def create_personal_results(mapping_fp,
                     otu_table_fp = join(body_site_dir,
                             add_filename_suffix(biom_fp, '_%s' % cat_value))
 
-                    if exists(otu_table_fp):
-                        # Not supporting parameter files yet
-                        #if parameter_fp == None:
-                        #    parameter_fp = ''
-                        #else:
-                        #    parameter_fp = '-p %s' %parameter_fp
-                        plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
-                            column_title_value, cat_value))
+                    # Not supporting parameter files yet
+                    #if parameter_fp == None:
+                    #    parameter_fp = ''
+                    #else:
+                    #    parameter_fp = '-p %s' %parameter_fp
 
-                        cmd_title = 'Creating taxa summary plots (%s)' % \
-                                    person_of_interest
-                        cmd = 'summarize_taxa_through_plots.py -i %s ' + \
-                              '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
-                              time_series_category, personal_mapping_file_fp)
-                        commands.append([(cmd_title, cmd)])
+                    plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
+                        column_title_value, cat_value))
 
-                        create_comparative_taxa_plots_html(cat_value, 
-                                join(area_plots_dir, '%s_comparative.html' %
-                                                     cat_value))
+                    cmd_title = 'Creating taxa summary plots (%s)' % \
+                                person_of_interest
+                    cmd = ('summarize_taxa_through_plots.py -i %s '
+                           '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
+                          time_series_category, personal_mapping_file_fp))
+                    commands.append([(cmd_title, cmd)])
+
+                    create_comparative_taxa_plots_html(cat_value, 
+                            join(area_plots_dir, '%s_comparative.html' %
+                                                 cat_value))
 
         # Generate OTU category significance tables (per body site).
         if not suppress_otu_category_significance:
