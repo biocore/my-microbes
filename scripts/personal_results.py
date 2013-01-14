@@ -116,7 +116,7 @@ script_info['optional_options'] = [
          help=('Suppress generation of alpha diversity boxplots '
                '[default: %default]')),
     make_option('--suppress_otu_category_significance',
-         default=False,action='store_true',
+         default=True,action='store_true',
          help=('Suppress generation of otu category significance tables '
                '[default: %default]')),
     make_option('-w', '--print_only', action='store_true',
