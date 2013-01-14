@@ -25,7 +25,11 @@ from numpy import isnan
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file, parse_rarefaction
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
-from qiime.util import create_dir, MetadataMap, qiime_system_call
+from qiime.util import (add_filename_suffix, create_dir, MetadataMap,
+                        qiime_system_call)
+from qiime.workflow import (call_commands_serially, generate_log_fp,
+                            no_status_updates, print_commands, print_to_stdout,
+                            WorkflowError, WorkflowLogger)
 
 from personal_microbiome.format import (create_index_html,
         create_alpha_diversity_boxplots_html_table_row,
@@ -80,155 +84,73 @@ def create_personal_results(mapping_fp,
                             individual_titles=None,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
-                            adiv_boxplots_rarefaction_depth=10000,
+                            rarefaction_depth=10000,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
                             suppress_taxa_summary_plots=False,
                             suppress_alpha_diversity_boxplots=False,
-                            verbose=False):
+                            suppress_otu_category_significance=False,
+                            command_handler=call_commands_serially,
+                            status_update_callback=no_status_updates):
+    create_dir(output_fp, fail_on_exist=True)
+    logger = WorkflowLogger(generate_log_fp(output_fp))
+
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
         personal_id_index = header.index(personal_id_field)
     except ValueError:
-        raise ValueError("personal id field (%s) is not a mapping file column header" %
-                         personal_id_field)
+        raise ValueError("personal id field (%s) is not a mapping file column "
+                         "header" % personal_id_field)
     header.append(column_title)
-    
+
     if personal_ids == None: 
         personal_ids  = get_personal_ids(map_as_list, personal_id_index)
     else:
         for id in personal_ids.split(','):
             if id not in get_personal_ids(map_as_list, personal_id_index):
-                raise ValueError('%s is not an id in the mapping file.' %id)
+                raise ValueError("%s is not an id in the mapping file." % id)
         personal_ids = personal_ids.split(',')
 
-    otu_table_title = otu_table.split('/')[-1].split('.')
-        
-    makedirs(output_fp)
+    otu_table_title = splitext(basename(otu_table))
+
     output_directories = []
     for person_of_interest in personal_ids:
-        makedirs(join(output_fp, person_of_interest))
+        create_dir(join(output_fp, person_of_interest), fail_on_exist=True)
 
         personal_mapping_file_fp = join(output_fp, person_of_interest,
-                                        "mapping_file.txt")
-        html_fp = join(output_fp, person_of_interest, "index.html")
+                                        'mapping_file.txt')
+        html_fp = join(output_fp, person_of_interest, 'index.html')
 
         personal_map = create_personal_mapping_file(map_as_list,
-                                     header,
-                                     comments,
-                                     person_of_interest,
-                                     personal_mapping_file_fp, 
-                                     personal_id_index, 
-                                     individual_titles)
+                                                    header,
+                                                    comments,
+                                                    person_of_interest,
+                                                    personal_mapping_file_fp,
+                                                    personal_id_index,
+                                                    individual_titles)
         column_title_index = header.index(column_title)
-        column_title_values = set([e[column_title_index] for e in personal_map])
+        column_title_values = set([e[column_title_index]
+                                   for e in personal_map])
         cat_index = header.index(category_to_split)
         cat_values = set([e[cat_index] for e in personal_map])
-        
-        ## Alpha rarefaction steps
-        if not suppress_alpha_rarefaction:
-            rarefaction_dir = join(output_fp, person_of_interest, "alpha_rarefaction")
-            output_directories.append(rarefaction_dir)
 
-            cmd = "make_rarefaction_plots.py -i %s -m %s -p %s -o %s" % (collated_dir_fp, 
-                                                                         personal_mapping_file_fp,
-                                                                         prefs_fp, 
-                                                                         rarefaction_dir)
-            if verbose:
-                print cmd          
-            stdout, stderr, return_code = qiime_system_call(cmd)
-            if return_code != 0:
-                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                (cmd, stdout, stderr))
-        
-        ## Beta diversity steps
-        if not suppress_beta_diversity:
-            pcoa_dir = join(output_fp, person_of_interest, "beta_diversity")
-            output_directories.append(pcoa_dir)
-
-            cmd = "make_3d_plots.py -m %s -p %s -i %s -o %s" % (personal_mapping_file_fp, 
-                                                                prefs_fp, 
-                                                                distance_matrix_fp, 
-                                                                pcoa_dir)
-            if verbose:
-                print cmd
-            stdout, stderr, return_code = qiime_system_call(cmd)
-            if return_code != 0:
-                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                (cmd, stdout, stderr))
-        
-        ## Split OTU table into self/other per-body-site tables
-        if not suppress_taxa_summary_plots:
-            area_plots_dir = join(output_fp, person_of_interest, "time_series")
-            output_directories.append(area_plots_dir)
-
-            cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (otu_table,
-                                                                  personal_mapping_file_fp,
-                                                                  column_title, 
-                                                                  area_plots_dir)
-            if verbose:
-                print cmd
-            stdout, stderr, return_code = qiime_system_call(cmd)
-            if return_code != 0:
-                raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                (cmd, stdout, stderr))
-                
-            
-            for column_title_value in column_title_values:
-                print column_title_value
-                biom_fp = join(area_plots_dir, '%s_%s.%s' % (otu_table_title[0], column_title_value, otu_table_title[1]))
-                body_site_dir = join(area_plots_dir, column_title_value)
-                cmd = "split_otu_table.py -i %s -m %s -f %s -o %s" % (biom_fp,
-                                                                      personal_mapping_file_fp,
-                                                                      category_to_split, 
-                                                                      body_site_dir)
-                if verbose:
-                    print cmd
-                stdout, stderr, return_code = qiime_system_call(cmd)
-                if return_code != 0:
-                    raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                    (cmd, stdout, stderr))
-                    
-                for cat_value in cat_values:
-                    otu_table_fp = join(body_site_dir, "otu_table_%s_%s.biom" % (column_title_value, cat_value))
-                    print otu_table_fp
-                    if exists(otu_table_fp):
-                        # Not supporting parameter files yet
-                        #if parameter_fp == None:
-                        #    parameter_fp = ''
-                        #else:
-                        #    parameter_fp = '-p %s' %parameter_fp
-                        plots = join(area_plots_dir, "taxa_plots_%s_%s" % (column_title_value, cat_value))
-                        cmd = "summarize_taxa_through_plots.py -i %s -o %s -c %s -m %s -s" % (otu_table_fp,
-                                                                                                    plots,
-                                                                                                    time_series_category, 
-                                                                                                    personal_mapping_file_fp)
-                                                                                                    #parameter_fp)
-                        if verbose:
-                            print cmd
-                        stdout, stderr, return_code = qiime_system_call(cmd)
-                        if return_code != 0:
-                            raise ValueError("Command failed!\nCommand: %s\n Stdout: %s\n Stderr: %s\n" %\
-                            (cmd, stdout, stderr))
-                        create_comparative_taxa_plots_html(cat_value, 
-                                                           join(area_plots_dir,'%s_comparative.html' % cat_value))
-        
         # Generate alpha diversity boxplots, split by body site, one per
-        # metric.
+        # metric. We run this one first because it completes relatively
+        # quickly and it does not call any QIIME scripts.
         alpha_diversity_boxplots_html = ''
         if not suppress_alpha_diversity_boxplots:
             adiv_boxplots_dir = join(output_fp, person_of_interest,
-                                     "adiv_boxplots")
+                                     'adiv_boxplots')
             create_dir(adiv_boxplots_dir, fail_on_exist=True)
             output_directories.append(adiv_boxplots_dir)
 
-            if verbose:
-                print "Generating alpha diversity boxplots."
+            logger.write("\nGenerating alpha diversity boxplots (%s)\n\n" %
+                         person_of_interest)
 
             plot_filenames = _generate_alpha_diversity_boxplots(
                     collated_dir_fp, personal_mapping_file_fp,
-                    category_to_split, column_title,
-                    adiv_boxplots_rarefaction_depth, adiv_boxplots_dir)
+                    category_to_split, column_title, rarefaction_depth,
+                    adiv_boxplots_dir)
 
             # Create relative paths for use with the index page.
             rel_boxplot_dir = basename(normpath(adiv_boxplots_dir))
@@ -238,8 +160,137 @@ def create_personal_results(mapping_fp,
             alpha_diversity_boxplots_html = \
                     create_alpha_diversity_boxplots_html_table_row(plot_fps)
 
+        # Start of the actual "workflow" (in that QIIME scripts are actually
+        # being called).
+        commands = []
+
+        ## Alpha rarefaction steps
+        if not suppress_alpha_rarefaction:
+            rarefaction_dir = join(output_fp, person_of_interest,
+                                   'alpha_rarefaction')
+            output_directories.append(rarefaction_dir)
+
+            cmd_title = 'Creating rarefaction plots (%s)' % person_of_interest
+            cmd = 'make_rarefaction_plots.py -i %s -m %s -p %s -o %s' % (
+                    collated_dir_fp, personal_mapping_file_fp, prefs_fp,
+                    rarefaction_dir)
+            commands.append([(cmd_title, cmd)])
+
+        ## Beta diversity steps
+        if not suppress_beta_diversity:
+            pcoa_dir = join(output_fp, person_of_interest, 'beta_diversity')
+            output_directories.append(pcoa_dir)
+
+            cmd_title = 'Creating beta diversity plots (%s)' % \
+                        person_of_interest
+            cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
+                    personal_mapping_file_fp, prefs_fp, distance_matrix_fp,
+                    pcoa_dir)
+            commands.append([(cmd_title, cmd)])
+
+        ## Time series taxa summary plots steps
+        if not suppress_taxa_summary_plots:
+            area_plots_dir = join(output_fp, person_of_interest, 'time_series')
+            create_dir(area_plots_dir, fail_on_exist=True)
+            output_directories.append(area_plots_dir)
+
+            ## Split OTU table into self/other per-body-site tables
+            cmd_title = 'Splitting OTU table into self/other (%s)' % \
+                        person_of_interest
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table,
+                    personal_mapping_file_fp, column_title, area_plots_dir)
+            commands.append([(cmd_title, cmd)])
+
+            for column_title_value in column_title_values:
+                biom_fp = join(area_plots_dir,
+                               add_filename_suffix(otu_table,
+                                                   '_%s' % column_title_value))
+                body_site_dir = join(area_plots_dir, column_title_value)
+
+                cmd_title = 'Splitting "%s" OTU table by body site (%s)' % \
+                            (column_title_value, person_of_interest)
+                cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (biom_fp,
+                        personal_mapping_file_fp, category_to_split,
+                        body_site_dir)
+                commands.append([(cmd_title, cmd)])
+
+                for cat_value in cat_values:
+                    otu_table_fp = join(body_site_dir,
+                            add_filename_suffix(biom_fp, '_%s' % cat_value))
+
+                    # Not supporting parameter files yet
+                    #if parameter_fp == None:
+                    #    parameter_fp = ''
+                    #else:
+                    #    parameter_fp = '-p %s' %parameter_fp
+
+                    plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
+                        column_title_value, cat_value))
+
+                    cmd_title = 'Creating taxa summary plots (%s)' % \
+                                person_of_interest
+                    cmd = ('summarize_taxa_through_plots.py -i %s '
+                           '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
+                          time_series_category, personal_mapping_file_fp))
+                    commands.append([(cmd_title, cmd)])
+
+                    create_comparative_taxa_plots_html(cat_value, 
+                            join(area_plots_dir, '%s_comparative.html' %
+                                                 cat_value))
+
+        # Generate OTU category significance tables (per body site).
+        if not suppress_otu_category_significance:
+            otu_cat_sig_dir = join(output_fp, person_of_interest,
+                                   'otu_category_significance')
+            create_dir(otu_cat_sig_dir, fail_on_exist=True)
+            output_directories.append(otu_cat_sig_dir)
+
+            rarefied_otu_table_fp = join(otu_cat_sig_dir,
+                    add_filename_suffix(otu_table,
+                                        '_even%d' % rarefaction_depth))
+
+            # Rarefy OTU table (based on otu_category_significance.py
+            # recommendataion).
+            cmd_title = 'Rarefying OTU table (%s)' % person_of_interest
+            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table,
+                    rarefied_otu_table_fp, rarefaction_depth)
+            commands.append([(cmd_title, cmd)])
+
+            # Split OTU table into per-body-site tables.
+            cmd_title = 'Splitting OTU table by body site (%s)' % \
+                        person_of_interest
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                    rarefied_otu_table_fp, personal_mapping_file_fp,
+                    category_to_split, otu_cat_sig_dir)
+            commands.append([(cmd_title, cmd)])
+
+            # For each body-site OTU table, run otu_category_significance.py
+            # using self versus other category.
+            for cat_value in cat_values:
+                body_site_otu_table_fp = join(otu_cat_sig_dir,
+                        add_filename_suffix(rarefied_otu_table_fp,
+                                            '_%s' % cat_value))
+                otu_cat_output_fp = join(otu_cat_sig_dir,
+                                         'otu_cat_sig_%s.txt' % cat_value)
+
+                cmd_title = 'Testing for significant differences in OTU ' + \
+                            'abundances in "%s" body site (%s)' % (
+                            cat_value, person_of_interest)
+                cmd = 'otu_category_significance.py -i %s -m %s ' + \
+                      '-c %s -o %s' % (body_site_otu_table_fp,
+                      personal_mapping_file_fp, column_title,
+                      otu_cat_output_fp)
+                commands.append([(cmd_title, cmd)])
+
+        # We have all of our commands, so execute them.
+        command_handler(commands, status_update_callback, logger,
+                        close_logger_on_success=False)
+
+        # Create the index.html file for the current individual.
         create_index_html(person_of_interest, html_fp,
                 alpha_diversity_boxplots_html=alpha_diversity_boxplots_html)
+
+    logger.close()
 
     return output_directories
 
