@@ -99,6 +99,11 @@ script_info['optional_options'] = [
     make_option('--parameter_fp',
         default=None, type='string',
         help='Path to the parameter files'),
+    make_option('--retain_raw_data', default=False, action='store_true',
+         help='Retain raw data files (OTU tables, taxa summary files, etc.). '
+               'By default, these files will be cleaned up by the script, as '
+               'they are not viewable in the hosted delivery system and they '
+               'roughly double the size of the output [default: %default]'),
     make_option('--suppress_alpha_rarefaction',
          default=False,action='store_true',
          help=('Suppress generation of alpha rarefaction data'
@@ -172,6 +177,7 @@ def main():
                             category_to_split, 
                             time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
+                            retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,
                             suppress_taxa_summary_plots=opts.suppress_taxa_summary_plots,
