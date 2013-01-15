@@ -175,6 +175,16 @@ comparative_taxa_plots_text = """<html>
 </head>
 
 <body onload="init()">
+    <h2>%s taxonomic composition plots (comparing self versus other)</h2>
+    The two panels below show taxonomic composition plots for yourself and all
+    other individuals in the study, respectively. The x-axis contains the week
+    number that the samples were taken from so that you can see how the
+    community composition changes over time.
+    <br/><br/>
+    The two panels are synchronized such that when you scroll one, the other
+    will also scroll. This makes it easier to compare your results to all other
+    individuals in the study.
+
     <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
     <div style="margin: 0 auto; width:90%%; height:48%%">
         <iframe id="selfIFrame"
@@ -198,7 +208,8 @@ comparative_taxa_plots_text = """<html>
 
 def create_comparative_taxa_plots_html(category, output_fp):
     output_f = open(output_fp,'w')
-    output_f.write(comparative_taxa_plots_text % (category.title(), category, category.title(), category))
+    output_f.write(comparative_taxa_plots_text % (category.title(),
+            category.title(), category, category.title(), category))
     output_f.close()
 
 def create_alpha_diversity_boxplots_html_table_row(plot_fps):
