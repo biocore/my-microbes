@@ -18,7 +18,10 @@ from email.Utils import formatdate
 from glob import glob
 from os import makedirs
 from os.path import basename, exists, join, normpath, splitext
+from shutil import rmtree
 from smtplib import SMTP
+
+from cogent.util.misc import remove_files
 
 from numpy import isnan
 
@@ -85,6 +88,7 @@ def create_personal_results(mapping_fp,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
                             rarefaction_depth=10000,
+                            retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
                             suppress_taxa_summary_plots=False,
@@ -114,6 +118,8 @@ def create_personal_results(mapping_fp,
     otu_table_title = splitext(basename(otu_table))
 
     output_directories = []
+    raw_data_files = []
+    raw_data_dirs = []
     for person_of_interest in personal_ids:
         create_dir(join(output_fp, person_of_interest), fail_on_exist=True)
 
@@ -128,6 +134,8 @@ def create_personal_results(mapping_fp,
                                                     personal_mapping_file_fp,
                                                     personal_id_index,
                                                     individual_titles)
+        raw_data_files.append(personal_mapping_file_fp)
+
         column_title_index = header.index(column_title)
         column_title_values = set([e[column_title_index]
                                    for e in personal_map])
@@ -176,6 +184,9 @@ def create_personal_results(mapping_fp,
                     rarefaction_dir)
             commands.append([(cmd_title, cmd)])
 
+            raw_data_dirs.append(join(rarefaction_dir, 'average_plots'))
+            raw_data_dirs.append(join(rarefaction_dir, 'average_tables'))
+
         ## Beta diversity steps
         if not suppress_beta_diversity:
             pcoa_dir = join(output_fp, person_of_interest, 'beta_diversity')
@@ -205,6 +216,11 @@ def create_personal_results(mapping_fp,
                 biom_fp = join(area_plots_dir,
                                add_filename_suffix(otu_table,
                                                    '_%s' % column_title_value))
+                column_title_map_fp = join(area_plots_dir, 'mapping_%s.txt' %
+                                                           column_title_value)
+                raw_data_files.append(biom_fp)
+                raw_data_files.append(column_title_map_fp)
+
                 body_site_dir = join(area_plots_dir, column_title_value)
 
                 cmd_title = 'Splitting "%s" OTU table by body site (%s)' % \
@@ -213,6 +229,7 @@ def create_personal_results(mapping_fp,
                         personal_mapping_file_fp, category_to_split,
                         body_site_dir)
                 commands.append([(cmd_title, cmd)])
+                raw_data_dirs.append(body_site_dir)
 
                 for cat_value in cat_values:
                     otu_table_fp = join(body_site_dir,
@@ -233,6 +250,9 @@ def create_personal_results(mapping_fp,
                            '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
                           time_series_category, personal_mapping_file_fp))
                     commands.append([(cmd_title, cmd)])
+
+                    raw_data_files.append(join(plots, '*.biom'))
+                    raw_data_files.append(join(plots, '*.txt'))
 
                     create_comparative_taxa_plots_html(cat_value, 
                             join(area_plots_dir, '%s_comparative.html' %
@@ -255,6 +275,7 @@ def create_personal_results(mapping_fp,
             cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table,
                     rarefied_otu_table_fp, rarefaction_depth)
             commands.append([(cmd_title, cmd)])
+            raw_data_files.append(rarefied_otu_table_fp)
 
             # Split OTU table into per-body-site tables.
             cmd_title = 'Splitting OTU table by body site (%s)' % \
@@ -282,6 +303,8 @@ def create_personal_results(mapping_fp,
                       otu_cat_output_fp)
                 commands.append([(cmd_title, cmd)])
 
+                raw_data_files.append(body_site_otu_table_fp)
+
         # We have all of our commands, so execute them.
         command_handler(commands, status_update_callback, logger,
                         close_logger_on_success=False)
@@ -291,6 +314,16 @@ def create_personal_results(mapping_fp,
                 alpha_diversity_boxplots_html=alpha_diversity_boxplots_html)
 
     logger.close()
+
+    # Clean up the unnecessary raw data files and directories. glob will only
+    # grab paths that exist.
+    if not retain_raw_data:
+        for raw_data_fp_glob in raw_data_files:
+            remove_files(glob(raw_data_fp_glob))
+
+        for raw_data_dir_glob in raw_data_dirs:
+            for dir_to_remove in glob(raw_data_dir_glob):
+                rmtree(dir_to_remove)
 
     return output_directories
 
