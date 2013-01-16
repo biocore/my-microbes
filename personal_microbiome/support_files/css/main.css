@@ -1,0 +1,29 @@
+/*
+  main.css
+
+  Stylesheet used by personalized results main index page.
+
+  Author: Jai Ram Rideout
+*/
+
+#header, #tabs, #footer {
+  background-color: white;
+  margin: 0 auto;
+  width: 75%;
+}
+
+#header img {
+  /* center image */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text {
+  padding: 1.0em 1.4em;
+}
+
+.ui-widget-content a {
+  /* override theme's black-colored links */
+  color: -webkit-link;
+}
