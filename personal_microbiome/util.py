@@ -17,7 +17,8 @@ from email.mime.text import MIMEText
 from email.Utils import formatdate
 from glob import glob
 from os import makedirs
-from os.path import basename, exists, join, normpath, splitext
+from os.path import (abspath, basename, dirname, exists, join, normpath,
+                     splitext)
 from shutil import rmtree
 from smtplib import SMTP
 
@@ -326,6 +327,19 @@ def create_personal_results(mapping_fp,
                 rmtree(dir_to_remove)
 
     return output_directories
+
+def get_project_dir():
+    """Returns the top-level personal microbiome delivery system directory.
+
+    Taken from QIIME's (https://github.com/qiime/qiime)
+    qiime.util.get_qiime_project_dir.
+    """
+    # Get the full path of util.py
+    current_file_path = abspath(__file__)
+    # Get the directory containing util.py
+    current_dir_path = dirname(current_file_path)
+    # Return the directory containing the directory containing util.py
+    return dirname(current_dir_path)
 
 def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
                                        split_category, comparison_category,

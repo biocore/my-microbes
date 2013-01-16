@@ -10,6 +10,7 @@ __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
 import sys
+from os.path import abspath, dirname, exists
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
@@ -18,6 +19,7 @@ from qiime.util import MetadataMap
 from personal_microbiome.util import (_collect_alpha_diversity_boxplot_data,
                                       create_personal_mapping_file,
                                       get_personal_ids,
+                                      get_project_dir,
                                       notify_participants)
 
 class UtilTests(TestCase):
@@ -72,6 +74,47 @@ class UtilTests(TestCase):
 #        output_fp
 #        personal_id_index = 8
 #        individual_titles=None
+
+    def test_get_qiime_project_dir(self):
+        """getting the qiime project directory functions as expected
+        
+        Taken from QIIME's (https://github.com/qiime/qiime)
+        tests.test_util.test_get_qiime_project_dir.
+        """
+        
+        # Do an explicit check on whether the file system containing
+        # the current file is case insensitive. This is in response
+        # to SF bug #2945548, where this test would fail on certain
+        # unusual circumstances on case-insensitive file systems
+        # because the case of abspath(__file__) was inconsistent. 
+        # (If you don't believe this, set case_insensitive_filesystem
+        # to False, and rename your top-level Qiime directory as 
+        # qiime on OS X. That sould cause this test to fail as 
+        # actual will be path/to/qiime and expected will be 
+        # path/to/Qiime.) Note that we don't need to change anything
+        # in the get_project_dir() function as if the 
+        # file system is case insenstive, the case of the returned
+        # string is irrelevant.
+        case_insensitive_filesystem = \
+         exists(__file__.upper()) and exists(__file__.lower())
+         
+        actual = get_project_dir()
+        # I base the expected here off the imported location of
+        # personal_microbiome/util.py here, to handle cases where either the
+        # user has the delivery system in their PYTHONPATH, or when they've
+        # installed it with setup.py.
+        # If util.py moves this test will fail -- that 
+        # is what we want in this case, as the get_project_dir()
+        # function would need to be modified.
+        import personal_microbiome.util
+        util_py_filepath = abspath(abspath(personal_microbiome.util.__file__))
+        expected = dirname(dirname(util_py_filepath))
+        
+        if case_insensitive_filesystem:
+            # make both lowercase if the file system is case insensitive
+            actual = actual.lower()
+            expected = expected.lower()
+        self.assertEqual(actual,expected)
 
     def test_notify_participants(self):
         """Tests the dry-run capability of notify_participants."""
