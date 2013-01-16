@@ -21,7 +21,7 @@ index_text = """
 			<h3>Personal microbiome results: %s</h3>
 			Below are links to your personal microbiome results, along with descriptions that should help you interpret those results. As our analysis progresses, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. If you have questions about your results, you can get in touch by email at <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
 		</td>
-		<td><img src="https://s3.amazonaws.com/my-microbes/my_microbes_logo.png"></td>
+		<td><img src="../support_files/images/my_microbes.png"></td>
 	</tr>
 	<tr>
 		<td colspan=2 width=100%%>

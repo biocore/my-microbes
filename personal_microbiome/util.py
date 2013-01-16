@@ -19,7 +19,7 @@ from glob import glob
 from os import makedirs
 from os.path import (abspath, basename, dirname, exists, join, normpath,
                      splitext)
-from shutil import rmtree
+from shutil import copytree, rmtree
 from smtplib import SMTP
 
 from cogent.util.misc import remove_files
@@ -79,7 +79,8 @@ def create_personal_mapping_file(map_as_list,
 def create_personal_results(mapping_fp, 
                             distance_matrix_fp, 
                             collated_dir_fp, 
-                            output_fp, prefs_fp, 
+                            output_fp,
+                            prefs_fp, 
                             personal_id_field,
                             otu_table,
                             parameter_fp, 
@@ -97,7 +98,12 @@ def create_personal_results(mapping_fp,
                             suppress_otu_category_significance=False,
                             command_handler=call_commands_serially,
                             status_update_callback=no_status_updates):
+    # Create our output directory and copy over the resources the personalized
+    # pages need (e.g. javascript, images, etc.).
     create_dir(output_fp, fail_on_exist=True)
+    copytree(join(get_project_dir(), 'personal_microbiome', 'support_files'),
+             join(output_fp, 'support_files'))
+
     logger = WorkflowLogger(generate_log_fp(output_fp))
 
     map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
