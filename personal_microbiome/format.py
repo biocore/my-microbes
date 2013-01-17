@@ -376,13 +376,15 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
 
                 if p_value <= alpha:
                     # Taken from qiime.plot_taxa_summary.
-                    split_tax = [i for i in taxonomy.split(';')]
-                    split_tax[-1] = ('<a href="javascript:gg(\'%s\');">%s</a>'
-                                     % (split_tax[-1].replace(' ', '+'),
-                                        split_tax[-1].replace(' ', '&nbsp;')))
-                    taxonomy = ';'.join(split_tax).replace('"', '')
+                    taxa_links = []
+                    for tax_level in taxonomy.split(';'):
+                        taxa_links.append(
+                                '<a href="javascript:gg(\'%s\');">%s</a>' %
+                                (tax_level.replace(' ', '+'),
+                                 tax_level.replace(' ', '&nbsp;')))
+                    taxonomy = ';'.join(taxa_links).replace('"', '')
 
-                    html_row_text += '<tr><td>%s</td><td>%s</td></tr>' % (
+                    html_row_text += '<tr><td>%s</td><td>%s</td></tr>\n' % (
                             otu_id, taxonomy)
 
         out_html_f.write(otu_category_significance_table_text %
@@ -410,9 +412,10 @@ otu_category_significance_table_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>OTUs that differed in relative abundance in %s samples (comparing self
     versus other)</h2>
-    Click on the taxonomy link for each OTU to learn more about it!
+    Click on the taxonomy links for each OTU to learn more about it!
+    <br/><br/>
 
-    <table>
+    <table class="data-table">
       <tr>
         <th>OTU ID</th>
         <th>Taxonomy</th>
