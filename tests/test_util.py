@@ -208,7 +208,7 @@ To view your personalized results, please visit the following link:
 
 https://s3.amazonaws.com/my-microbes/foo1/index.html
 
-The website has additional details on how to view and interpret your results.  If you have any questions, please send an email to student.microbiome@gmail.com.
+The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 
 Thanks for participating in the study!
 
