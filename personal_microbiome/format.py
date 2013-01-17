@@ -41,6 +41,11 @@ index_text = """
         <p>
           Below are links to your personal microbiome results, along with descriptions that should help you interpret those results. As our analysis progresses, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. If you have questions about your results, you can get in touch by email at <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
         </p>
+        <center>
+          <noscript>
+            <h2 class="error">You <em>must</em> have JavaScript enabled to use My Microbes.</h1>
+          </noscript>
+        </center>
       </div>
     </div>
     <br/>
@@ -193,7 +198,7 @@ To view your personalized results, please visit the following link:
 
 https://s3.amazonaws.com/my-microbes/%s/index.html
 
-The website has additional details on how to view and interpret your results.  If you have any questions, please send an email to student.microbiome@gmail.com.
+The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 
 Thanks for participating in the study!
 
@@ -225,6 +230,9 @@ def create_index_html(personal_id, output_fp,
 comparative_taxa_plots_text = """
 <html>
 <head>
+  <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
+  <link href="../../support_files/css/main.css" rel="stylesheet">
+
   <script language="javascript" type="text/javascript">
     function init() {
       document.getElementById("selfIFrame").contentWindow.onscroll = syncOther;
@@ -246,15 +254,17 @@ comparative_taxa_plots_text = """
 </head>
 
 <body onload="init()">
-  <h2>%s taxonomic composition plots (comparing self versus other)</h2>
-  The two panels below show taxonomic composition plots for yourself and all
-  other individuals in the study, respectively. The x-axis contains the week
-  number that the samples were taken from so that you can see how the community
-  composition changes over time.
-  <br/><br/>
-  The two panels are synchronized such that when you scroll one, the other will
-  also scroll. This makes it easier to compare your results to all other
-  individuals in the study.
+  <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
+    <h2>%s taxonomic composition plots (comparing self versus other)</h2>
+    The two panels below show taxonomic composition plots for yourself and all
+    other individuals in the study, respectively. The x-axis contains the week
+    number that the samples were taken from so that you can see how the community
+    composition changes over time.
+    <br/><br/>
+    The two panels are synchronized such that when you scroll one, the other will
+    also scroll. This makes it easier to compare your results to all other
+    individuals in the study.
+  </div>
 
   <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
   <div style="margin: 0 auto; width:90%%; height:48%%">
