@@ -321,7 +321,6 @@ def create_personal_results(mapping_fp,
                           column_title, otu_cat_output_fp))
                 commands.append([(cmd_title, cmd)])
                 raw_data_files.append(otu_cat_output_fp)
-                break
 
         # We have all of our commands, so execute them.
         command_handler(commands, status_update_callback, logger,
