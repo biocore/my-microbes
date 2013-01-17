@@ -22,3 +22,8 @@
 .text {
   padding: 1.0em 1.4em;
 }
+
+.ui-widget .ui-widget {
+  /* make all text a bit smaller */
+  font-size: 0.9em;
+}

@@ -134,10 +134,41 @@ index_text = """
       <br/>
       <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
         <center>
-        <p>
-          Thanks for participating in the study! Please direct any questions to
-          <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
-        </p>
+          <p>
+            Thanks for participating in the study! Please direct any questions to
+            <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
+          </p>
+          <h3>Powered by:</h3>
+          <table>
+            <tr>
+              <td>
+                <a href="http://www.qiime.org">
+                  <img src="../support_files/images/qiime_logo.png" width="143px" height="46px"/>
+                </a>
+              </td>
+              <td>
+                <a href="http://www.pycogent.org">
+                  <img src="../support_files/images/pycogent_logo.jpg" width="65" height="69"/>
+                </a>
+              </td>
+              <td>
+                <a href="http://biom-format.org">
+                  <img src="../support_files/images/biom_format_logo.png" width="65" height="69"/>
+                </a>
+              </td>
+              <td>
+                <a href="http://www.jquery.com">
+                  <img src="../support_files/images/jquery_logo.png" width="143px" height="46px"/>
+                </a>
+              </td>
+              <td>
+                <a href="http://www.jqueryui.com">
+                  <img src="../support_files/images/jquery_ui_logo.jpg" width="143px" height="46px"/>
+                </a>
+              </td>
+            </tr>
+          </table>
+          &copy; Copyright 2013, QIIME Team.
         </center>
       </div>
     </div>
