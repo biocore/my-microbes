@@ -16,25 +16,58 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.workflow import (call_commands_serially, no_status_updates,
                             print_commands, print_to_stdout)
 
-from personal_microbiome.util import create_personal_results
+from my_microbes.util import create_personal_results
 
 script_info = {}
-script_info['brief_description'] = """Generate distinct 3d plots for unique individuals based on the metadata mapping file."""
-script_info['script_description'] = """This script generates a prefs file which assigns a unique color to the individual and then generates a 3d plot based on that prefs file"""
-script_info['script_usage'] = [("""Basic usage""", 
-                                """The required options are a mapping file, a distance matrix, a directory of collated alpha files, an output directory, and a preferences file. This will create alpha and beta diversity plots for all of the individuals. """, 
-                                """%prog  -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o personal_micro_out -p universal_prefs.txt"""),
-                            ("""Limit output""",
-                                """If the user wishes to limit the output so that plots are not created for every individual in the mapping file they can pass a list of the desired individual ids. For instance to create output for CUB027 and NAU113 the user would pass:""",
-                                """%prog  -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o limited_results_out -p universal_prefs.txt -l CUB027,NAU113"""),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-                            ("""Change default id column title""",
-                                """If the column indicating the individual is named something other than 'PersonalID' the user can indicate the name of that column. This will however require the updating the example prefs file to reflect the mapping file that is being used.""",
-                                """%prog -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o personal_micro_out -p universal_prefs.txt -n title_of_column"""),
-                            ("""Change default titles for new column in mapping file""", 
-                                """By default the new column will be titles "Self" and the categories are "Self" and "Other" if the user wishes to change this they can specify the new titles. These changes will have to be made manually in the prefs file as well.""",
-                                """%prog -m StudentHouseMF072212.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -o def_cat_out -p universal_prefs_2.txt -l CUB027,NAU113 -t individual -r yes,no""")]
+script_info['brief_description'] = """Generate personalized results for individuals in a study"""
 
-script_info['output_description'] = "A directory containing all of the 3d and rarefaction plots for each individual"
+script_info['script_description'] = """
+This script generates various microbial ecology analysis results on a
+per-individual basis, allowing a study participant to easily view his/her
+results and compare them to all other individuals in the study. The output is
+organized as a set of HTML pages that can be viewed locally or from a hosted
+location on the web.
+"""
+
+script_info['script_usage'] = [("Basic usage",
+"The following command will create alpha rarefaction, beta diversity, and "
+"taxa summary plots, as well as alpha diversity boxplots and OTU category "
+"significance tables for all of the individuals in the study.",
+"%prog -m map.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -a "
+"otu_table.biom -p prefs.txt -o my_microbes_output"),
+
+("Limit output",
+"If the user wishes to limit the output so that plots are not created for "
+"every individual in the mapping file they can pass a list of the desired "
+"individual IDs. For instance, the following command creates output for "
+"CUB027 and NAU113 only.",
+"%prog -m map.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -a "
+"otu_table.biom -p prefs.txt -o limited_output -l CUB027,NAU113"),
+
+("Change default ID column title",
+"If the column indicating the individual is named something other than "
+"'PersonalID' the user can indicate the name of that column. This will, "
+"however, require updating the example prefs file to reflect the mapping file "
+"that is being used.",
+"%prog -m map.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -a "
+"otu_table.biom -p prefs.txt -o custom_pid_column_output -n title_of_column"),
+
+("Change default title for new column in mapping file",
+"By default a new column will be named 'Self' will be added to each "
+"personalized mapping file in order to distinguish samples from the current "
+"individual from all other samples. The column will have the categories "
+"'Self' and 'Other'. If the user wishes to change this, they can specify the "
+"column and category names. These changes will have to be made manually in "
+"the prefs file as well.",
+"%prog -m map.txt -i unweighted_unifrac_pc.txt -c alpha_div_collated/ -a "
+"otu_table.biom -p prefs.txt -o custom_column_output -l CUB027,NAU113 -t "
+"individual -r yes,no""")]
+
+script_info['output_description'] = """
+The output directory will contain sets of HTML pages for each individual in the
+study, organized by personal ID.
+"""
+
 script_info['required_options'] = [ 
     make_option('-m', '--mapping_fp', type='existing_filepath', 
         help='Metadata mapping file filepath'),
@@ -134,7 +167,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     mapping_file = opts.mapping_fp
-    distance_matrix = opts.coord_fname
+    coord_fname = opts.coord_fname
     collated_dir = opts.collated_dir
     output_dir = opts.output_dir
     prefs = opts.prefs_fp
@@ -163,18 +196,18 @@ def main():
     else:
         status_update_callback = no_status_updates
 
-    create_personal_results(mapping_file, 
-                            distance_matrix, 
-                            collated_dir, 
-                            output_dir, 
-                            prefs, 
+    create_personal_results(mapping_file,
+                            coord_fname,
+                            collated_dir,
+                            output_dir,
+                            prefs,
                             personal_id_column,
                             otu_table,
-                            parameter_fp, 
-                            personal_ids, 
-                            column_title, 
+                            parameter_fp,
+                            personal_ids,
+                            column_title,
                             individual_titles,
-                            category_to_split, 
+                            category_to_split,
                             time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
                             retain_raw_data=opts.retain_raw_data,

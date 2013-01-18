@@ -35,11 +35,11 @@ from qiime.workflow import (call_commands_serially, generate_log_fp,
                             no_status_updates, print_commands, print_to_stdout,
                             WorkflowError, WorkflowLogger)
 
-from personal_microbiome.format import (create_index_html,
+from my_microbes.format import (create_index_html,
         create_alpha_diversity_boxplots_html_table_row,
         create_comparative_taxa_plots_html, notification_email_subject,
         get_personalized_notification_email_text)
-from personal_microbiome.parse import parse_email_settings, parse_recipients
+from my_microbes.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
     result = []
@@ -77,7 +77,7 @@ def create_personal_mapping_file(map_as_list,
     return personal_map
     
 def create_personal_results(mapping_fp, 
-                            distance_matrix_fp, 
+                            coord_fp, 
                             collated_dir_fp, 
                             output_fp,
                             prefs_fp, 
@@ -101,7 +101,7 @@ def create_personal_results(mapping_fp,
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
     create_dir(output_fp, fail_on_exist=True)
-    copytree(join(get_project_dir(), 'personal_microbiome', 'support_files'),
+    copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
              join(output_fp, 'support_files'))
 
     logger = WorkflowLogger(generate_log_fp(output_fp))
@@ -202,8 +202,7 @@ def create_personal_results(mapping_fp,
             cmd_title = 'Creating beta diversity plots (%s)' % \
                         person_of_interest
             cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
-                    personal_mapping_file_fp, prefs_fp, distance_matrix_fp,
-                    pcoa_dir)
+                    personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir)
             commands.append([(cmd_title, cmd)])
 
         ## Time series taxa summary plots steps
