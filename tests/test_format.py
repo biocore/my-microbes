@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from unittest import main, TestCase
 
-from personal_microbiome.format import format_participant_table
+from my_microbes.format import format_participant_table
 
 class FormatTests(TestCase):
     """Tests for the format.py module."""

@@ -11,7 +11,7 @@ __email__ = "jc33@nau.edu"
 
 from os.path import basename, join, splitext
 
-from personal_microbiome.parse import parse_recipients
+from my_microbes.parse import parse_recipients
 
 index_text = """
 <html>
@@ -437,7 +437,7 @@ def format_participant_table(participants_f, url_prefix):
 
     Arguments:
         participants_f - file in same format as that accepted by
-            personal_microbiome.parse.parse_recipients. Email addresses are
+            my_microbes.parse.parse_recipients. Email addresses are
             ignored
         url_prefix - URL to prefix each personal ID with to provide links to
             personalized results (string)
