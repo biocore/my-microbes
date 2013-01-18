@@ -35,11 +35,11 @@ from qiime.workflow import (call_commands_serially, generate_log_fp,
                             no_status_updates, print_commands, print_to_stdout,
                             WorkflowError, WorkflowLogger)
 
-from personal_microbiome.format import (create_index_html,
+from my_microbes.format import (create_index_html,
         create_alpha_diversity_boxplots_html_table_row,
         create_comparative_taxa_plots_html, notification_email_subject,
         get_personalized_notification_email_text)
-from personal_microbiome.parse import parse_email_settings, parse_recipients
+from my_microbes.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
     result = []
