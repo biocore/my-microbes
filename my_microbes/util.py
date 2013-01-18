@@ -101,7 +101,7 @@ def create_personal_results(mapping_fp,
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
     create_dir(output_fp, fail_on_exist=True)
-    copytree(join(get_project_dir(), 'personal_microbiome', 'support_files'),
+    copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
              join(output_fp, 'support_files'))
 
     logger = WorkflowLogger(generate_log_fp(output_fp))

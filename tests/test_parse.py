@@ -13,8 +13,8 @@ __email__ = "jai.rideout@gmail.com"
 
 from unittest import main, TestCase
 
-from personal_microbiome.parse import (parse_email_settings, parse_recipients,
-                                       _can_ignore)
+from my_microbes.parse import (parse_email_settings, parse_recipients,
+                               _can_ignore)
 
 class ParseTests(TestCase):
     """Tests for the parse.py module.
