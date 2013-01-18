@@ -33,3 +33,25 @@ h2.error
 {
   color:#FF0000;
 }
+
+.data-table {
+  border-spacing: 0;
+  border: 1px solid #000;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  text-align: left;
+  padding: 4px 4px 4px 4px;
+  border-style: solid;
+  border-color: #444;
+}
+
+.data-table th {
+  border-width: 0px 1px 1px 1px;
+  background-color: #a6c9e2;
+}
+
+.data-table td {
+  border-width: 1px;
+}

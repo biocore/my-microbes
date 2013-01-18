@@ -132,6 +132,11 @@ script_info['optional_options'] = [
     make_option('--parameter_fp',
         default=None, type='string',
         help='Path to the parameter files'),
+    make_option('--alpha', default=0.05, type='float',
+        help='the alpha value to use when choosing OTUs to display in the OTU '
+        'category significance tables. For an OTU to be included in the '
+        'table, it must have an FDR-corrected p-value <= to alpha '
+        '[default: %default]'),
     make_option('--retain_raw_data', default=False, action='store_true',
          help='Retain raw data files (OTU tables, taxa summary files, etc.). '
                'By default, these files will be cleaned up by the script, as '
@@ -154,7 +159,7 @@ script_info['optional_options'] = [
          help=('Suppress generation of alpha diversity boxplots '
                '[default: %default]')),
     make_option('--suppress_otu_category_significance',
-         default=True,action='store_true',
+         default=False,action='store_true',
          help=('Suppress generation of otu category significance tables '
                '[default: %default]')),
     make_option('-w', '--print_only', action='store_true',
@@ -181,8 +186,9 @@ def main():
     parameter_fp = opts.parameter_fp
     
     if exists(output_dir):
-        # don't overwrite existing output directory - make the user provide a different name or 
-        # move/delete the existing directory since it may have taken a while to create.
+        # don't overwrite existing output directory - make the user provide a
+        # different name or move/delete the existing directory since it may
+        # have taken a while to create.
         option_parser.error("Output directory (%s) already exists. "
                             "Won't overwrite." % output_dir)
 
@@ -210,6 +216,7 @@ def main():
                             category_to_split,
                             time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
+                            alpha=opts.alpha,
                             retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,

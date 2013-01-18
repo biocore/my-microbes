@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
-from personal_microbiome.format import format_participant_table
+from my_microbes.format import format_participant_table
 
 options_lookup = get_options_lookup()
 
