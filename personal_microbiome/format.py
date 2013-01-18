@@ -323,7 +323,8 @@ more details about alpha diversity, please refer to the
 def format_participant_table(participants_f, url_prefix):
     """Formats an HTML table of personal IDs with links to personal results.
 
-    Returns the HTMl table as a string suitable for writing to a file.
+    Returns the HTMl table as a string suitable for writing to a file. Personal
+    IDs will be sorted.
 
     Arguments:
         participants_f - file in same format as that accepted by
