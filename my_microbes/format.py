@@ -9,9 +9,9 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-from os.path import basename, splitext
+from os.path import basename, join, splitext
 
-from personal_microbiome.parse import parse_recipients
+from my_microbes.parse import parse_recipients
 
 index_text = """
 <html>
@@ -57,6 +57,7 @@ index_text = """
         <li><a href="#taxonomic-composition">Taxonomic Composition</a></li>
         <li><a href="#beta-diversity">Beta Diversity</a></li>
         <li><a href="#alpha-diversity-boxplots">Alpha Diversity Boxplots</a></li>
+        <li><a href="#differential-otus">Differential OTUs</a></li>
         <li><a href="#alpha-rarefaction">Alpha Rarefaction</a></li>
       </ul>
 
@@ -119,6 +120,8 @@ index_text = """
       </div>
 
       <div id="alpha-diversity-boxplots">%s</div>
+
+      <div id="differential-otus">%s</div>
 
       <div id="alpha-rarefaction">
         <h2>Alpha Rarefaction</h2>
@@ -212,10 +215,12 @@ def get_personalized_notification_email_text(personal_id):
     return notification_email_text % (personal_id, personal_id)
 
 def create_index_html(personal_id, output_fp,
-                      alpha_diversity_boxplots_html=''):
+                      alpha_diversity_boxplots_html='',
+                      otu_category_significance_html=''):
     output_f = open(output_fp,'w')
     output_f.write(index_text % (personal_id, personal_id,
-                                 alpha_diversity_boxplots_html))
+                                 alpha_diversity_boxplots_html,
+                                 otu_category_significance_html))
     output_f.close()
 
 # This javascript synchronizes the scrolling of the two iframes. It has been
@@ -295,7 +300,7 @@ def create_comparative_taxa_plots_html(category, output_fp):
             category.title(), category, category.title(), category))
     output_f.close()
 
-def create_alpha_diversity_boxplots_html_table_row(plot_fps):
+def create_alpha_diversity_boxplots_html(plot_fps):
     plot_links_text = ''
 
     for plot_fp in plot_fps:
@@ -316,8 +321,112 @@ more details about alpha diversity, please refer to the
 
 <h3>Click on the following links to see your alpha diversity boxplots:</h3>
 <ul>
-    %s
+  %s
 </ul>
+"""
+
+def create_otu_category_significance_html(table_fps):
+    table_links_text = ''
+
+    for table_fp in table_fps:
+        body_site = splitext(basename(table_fp))[0].title()
+        table_links_text += '<li><a href="%s">%s</a></li>' % (table_fp,
+                                                              body_site)
+
+    return otu_category_significance_text % table_links_text
+
+otu_category_significance_text = """
+<h2>Differences in OTU Abundances</h2>
+Here we present OTUs that seemed to differ in their relative abundances when
+comparing you to all other individuals in the study.
+
+<h3>Click on the following links to see what OTU abundances differed by body
+site:</h3>
+<ul>
+  %s
+</ul>
+"""
+
+def format_otu_category_significance_tables_as_html(table_fps, alpha,
+                                                    output_dir):
+    if alpha < 0 or alpha > 1:
+        raise ValueError("Alpha must be between zero and one.")
+
+    created_files = []
+    for table_fp in table_fps:
+        body_site = splitext(basename(table_fp))[0].split('otu_cat_sig_')[-1]
+        table_f = open(table_fp, 'U')
+
+        out_html_fp = join(output_dir, '%s.html' % body_site)
+        out_html_f = open(out_html_fp, 'w')
+        created_files.append(basename(out_html_fp))
+
+        html_row_text = ''
+        processed_header = False
+        for line in table_f:
+            cells = map(lambda e: e.strip(), line.strip().split('\t'))
+
+            if not processed_header:
+                otu_id_idx = cells.index('OTU')
+                p_value_idx = cells.index('FDR_corrected')
+                taxonomy_idx = cells.index('Consensus Lineage')
+                processed_header = True
+            else:
+                otu_id = cells[otu_id_idx]
+                p_value = float(cells[p_value_idx])
+                taxonomy = cells[taxonomy_idx]
+
+                if p_value <= alpha:
+                    # Taken from qiime.plot_taxa_summary.
+                    taxa_links = []
+                    for tax_level in taxonomy.split(';'):
+                        taxa_links.append(
+                                '<a href="javascript:gg(\'%s\');">%s</a>' %
+                                (tax_level.replace(' ', '+'),
+                                 tax_level.replace(' ', '&nbsp;')))
+                    taxonomy = ';'.join(taxa_links).replace('"', '')
+
+                    html_row_text += '<tr><td>%s</td><td>%s</td></tr>\n' % (
+                            otu_id, taxonomy)
+
+        out_html_f.write(otu_category_significance_table_text %
+                         (body_site, html_row_text))
+        out_html_f.close()
+        table_f.close()
+
+    return created_files
+
+# gg() function taken from qiime.plot_taxa_summary.
+otu_category_significance_table_text = """
+<html>
+<head>
+  <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
+  <link href="../../support_files/css/main.css" rel="stylesheet">
+
+  <script language="javascript" type="text/javascript">
+    function gg(targetq) {
+      window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
+    }
+  </script>
+</head>
+
+<body>
+  <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
+    <h2>OTUs that differed in relative abundance in %s samples (comparing self
+    versus other)</h2>
+    Click on the taxonomy links for each OTU to learn more about it!
+    <br/><br/>
+
+    <table class="data-table">
+      <tr>
+        <th>OTU ID</th>
+        <th>Taxonomy</th>
+      </tr>
+      %s
+    </table>
+  </div>
+</body>
+</html>
 """
 
 def format_participant_table(participants_f, url_prefix):
@@ -328,7 +437,7 @@ def format_participant_table(participants_f, url_prefix):
 
     Arguments:
         participants_f - file in same format as that accepted by
-            personal_microbiome.parse.parse_recipients. Email addresses are
+            my_microbes.parse.parse_recipients. Email addresses are
             ignored
         url_prefix - URL to prefix each personal ID with to provide links to
             personalized results (string)
