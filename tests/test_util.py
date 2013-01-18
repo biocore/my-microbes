@@ -16,11 +16,11 @@ from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
 from qiime.util import MetadataMap
 
-from personal_microbiome.util import (_collect_alpha_diversity_boxplot_data,
-                                      create_personal_mapping_file,
-                                      get_personal_ids,
-                                      get_project_dir,
-                                      notify_participants)
+from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
+                              create_personal_mapping_file,
+                              get_personal_ids,
+                              get_project_dir,
+                              notify_participants)
 
 class UtilTests(TestCase):
 
@@ -100,14 +100,14 @@ class UtilTests(TestCase):
          
         actual = get_project_dir()
         # I base the expected here off the imported location of
-        # personal_microbiome/util.py here, to handle cases where either the
+        # my_microbes/util.py here, to handle cases where either the
         # user has the delivery system in their PYTHONPATH, or when they've
         # installed it with setup.py.
         # If util.py moves this test will fail -- that 
         # is what we want in this case, as the get_project_dir()
         # function would need to be modified.
-        import personal_microbiome.util
-        util_py_filepath = abspath(abspath(personal_microbiome.util.__file__))
+        import my_microbes.util
+        util_py_filepath = abspath(abspath(my_microbes.util.__file__))
         expected = dirname(dirname(util_py_filepath))
         
         if case_insensitive_filesystem:

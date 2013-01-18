@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
-from personal_microbiome.util import notify_participants
+from my_microbes.util import notify_participants
 
 script_info = {}
 script_info['brief_description'] = "Notifies participants of personal results"
