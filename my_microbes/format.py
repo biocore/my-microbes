@@ -11,6 +11,8 @@ __email__ = "jc33@nau.edu"
 
 from os.path import basename, splitext
 
+from personal_microbiome.parse import parse_recipients
+
 index_text = """
 <html>
   <head>
@@ -317,3 +319,28 @@ more details about alpha diversity, please refer to the
     %s
 </ul>
 """
+
+def format_participant_table(participants_f, url_prefix):
+    """Formats an HTML table of personal IDs with links to personal results.
+
+    Returns the HTMl table as a string suitable for writing to a file. Personal
+    IDs will be sorted.
+
+    Arguments:
+        participants_f - file in same format as that accepted by
+            personal_microbiome.parse.parse_recipients. Email addresses are
+            ignored
+        url_prefix - URL to prefix each personal ID with to provide links to
+            personalized results (string)
+    """
+    personal_ids = sorted(parse_recipients(participants_f).keys())
+    url_prefix = url_prefix if url_prefix.endswith('/') else url_prefix + '/'
+
+    result = '<table class="data-table">\n<tr><th>Personal ID</th></tr>\n'
+    for personal_id in personal_ids:
+        url = url_prefix + personal_id + '/index.html'
+        result += '<tr><td><a href="%s">%s</a></td></tr>\n' % (url,
+                                                               personal_id)
+    result += '</table>\n'
+
+    return result
