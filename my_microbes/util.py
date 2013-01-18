@@ -77,7 +77,7 @@ def create_personal_mapping_file(map_as_list,
     return personal_map
     
 def create_personal_results(mapping_fp, 
-                            distance_matrix_fp, 
+                            coord_fp, 
                             collated_dir_fp, 
                             output_fp,
                             prefs_fp, 
@@ -202,8 +202,7 @@ def create_personal_results(mapping_fp,
             cmd_title = 'Creating beta diversity plots (%s)' % \
                         person_of_interest
             cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
-                    personal_mapping_file_fp, prefs_fp, distance_matrix_fp,
-                    pcoa_dir)
+                    personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir)
             commands.append([(cmd_title, cmd)])
 
         ## Time series taxa summary plots steps

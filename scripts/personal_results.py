@@ -167,7 +167,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     mapping_file = opts.mapping_fp
-    distance_matrix = opts.coord_fname
+    coord_fname = opts.coord_fname
     collated_dir = opts.collated_dir
     output_dir = opts.output_dir
     prefs = opts.prefs_fp
@@ -196,18 +196,18 @@ def main():
     else:
         status_update_callback = no_status_updates
 
-    create_personal_results(mapping_file, 
-                            distance_matrix, 
-                            collated_dir, 
-                            output_dir, 
-                            prefs, 
+    create_personal_results(mapping_file,
+                            coord_fname,
+                            collated_dir,
+                            output_dir,
+                            prefs,
                             personal_id_column,
                             otu_table,
-                            parameter_fp, 
-                            personal_ids, 
-                            column_title, 
+                            parameter_fp,
+                            personal_ids,
+                            column_title,
                             individual_titles,
-                            category_to_split, 
+                            category_to_split,
                             time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
                             retain_raw_data=opts.retain_raw_data,
