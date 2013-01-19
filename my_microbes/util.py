@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
+    "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -91,6 +92,7 @@ def create_personal_results(mapping_fp,
                             column_title='Self', 
                             individual_titles=None,
                             category_to_split='BodySite',
+                            site_id_category='SiteID',
                             time_series_category='WeeksSinceStart',
                             rarefaction_depth=10000,
                             alpha=0.05,
@@ -205,8 +207,10 @@ def create_personal_results(mapping_fp,
 
             cmd_title = 'Creating beta diversity plots (%s)' % \
                         person_of_interest
-            cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
-                    personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir)
+            cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s --custom_axes=' % (
+                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir) +\
+                '\'%s\' --add_vectors=\'%s,%s\'' % (time_series_category,
+                site_id_category, time_series_category)
             commands.append([(cmd_title, cmd)])
 
         ## Time series taxa summary plots steps
