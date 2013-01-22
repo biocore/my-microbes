@@ -45,14 +45,8 @@ from my_microbes.format import (create_index_html,
 from my_microbes.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
-    result = []
-    for i in mapping_data:
-        if i[personal_id_index] not in result: 
-            result.append(i[personal_id_index]) 
-        else: 
-            pass
-    return result
-    
+    return set([line[personal_id_index] for line in mapping_data])
+
 def create_personal_mapping_file(map_as_list,
                                  header, 
                                  comments, 

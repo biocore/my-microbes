@@ -9,6 +9,8 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
+"""Test suite for the util.py module."""
+
 import sys
 from os.path import abspath, dirname, exists
 from StringIO import StringIO
@@ -23,11 +25,13 @@ from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               notify_participants)
 
 class UtilTests(TestCase):
+    """Tests for the util.py module."""
 
     def setUp(self):
-        # Define some data here...
+        """Define some sample data that will be used by the tests."""
         self.metadata_map = MetadataMap.parseMetadataMap(
                 mapping_str.split('\n'))
+        self.mapping_data = parse_mapping_file(mapping_str.split('\n'))[0]
 
         self.rarefaction_lines = collated_alpha_div_str.split('\n')
         self.na_rarefaction_lines = collated_alpha_div_na_str.split('\n')
@@ -39,23 +43,12 @@ class UtilTests(TestCase):
                 "smtp_server\tsome.smtp.server", "smtp_port\t42",
                 "sender\tfrom@foobarbaz.com", "password\t424242!"]
 
-#    def test_get_personal_ids(self): 
-#        """Does the function return correct output when given correct output"""
-#        obs = get_personal_ids(self.mapping_data)
-#        
-#        column = 'PersonalID'
-#        input  = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
-#                  ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
-#                  ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
-#                  ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
-#                  ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
-#                  ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
-#                  ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
-#                  ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
-#                  ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
-#        expected = ['CUB027', 'NAU113', 'NAU133', 'NAU144', 'NCS210', 'NCS214', 'CUB000', 'CUB003', 'CUB004']
-#        self.assertEqual(get_personal_ids(input, 8), expected)
-#        
+    def test_get_personal_ids(self): 
+        """Test extracting a set of personal IDs."""
+        exp = set(['NAU123', 'NAU789', 'NAU456'])
+        obs = get_personal_ids(self.mapping_data, 3)
+        self.assertEqual(obs, exp)
+
 #    def test_create_personal_mapping_file(self): 
 #        """Does the function return correct output when given correct input?"""
 #        map_as_list = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
@@ -158,15 +151,15 @@ class UtilTests(TestCase):
         self.assertEqual(obs, ([], []))
 
 
-mapping_str = """#SampleID\tBodySite\tSelf\tDescription
-S1\tPalm\tSelf\tS1
-S2\tTongue\tOther\tS2
-S3\tPalm\tOther\tS3
-S4\tPalm\tSelf\tS4
-S5\tTongue\tSelf\tS5
-S6\tTongue\tOther\tS6
-S7\tTongue\tSelf\tS7
-S8\tPalm\tOther\tS8"""
+mapping_str = """#SampleID\tBodySite\tSelf\tPersonalID\tDescription
+S1\tPalm\tSelf\tNAU123\tS1
+S2\tTongue\tOther\tNAU456\tS2
+S3\tPalm\tOther\tNAU789\tS3
+S4\tPalm\tSelf\tNAU123\tS4
+S5\tTongue\tSelf\tNAU123\tS5
+S6\tTongue\tOther\tNAU456\tS6
+S7\tTongue\tSelf\tNAU123\tS7
+S8\tPalm\tOther\tNAU789\tS8"""
 
 collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
 alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8
