@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from unittest import main, TestCase
 
-from my_microbes.format import format_participant_table
+from my_microbes.format import format_participant_table, create_alpha_diversity_boxplots_html
 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
@@ -54,7 +54,28 @@ class FormatTests(TestCase):
         obs = format_participant_table(self.empty_recipients,
                                        'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
+        
+    def test_create_alpha_diversity_boxplots_html(self): 
+        """Test alpha diversity boxplots"""
+        input = ('pd.txt', 'chao.txt')
+        exp = expected_alpha_diversity_boxplots
+        self.assertEqual(create_alpha_diversity_boxplots_html(input), exp)
 
+
+expected_alpha_diversity_boxplots = """
+<h2>Alpha Diversity Boxplots</h2>
+Here we present a series of comparative boxplots showing the
+distributions of your alpha diversity (<i>Self</i>) versus all other
+individuals' alpha diversity (<i>Other</i>) for each body site.
+Separate boxplots are provided for each alpha diversity metric. For
+more details about alpha diversity, please refer to the
+<b>Alpha Rarefaction</b> tab.
+
+<h3>Click on the following links to see your alpha diversity boxplots:</h3>
+<ul>
+  <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>
+</ul>
+"""
 
 if __name__ == "__main__":
     main()
