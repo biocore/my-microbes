@@ -290,6 +290,7 @@ def create_personal_results(mapping_fp,
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
+        otu_category_significance_html = ''
         if not suppress_otu_category_significance:
             otu_cat_sig_dir = join(output_fp, person_of_interest,
                                    'otu_category_significance')
