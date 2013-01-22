@@ -176,6 +176,7 @@ def main():
         option_parser.error("Output directory (%s) already exists. "
                             "Won't overwrite." % opts.output_dir)
 
+    personal_ids = opts.personal_ids
     if personal_ids is not None:
         personal_ids = opts.personal_ids.split(',')
 
