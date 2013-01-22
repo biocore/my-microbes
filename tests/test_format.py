@@ -71,11 +71,10 @@ class FormatTests(TestCase):
     
     def test_format_otu_category_significance_tables_as_html(self): 
         """test that a value error is raised if number not between 0 and 1 is passed"""
-#         exp = format_otu_category_significance_tables_as_html(otu_category_significance_text, 
-#                                                               10,
-#                                                               'output_dir')
         self.assertRaises(ValueError, format_otu_category_significance_tables_as_html, otu_category_significance_text, 
                           10, 'output_dir')
+                          
+        
 
 expected_alpha_diversity_boxplots = """
 <h2>Alpha Diversity Boxplots</h2>
