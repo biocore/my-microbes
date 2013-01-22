@@ -41,7 +41,7 @@ index_text = """
       <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
         <center><h1>Personalized Results for %s</h1></center>
         <p>
-          Below are links to your personal microbiome results, along with descriptions that should help you interpret those results. As our analysis progresses, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. If you have questions about your results, you can get in touch by email at <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
+          Below are links to your personal microbiome data, along with descriptions that should help you interpret those results. As our analyses progress, we may have periodic updates to the data on this page. We'll alert you to those new data as they're available. If you have questions about your results, you can get in touch by email at <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
         </p>
         <center>
           <noscript>
@@ -63,13 +63,14 @@ index_text = """
 
       <div id="taxonomic-composition">
         <h2>Taxonomic Composition</h2>
-        Here we present the composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
+        Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
           <li>What was the dominant phylum in your gut on the first week that you donated a sample?
           <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time? 
           <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?
+          <li>Does the composition of eahc of your body sites look consistent over time, or do certain groups appear to bloom and then die off?
         </ol>
 
         <h3>Click on the following links to see your taxonomic summary plots:</h3>
@@ -102,11 +103,11 @@ index_text = """
 
       <div id="beta-diversity">
         <h2>Beta Diversity</h2>
-        Beta diversity refers to the variation in species composition across samples, in contrast to alpha (i.e., within-sample) diversity, and is often computed as a distance between samples. If you have three samples, for example a sample from your tongue, another indivdual's tongue, and your palm, you could compute the beta diveristy or distance between all pairs of these three samples and determine if your tongue microbial community was more similar in composition to someone else's tongue microbial community, or to your palm microbial community. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
+        Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
-        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In these ordination plots, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
+        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
         <br/><br/>
-        The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are XXX, palm samples are XXX, gut samples are XXX and tongue samples are XXX. You can tell your samples from those of the rest of the participants as yours are colored in a lighter shade of the same colors.
+        The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in a lighter shade of the same colors.
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
