@@ -177,9 +177,12 @@ def main():
     output_dir = opts.output_dir
     prefs = opts.prefs_fp
     personal_id_column = opts.personal_id_column
-    personal_ids = opts.personal_ids
+
+    if personal_ids is not None:
+        personal_ids = opts.personal_ids.split(',')
+
     column_title = opts.column_title
-    individual_titles = opts.individual_titles
+    individual_titles = opts.individual_titles.split(',')
     otu_table = opts.otu_table
     category_to_split = opts.category_to_split
     time_series_category = opts.time_series_category

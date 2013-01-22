@@ -31,7 +31,13 @@ class UtilTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.metadata_map = MetadataMap.parseMetadataMap(
                 mapping_str.split('\n'))
-        self.mapping_data = parse_mapping_file(mapping_str.split('\n'))[0]
+        self.mapping_data, self.mapping_header = parse_mapping_file(
+                mapping_str.split('\n'))[:2]
+
+        self.personal_metadata_map = MetadataMap.parseMetadataMap(
+                personal_mapping_str.split('\n'))
+        self.personal_mapping_data = parse_mapping_file(
+                personal_mapping_str.split('\n'))[0]
 
         self.rarefaction_lines = collated_alpha_div_str.split('\n')
         self.na_rarefaction_lines = collated_alpha_div_na_str.split('\n')
@@ -46,27 +52,17 @@ class UtilTests(TestCase):
     def test_get_personal_ids(self): 
         """Test extracting a set of personal IDs."""
         exp = set(['NAU123', 'NAU789', 'NAU456'])
-        obs = get_personal_ids(self.mapping_data, 3)
+        obs = get_personal_ids(self.mapping_data, 2)
         self.assertEqual(obs, exp)
 
-#    def test_create_personal_mapping_file(self): 
-#        """Does the function return correct output when given correct input?"""
-#        map_as_list = [['A01393', 'GTTATCGCATGG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB027'],
-#                       ['A00994', 'CGGATAACCTCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU113'], 
-#                       ['A00981', 'TAACGCTGTGTG', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU133'], 
-#                       ['A00936', 'ATTGACCGGTCA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NAU', 'NAU144'], 
-#                       ['A01497', 'AGCGCTCACATC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS210'], 
-#                       ['A00663', 'CTCATCATGTTC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'NCS', 'NCS214'], 
-#                       ['A01367', 'GCAACACCATCC', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB000'], 
-#                       ['A01383', 'GCTTGAGCTTGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB003'], 
-#                       ['A01332', 'AGTAGCGGAAGA', 'CCGGACTACHVGGGTWTCTAAT', 'student', 'na', 'na', 'armpit', 'CUB', 'CUB004']]
-#        header = ['SampleID', 'BarcodeSequence', 'LinkerPrimerSequence', 'Study', 'HouseZipCode', 'SamplingLocation', 'BodyHabitat', 'University', 'PersonalID']
-#        comments = [] 
-#        personal_id_of_interest = 'CUB027'
-#        "So how do I write something out to file here and then check to make sure that is correct?"
-#        output_fp
-#        personal_id_index = 8
-#        individual_titles=None
+    def test_create_personal_mapping_file(self): 
+        """Test creating a personalized mapping file (adding a new column)."""
+        obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2)
+        self.assertEqual(obs, self.personal_mapping_data)
+
+    def test_create_personal_results_invalid_input(self): 
+        """Test running workflow on invalid input (should throw errors)."""
+        pass
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
@@ -74,7 +70,6 @@ class UtilTests(TestCase):
         Taken from QIIME's (https://github.com/qiime/qiime)
         tests.test_util.test_get_qiime_project_dir.
         """
-        
         # Do an explicit check on whether the file system containing
         # the current file is case insensitive. This is in response
         # to SF bug #2945548, where this test would fail on certain
@@ -134,32 +129,41 @@ class UtilTests(TestCase):
                 [5.0, 7.0, 13.0, 15.0]])
 
         obs = _collect_alpha_diversity_boxplot_data(self.rarefaction_lines,
-                self.metadata_map, 10, 'BodySite', 'Self')
+                self.personal_metadata_map, 10, 'BodySite', 'Self')
         self.assertFloatEqual(obs, exp)
 
     def test_collect_alpha_diversity_boxplot_data_invalid_depth(self):
         """Tests throws error on invalid rarefaction depth."""
         self.assertRaises(ValueError, _collect_alpha_diversity_boxplot_data,
-                self.rarefaction_lines, self.metadata_map, 42, 'BodySite',
-                'Self')
+                self.rarefaction_lines, self.personal_metadata_map, 42,
+                'BodySite', 'Self')
 
     def test_collect_alpha_diversity_boxplot_data_na_values(self):
         """Tests correctly ignores n/a values in rarefaction file."""
         obs = _collect_alpha_diversity_boxplot_data(
-                self.na_rarefaction_lines, self.metadata_map, 10, 'BodySite',
-                'Self')
+                self.na_rarefaction_lines, self.personal_metadata_map, 10,
+                'BodySite', 'Self')
         self.assertEqual(obs, ([], []))
 
+mapping_str = """#SampleID\tBodySite\tPersonalID\tDescription
+S1\tPalm\tNAU123\tS1
+S2\tTongue\tNAU456\tS2
+S3\tPalm\tNAU789\tS3
+S4\tPalm\tNAU123\tS4
+S5\tTongue\tNAU123\tS5
+S6\tTongue\tNAU456\tS6
+S7\tTongue\tNAU123\tS7
+S8\tPalm\tNAU789\tS8"""
 
-mapping_str = """#SampleID\tBodySite\tSelf\tPersonalID\tDescription
-S1\tPalm\tSelf\tNAU123\tS1
-S2\tTongue\tOther\tNAU456\tS2
-S3\tPalm\tOther\tNAU789\tS3
-S4\tPalm\tSelf\tNAU123\tS4
-S5\tTongue\tSelf\tNAU123\tS5
-S6\tTongue\tOther\tNAU456\tS6
-S7\tTongue\tSelf\tNAU123\tS7
-S8\tPalm\tOther\tNAU789\tS8"""
+personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tSelf\tDescription
+S1\tPalm\tNAU123\tSelf\tS1
+S2\tTongue\tNAU456\tOther\tS2
+S3\tPalm\tNAU789\tOther\tS3
+S4\tPalm\tNAU123\tSelf\tS4
+S5\tTongue\tNAU123\tSelf\tS5
+S6\tTongue\tNAU456\tOther\tS6
+S7\tTongue\tNAU123\tSelf\tS7
+S8\tPalm\tNAU789\tOther\tS8"""
 
 collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
 alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8

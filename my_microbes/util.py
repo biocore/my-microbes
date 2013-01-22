@@ -45,44 +45,38 @@ from my_microbes.format import (create_index_html,
 from my_microbes.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
+    """Returns a set of personal IDs from a mapping file."""
     return set([line[personal_id_index] for line in mapping_data])
 
-def create_personal_mapping_file(map_as_list,
-                                 header, 
-                                 comments, 
-                                 personal_id_of_interest, 
-                                 output_fp, 
-                                 personal_id_index, 
-                                 individual_titles):
-    """ creates mapping file on a per-individual basis """
-    if individual_titles == None: 
+def create_personal_mapping_file(mapping_data, personal_id_of_interest,
+                                 personal_id_index, individual_titles=None):
+    """Creates mapping file on a per-individual basis.
+
+    Inserts new column designating self versus other.
+    """
+    if individual_titles == None:
         individual_titles = ['Self', 'Other']
-    else: 
-        individual_titles = individual_titles.split(',')   
+
     personal_map = []
-    for line in map_as_list:
-        personal_map.append(line[:])
-    for i in personal_map:   
-        if i[personal_id_index] == personal_id_of_interest: 
-            i.append(individual_titles[0])
-        else: 
-            i.append(individual_titles[1])
-    personal_mapping_file = format_mapping_file(header, personal_map, comments) 
-    output_f = open(output_fp,'w')
-    output_f.write(personal_mapping_file)
-    output_f.close()
+    for line in mapping_data:
+        if line[personal_id_index] == personal_id_of_interest:
+            individual_title = individual_titles[0]
+        else:
+            individual_title = individual_titles[1]
+        personal_map.append(line[:-1] + [individual_title] + [line[-1]])
+
     return personal_map
-    
-def create_personal_results(mapping_fp, 
-                            coord_fp, 
-                            collated_dir_fp, 
+
+def create_personal_results(mapping_fp,
+                            coord_fp,
+                            collated_dir_fp,
                             output_fp,
-                            prefs_fp, 
+                            prefs_fp,
                             personal_id_field,
                             otu_table,
-                            parameter_fp, 
-                            personal_ids=None, 
-                            column_title='Self', 
+                            parameter_fp,
+                            personal_ids=None,
+                            column_title='Self',
                             individual_titles=None,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
@@ -104,21 +98,22 @@ def create_personal_results(mapping_fp,
 
     logger = WorkflowLogger(generate_log_fp(output_fp))
 
-    map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
+    mapping_data, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
         personal_id_index = header.index(personal_id_field)
     except ValueError:
         raise ValueError("personal id field (%s) is not a mapping file column "
                          "header" % personal_id_field)
-    header.append(column_title)
 
+    header = header[:-1] + [column_title] + header[-1]
+
+    all_personal_ids = get_personal_ids(mapping_data, personal_id_index)
     if personal_ids == None: 
-        personal_ids  = get_personal_ids(map_as_list, personal_id_index)
+        personal_ids = all_personal_ids
     else:
-        for id in personal_ids.split(','):
-            if id not in get_personal_ids(map_as_list, personal_id_index):
+        for id in personal_ids:
+            if id not in all_personal_ids:
                 raise ValueError("%s is not an id in the mapping file." % id)
-        personal_ids = personal_ids.split(',')
 
     otu_table_title = splitext(basename(otu_table))
 
@@ -132,13 +127,13 @@ def create_personal_results(mapping_fp,
                                         'mapping_file.txt')
         html_fp = join(output_fp, person_of_interest, 'index.html')
 
-        personal_map = create_personal_mapping_file(map_as_list,
-                                                    header,
-                                                    comments,
-                                                    person_of_interest,
-                                                    personal_mapping_file_fp,
-                                                    personal_id_index,
-                                                    individual_titles)
+        personal_mapping_data = create_personal_mapping_file(mapping_data,
+                person_of_interest, personal_id_index, individual_titles)
+
+        personal_mapping_f = open(personal_mapping_file_fp, 'w')
+        personal_mapping_f.write(
+                format_mapping_file(header, personal_mapping_data, comments))
+        personal_mapping_f.close()
         raw_data_files.append(personal_mapping_file_fp)
 
         column_title_index = header.index(column_title)
