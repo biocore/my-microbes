@@ -13,8 +13,10 @@ __email__ = "jai.rideout@gmail.com"
 
 from unittest import main, TestCase
 
-from my_microbes.format import format_participant_table, create_alpha_diversity_boxplots_html
-
+from my_microbes.format import (format_participant_table,
+                               create_alpha_diversity_boxplots_html,
+                               create_otu_category_significance_html, 
+                               format_otu_category_significance_tables_as_html) 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
 
@@ -60,7 +62,20 @@ class FormatTests(TestCase):
         input = ('pd.txt', 'chao.txt')
         exp = expected_alpha_diversity_boxplots
         self.assertEqual(create_alpha_diversity_boxplots_html(input), exp)
-
+    
+    def test_create_otu_category_significance_html(self): 
+        """Test create_otu_category_significance"""
+        input = ('otu_cat_sig_gut.txt', 'otu_cat_sig_palm.txt')
+        exp = otu_category_significance_text
+        self.assertEqual(create_otu_category_significance_html(input), exp)
+    
+    def test_format_otu_category_significance_tables_as_html(self): 
+        """test that a value error is raised if number not between 0 and 1 is passed"""
+#         exp = format_otu_category_significance_tables_as_html(otu_category_significance_text, 
+#                                                               10,
+#                                                               'output_dir')
+        self.assertRaises(ValueError, format_otu_category_significance_tables_as_html, otu_category_significance_text, 
+                          10, 'output_dir')
 
 expected_alpha_diversity_boxplots = """
 <h2>Alpha Diversity Boxplots</h2>
@@ -74,6 +89,18 @@ more details about alpha diversity, please refer to the
 <h3>Click on the following links to see your alpha diversity boxplots:</h3>
 <ul>
   <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>
+</ul>
+"""
+
+otu_category_significance_text = """
+<h2>Differences in OTU Abundances</h2>
+Here we present OTUs that seemed to differ in their relative abundances when
+comparing you to all other individuals in the study.
+
+<h3>Click on the following links to see what OTU abundances differed by body
+site:</h3>
+<ul>
+  <li><a href="otu_cat_sig_gut.txt">Gut</a></li><li><a href="otu_cat_sig_palm.txt">Palm</a></li>
 </ul>
 """
 
