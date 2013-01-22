@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
+    "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -125,6 +126,9 @@ script_info['optional_options'] = [
         'will be split on. The first is "column_title" '
         'a new otu table will be created for each value ' 
         'in each category [default: %default].'),
+    make_option('--site_id_category', type='string', default='SiteID',
+        help='Header in mapping_fp describing the identifier that differentiate'
+        's between body-sites within a single individual [default: %default]'),
     make_option('--time_series_category',
         default="WeeksSinceStart", type='string',
         help='Header in mapping_fp describing the timeseries column '
@@ -182,6 +186,7 @@ def main():
     individual_titles = opts.individual_titles
     otu_table = opts.otu_table
     category_to_split = opts.category_to_split
+    site_id_category = opts.site_id_category
     time_series_category = opts.time_series_category
     parameter_fp = opts.parameter_fp
     
@@ -214,6 +219,7 @@ def main():
                             column_title,
                             individual_titles,
                             category_to_split,
+                            site_id_category,
                             time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
                             alpha=opts.alpha,
