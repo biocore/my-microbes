@@ -12,14 +12,20 @@ __email__ = "jc33@nau.edu"
 """Test suite for the util.py module."""
 
 import sys
-from os.path import abspath, dirname, exists
+from os import chdir, getcwd
+from os.path import abspath, dirname, exists, join
+from shutil import rmtree
 from StringIO import StringIO
+from tempfile import mkdtemp
+
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
-from qiime.util import MetadataMap
+from qiime.util import create_dir, get_qiime_temp_dir, MetadataMap
 
 from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               create_personal_mapping_file,
+                              create_personal_results,
                               get_personal_ids,
                               get_project_dir,
                               notify_participants)
@@ -29,10 +35,41 @@ class UtilTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        # The prefix to use for temporary files. This prefix may be added to,
+        # but all temp dirs and files created by the tests will have this
+        # prefix at a minimum.
+        self.prefix = 'my_microbes_tests_'
+
+        self.start_dir = getcwd()
+        self.dirs_to_remove = []
+        self.files_to_remove = []
+
+        self.tmp_dir = get_qiime_temp_dir()
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
+            # If test creates the temp dir, also remove it.
+            self.dirs_to_remove.append(self.tmp_dir)
+
+        # Set up temporary input and output directories.
+        self.input_dir = mkdtemp(dir=self.tmp_dir,
+                                  prefix='%sinput_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.input_dir)
+
+        self.output_dir = mkdtemp(dir=self.tmp_dir,
+                                  prefix='%soutput_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.output_dir)
+
+        # Data that will be used by the tests.
         self.metadata_map = MetadataMap.parseMetadataMap(
                 mapping_str.split('\n'))
         self.mapping_data, self.mapping_header = parse_mapping_file(
                 mapping_str.split('\n'))[:2]
+
+        self.mapping_fp = join(self.input_dir, 'map.txt')
+        mapping_f = open(self.mapping_fp, 'w')
+        mapping_f.write(mapping_str)
+        mapping_f.close()
+        self.files_to_remove.append(self.mapping_fp)
 
         self.personal_metadata_map = MetadataMap.parseMetadataMap(
                 personal_mapping_str.split('\n'))
@@ -42,12 +79,50 @@ class UtilTests(TestCase):
         self.rarefaction_lines = collated_alpha_div_str.split('\n')
         self.na_rarefaction_lines = collated_alpha_div_na_str.split('\n')
 
+        self.rarefaction_dir = join(self.input_dir, 'collated_adiv')
+        create_dir(self.rarefaction_dir)
+        self.rarefaction_fp = join(self.rarefaction_dir, 'PD_whole_tree.txt')
+        rarefaction_f = open(self.rarefaction_fp, 'w')
+        rarefaction_f.write(collated_alpha_div_str)
+        rarefaction_f.close()
+        self.files_to_remove.append(self.rarefaction_fp)
+
+        self.coord_fp = join(self.input_dir, 'coord.txt')
+        coord_f = open(self.coord_fp, 'w')
+        coord_f.write(coord_str)
+        coord_f.close()
+        self.files_to_remove.append(self.coord_fp)
+
+        self.otu_table_fp = join(self.input_dir, 'otu_table.biom')
+        otu_table_f = open(self.otu_table_fp, 'w')
+        otu_table_f.write(otu_table_str)
+        otu_table_f.close()
+        self.files_to_remove.append(self.otu_table_fp)
+
+        self.prefs_fp = join(self.input_dir, 'prefs.txt')
+        prefs_f = open(self.prefs_fp, 'w')
+        prefs_f.write(prefs_str)
+        prefs_f.close()
+        self.files_to_remove.append(self.prefs_fp)
+
         self.recipients = ["# a comment", " ", " foo1\tfoo1@bar.baz  ",
                             "foo2\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
 
         self.email_settings = ["# A comment", "# Another comment",
                 "smtp_server\tsome.smtp.server", "smtp_port\t42",
                 "sender\tfrom@foobarbaz.com", "password\t424242!"]
+
+    def tearDown(self):
+        """Remove temporary files/dirs created by tests."""
+        # Change back to the start dir - some workflows change directory.
+        chdir(self.start_dir)
+
+        remove_files(self.files_to_remove)
+        # Remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories.
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
     def test_get_personal_ids(self): 
         """Test extracting a set of personal IDs."""
@@ -62,7 +137,10 @@ class UtilTests(TestCase):
 
     def test_create_personal_results_invalid_input(self): 
         """Test running workflow on invalid input (should throw errors)."""
-        pass
+        # Invalid personal ID column name.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'foo')
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
@@ -172,6 +250,20 @@ alpha_rarefaction_10_1.biom\t10\t1\t9\t10\t11\t12\t13\t14\t15\t16"""
 collated_alpha_div_na_str = """\tsequences per sample\titeration\tS1\tS2\tS3
 alpha_rarefaction_10_0.biom\t10\t0\tn/a\tn/a\tn/a
 alpha_rarefaction_10_1.biom\t10\t1\tn/a\tn/a\tn/a"""
+
+coord_str = """pc vector number\t1\t2
+S1\t1\t2
+S2\t1\t2
+S3\t1\t2
+S4\t1\t2
+S5\t1\t2
+S6\t1\t2
+S7\t1\t2
+S8\t1\t2"""
+
+otu_table_str = """foobarbaz"""
+
+prefs_str = """foobarbaz"""
 
 exp_dry_run_output = """Running script in dry-run mode. No emails will be sent. Here's what I would have done:
 
