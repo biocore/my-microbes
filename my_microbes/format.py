@@ -386,8 +386,9 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                         tax_name = tax_level.split('__',1)[1]
                         if len(tax_name) == 0:
                             # if there is no taxa name (e.g., tax_level == "s__")
-                            # don't print anything
-                            continue
+                            # don't print anything for this level or any levels
+                            # below it (which all should have no name anyway)
+                            break
                         else:
                             taxa_links.append(
                                     '<a href="javascript:gg(\'%s\');">%s</a>' %
