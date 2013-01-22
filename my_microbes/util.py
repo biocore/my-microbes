@@ -45,50 +45,37 @@ from my_microbes.format import (create_index_html,
 from my_microbes.parse import parse_email_settings, parse_recipients
 
 def get_personal_ids(mapping_data, personal_id_index):
-    result = []
-    for i in mapping_data:
-        if i[personal_id_index] not in result: 
-            result.append(i[personal_id_index]) 
-        else: 
-            pass
-    return result
-    
-def create_personal_mapping_file(map_as_list,
-                                 header, 
-                                 comments, 
-                                 personal_id_of_interest, 
-                                 output_fp, 
-                                 personal_id_index, 
-                                 individual_titles):
-    """ creates mapping file on a per-individual basis """
-    if individual_titles == None: 
+    """Returns a set of personal IDs from a mapping file."""
+    return set([line[personal_id_index] for line in mapping_data])
+
+def create_personal_mapping_file(mapping_data, personal_id_of_interest,
+                                 personal_id_index, individual_titles=None):
+    """Creates mapping file on a per-individual basis.
+
+    Inserts new column designating self versus other.
+    """
+    if individual_titles == None:
         individual_titles = ['Self', 'Other']
-    else: 
-        individual_titles = individual_titles.split(',')   
+
     personal_map = []
-    for line in map_as_list:
-        personal_map.append(line[:])
-    for i in personal_map:   
-        if i[personal_id_index] == personal_id_of_interest: 
-            i.append(individual_titles[0])
-        else: 
-            i.append(individual_titles[1])
-    personal_mapping_file = format_mapping_file(header, personal_map, comments) 
-    output_f = open(output_fp,'w')
-    output_f.write(personal_mapping_file)
-    output_f.close()
+    for line in mapping_data:
+        if line[personal_id_index] == personal_id_of_interest:
+            individual_title = individual_titles[0]
+        else:
+            individual_title = individual_titles[1]
+        personal_map.append(line[:-1] + [individual_title] + [line[-1]])
+
     return personal_map
-    
-def create_personal_results(mapping_fp, 
-                            coord_fp, 
-                            collated_dir_fp, 
-                            output_fp,
-                            prefs_fp, 
-                            personal_id_field,
-                            otu_table,
-                            parameter_fp, 
-                            personal_ids=None, 
-                            column_title='Self', 
+
+def create_personal_results(output_dir,
+                            mapping_fp,
+                            coord_fp,
+                            collated_dir,
+                            otu_table_fp,
+                            prefs_fp,
+                            personal_id_column,
+                            personal_ids=None,
+                            column_title='Self',
                             individual_titles=None,
                             category_to_split='BodySite',
                             time_series_category='WeeksSinceStart',
@@ -104,70 +91,76 @@ def create_personal_results(mapping_fp,
                             status_update_callback=no_status_updates):
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
-    create_dir(output_fp, fail_on_exist=True)
-    copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
-             join(output_fp, 'support_files'))
+    create_dir(output_dir)
 
-    logger = WorkflowLogger(generate_log_fp(output_fp))
+    support_files_dir = join(output_dir, 'support_files')
+    if not exists(support_files_dir):
+        copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
+                 support_files_dir)
 
-    map_as_list, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
+    logger = WorkflowLogger(generate_log_fp(output_dir))
+
+    mapping_data, header, comments = parse_mapping_file(open(mapping_fp, 'U'))
     try:
-        personal_id_index = header.index(personal_id_field)
+        personal_id_index = header.index(personal_id_column)
     except ValueError:
-        raise ValueError("personal id field (%s) is not a mapping file column "
-                         "header" % personal_id_field)
-    header.append(column_title)
+        raise ValueError("Personal ID field '%s' is not a mapping file column "
+                         "header." % personal_id_column)
 
+    header = header[:-1] + [column_title] + [header[-1]]
+
+    all_personal_ids = get_personal_ids(mapping_data, personal_id_index)
     if personal_ids == None: 
-        personal_ids  = get_personal_ids(map_as_list, personal_id_index)
+        personal_ids = all_personal_ids
     else:
-        for id in personal_ids.split(','):
-            if id not in get_personal_ids(map_as_list, personal_id_index):
-                raise ValueError("%s is not an id in the mapping file." % id)
-        personal_ids = personal_ids.split(',')
+        for pid in personal_ids:
+            if pid not in all_personal_ids:
+                raise ValueError("'%s' is not a personal ID in the mapping "
+                                 "file column '%s'." %
+                                 (pid, personal_id_column))
 
-    otu_table_title = splitext(basename(otu_table))
+    otu_table_title = splitext(basename(otu_table_fp))
 
     output_directories = []
     raw_data_files = []
     raw_data_dirs = []
     for person_of_interest in personal_ids:
-        create_dir(join(output_fp, person_of_interest), fail_on_exist=True)
+        create_dir(join(output_dir, person_of_interest))
 
-        personal_mapping_file_fp = join(output_fp, person_of_interest,
+        personal_mapping_file_fp = join(output_dir, person_of_interest,
                                         'mapping_file.txt')
-        html_fp = join(output_fp, person_of_interest, 'index.html')
+        html_fp = join(output_dir, person_of_interest, 'index.html')
 
-        personal_map = create_personal_mapping_file(map_as_list,
-                                                    header,
-                                                    comments,
-                                                    person_of_interest,
-                                                    personal_mapping_file_fp,
-                                                    personal_id_index,
-                                                    individual_titles)
+        personal_mapping_data = create_personal_mapping_file(mapping_data,
+                person_of_interest, personal_id_index, individual_titles)
+
+        personal_mapping_f = open(personal_mapping_file_fp, 'w')
+        personal_mapping_f.write(
+                format_mapping_file(header, personal_mapping_data, comments))
+        personal_mapping_f.close()
         raw_data_files.append(personal_mapping_file_fp)
 
         column_title_index = header.index(column_title)
         column_title_values = set([e[column_title_index]
-                                   for e in personal_map])
+                                   for e in personal_mapping_data])
         cat_index = header.index(category_to_split)
-        cat_values = set([e[cat_index] for e in personal_map])
+        cat_values = set([e[cat_index] for e in personal_mapping_data])
 
         # Generate alpha diversity boxplots, split by body site, one per
         # metric. We run this one first because it completes relatively
         # quickly and it does not call any QIIME scripts.
         alpha_diversity_boxplots_html = ''
         if not suppress_alpha_diversity_boxplots:
-            adiv_boxplots_dir = join(output_fp, person_of_interest,
+            adiv_boxplots_dir = join(output_dir, person_of_interest,
                                      'adiv_boxplots')
-            create_dir(adiv_boxplots_dir, fail_on_exist=True)
+            create_dir(adiv_boxplots_dir)
             output_directories.append(adiv_boxplots_dir)
 
             logger.write("\nGenerating alpha diversity boxplots (%s)\n\n" %
                          person_of_interest)
 
             plot_filenames = _generate_alpha_diversity_boxplots(
-                    collated_dir_fp, personal_mapping_file_fp,
+                    collated_dir, personal_mapping_file_fp,
                     category_to_split, column_title, rarefaction_depth,
                     adiv_boxplots_dir)
 
@@ -181,14 +174,14 @@ def create_personal_results(mapping_fp,
 
         ## Alpha rarefaction steps
         if not suppress_alpha_rarefaction:
-            rarefaction_dir = join(output_fp, person_of_interest,
+            rarefaction_dir = join(output_dir, person_of_interest,
                                    'alpha_rarefaction')
             output_directories.append(rarefaction_dir)
 
             commands = []
             cmd_title = 'Creating rarefaction plots (%s)' % person_of_interest
             cmd = 'make_rarefaction_plots.py -i %s -m %s -p %s -o %s' % (
-                    collated_dir_fp, personal_mapping_file_fp, prefs_fp,
+                    collated_dir, personal_mapping_file_fp, prefs_fp,
                     rarefaction_dir)
             commands.append([(cmd_title, cmd)])
 
@@ -200,7 +193,7 @@ def create_personal_results(mapping_fp,
 
         ## Beta diversity steps
         if not suppress_beta_diversity:
-            pcoa_dir = join(output_fp, person_of_interest, 'beta_diversity')
+            pcoa_dir = join(output_dir, person_of_interest, 'beta_diversity')
             output_directories.append(pcoa_dir)
 
             commands = []
@@ -215,15 +208,15 @@ def create_personal_results(mapping_fp,
 
         ## Time series taxa summary plots steps
         if not suppress_taxa_summary_plots:
-            area_plots_dir = join(output_fp, person_of_interest, 'time_series')
-            create_dir(area_plots_dir, fail_on_exist=True)
+            area_plots_dir = join(output_dir, person_of_interest, 'time_series')
+            create_dir(area_plots_dir)
             output_directories.append(area_plots_dir)
 
             ## Split OTU table into self/other per-body-site tables
             commands = []
             cmd_title = 'Splitting OTU table into self/other (%s)' % \
                         person_of_interest
-            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table,
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table_fp,
                     personal_mapping_file_fp, column_title, area_plots_dir)
             commands.append([(cmd_title, cmd)])
 
@@ -232,7 +225,7 @@ def create_personal_results(mapping_fp,
 
             for column_title_value in column_title_values:
                 biom_fp = join(area_plots_dir,
-                               add_filename_suffix(otu_table,
+                               add_filename_suffix(otu_table_fp,
                                                    '_%s' % column_title_value))
                 column_title_map_fp = join(area_plots_dir, 'mapping_%s.txt' %
                                                            column_title_value)
@@ -255,27 +248,23 @@ def create_personal_results(mapping_fp,
 
                 commands = []
                 for cat_value in cat_values:
-                    otu_table_fp = join(body_site_dir,
+                    body_site_otu_table_fp = join(body_site_dir,
                             add_filename_suffix(biom_fp, '_%s' % cat_value))
 
                     # We won't always get an OTU table if the mapping file
                     # category contains samples that aren't in the OTU table
                     # (e.g. the 'na' state for body site).
-                    if exists(otu_table_fp):
-                        # Not supporting parameter files yet
-                        #if parameter_fp == None:
-                        #    parameter_fp = ''
-                        #else:
-                        #    parameter_fp = '-p %s' %parameter_fp
-
+                    if exists(body_site_otu_table_fp):
                         plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
                             column_title_value, cat_value))
 
                         cmd_title = 'Creating taxa summary plots (%s)' % \
                                     person_of_interest
                         cmd = ('summarize_taxa_through_plots.py -i %s '
-                               '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
-                              time_series_category, personal_mapping_file_fp))
+                               '-o %s -c %s -m %s -s' %
+                               (body_site_otu_table_fp, plots,
+                                time_series_category,
+                                personal_mapping_file_fp))
                         commands.append([(cmd_title, cmd)])
 
                         raw_data_files.append(join(plots, '*.biom'))
@@ -292,20 +281,20 @@ def create_personal_results(mapping_fp,
         otu_cat_sig_output_fps = []
         otu_category_significance_html = ''
         if not suppress_otu_category_significance:
-            otu_cat_sig_dir = join(output_fp, person_of_interest,
+            otu_cat_sig_dir = join(output_dir, person_of_interest,
                                    'otu_category_significance')
-            create_dir(otu_cat_sig_dir, fail_on_exist=True)
+            create_dir(otu_cat_sig_dir)
             output_directories.append(otu_cat_sig_dir)
 
             rarefied_otu_table_fp = join(otu_cat_sig_dir,
-                    add_filename_suffix(otu_table,
+                    add_filename_suffix(otu_table_fp,
                                         '_even%d' % rarefaction_depth))
 
             # Rarefy OTU table (based on otu_category_significance.py
             # recommendataion).
             commands = []
             cmd_title = 'Rarefying OTU table (%s)' % person_of_interest
-            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table,
+            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
                     rarefied_otu_table_fp, rarefaction_depth)
             commands.append([(cmd_title, cmd)])
             raw_data_files.append(rarefied_otu_table_fp)

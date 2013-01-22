@@ -88,7 +88,7 @@ script_info['required_options'] = [
         help='Input prefs filepath, this is user generated (i.e.,'
         'not currently created from any qiime function)',
         type='existing_path'),
-    make_option('-a', '--otu_table',
+    make_option('-a', '--otu_table_fp',
         help='Input otu table filepath',
         type='existing_path')
 ]
@@ -129,9 +129,6 @@ script_info['optional_options'] = [
         default="WeeksSinceStart", type='string',
         help='Header in mapping_fp describing the timeseries column '
         '[default: %default]'),
-    make_option('--parameter_fp',
-        default=None, type='string',
-        help='Path to the parameter files'),
     make_option('--alpha', default=0.05, type='float',
         help='the alpha value to use when choosing OTUs to display in the OTU '
         'category significance tables. For an OTU to be included in the '
@@ -171,26 +168,19 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    mapping_file = opts.mapping_fp
-    coord_fname = opts.coord_fname
-    collated_dir = opts.collated_dir
-    output_dir = opts.output_dir
-    prefs = opts.prefs_fp
-    personal_id_column = opts.personal_id_column
-    personal_ids = opts.personal_ids
-    column_title = opts.column_title
-    individual_titles = opts.individual_titles
-    otu_table = opts.otu_table
-    category_to_split = opts.category_to_split
-    time_series_category = opts.time_series_category
-    parameter_fp = opts.parameter_fp
-    
-    if exists(output_dir):
+
+    if exists(opts.output_dir):
         # don't overwrite existing output directory - make the user provide a
         # different name or move/delete the existing directory since it may
         # have taken a while to create.
         option_parser.error("Output directory (%s) already exists. "
-                            "Won't overwrite." % output_dir)
+                            "Won't overwrite." % opts.output_dir)
+
+    personal_ids = opts.personal_ids
+    if personal_ids is not None:
+        personal_ids = opts.personal_ids.split(',')
+
+    individual_titles = opts.individual_titles.split(',')
 
     if opts.print_only:
         command_handler = print_commands
@@ -202,19 +192,18 @@ def main():
     else:
         status_update_callback = no_status_updates
 
-    create_personal_results(mapping_file,
-                            coord_fname,
-                            collated_dir,
-                            output_dir,
-                            prefs,
-                            personal_id_column,
-                            otu_table,
-                            parameter_fp,
+    create_personal_results(opts.output_dir,
+                            opts.mapping_fp,
+                            opts.coord_fname,
+                            opts.collated_dir,
+                            opts.otu_table_fp,
+                            opts.prefs_fp,
+                            opts.personal_id_column,
                             personal_ids,
-                            column_title,
+                            opts.column_title,
                             individual_titles,
-                            category_to_split,
-                            time_series_category,
+                            opts.category_to_split,
+                            opts.time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
                             alpha=opts.alpha,
                             retain_raw_data=opts.retain_raw_data,
