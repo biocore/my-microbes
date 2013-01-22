@@ -107,13 +107,13 @@ index_text = """
         <br/><br/>
         Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
         <br/><br/>
-        The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in a lighter shade of the same colors.
+        The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in lighter shades of the same colors.
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
           <li>Which is more similar: microbial communities from the same body site but from different individuals, or microbial communities from different body sites but from the same individual?</li>
           <li>Do your microbial communities look typical of each body site, or are they outliers?</li>
-          <li>Which body sites exhibit the most variability in composition across individuals?</li> 
+          <li>Which body sites exhibit the most variability across individuals?</li> 
         </ol>
         While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 
@@ -179,7 +179,7 @@ index_text = """
               </td>
             </tr>
           </table>
-          &copy; Copyright 2013, QIIME Team.
+          &copy; Copyright 2013, The QIIME Team.
         </center>
       </div>
     </div>
@@ -313,12 +313,14 @@ def create_alpha_diversity_boxplots_html(plot_fps):
 
 alpha_diversity_boxplots_text = """
 <h2>Alpha Diversity Boxplots</h2>
-Here we present a series of comparative boxplots showing the
-distributions of your alpha diversity (<i>Self</i>) versus all other
-individuals' alpha diversity (<i>Other</i>) for each body site.
-Separate boxplots are provided for each alpha diversity metric. For
-more details about alpha diversity, please refer to the
-<b>Alpha Rarefaction</b> tab.
+Here we present a series of comparative boxplots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in a reference phylogenetic tree that is observed in a sample. PD is a phylogenetic measure of richness, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.
+<br/><br/>
+You should be able to answer several questions about your microbial communities from these plots:
+<ol>
+  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
+  <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>
+</ol>
+
 
 <h3>Click on the following links to see your alpha diversity boxplots:</h3>
 <ul>
@@ -338,8 +340,9 @@ def create_otu_category_significance_html(table_fps):
 
 otu_category_significance_text = """
 <h2>Differences in OTU Abundances</h2>
-Here we present OTUs that seemed to differ in their relative abundances when
-comparing you to all other individuals in the study.
+Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97\% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs. 
+<br/><br/>
+Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
 <h3>Click on the following links to see what OTU abundances differed by body
 site:</h3>
@@ -413,9 +416,9 @@ otu_category_significance_table_text = """
 
 <body>
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
-    <h2>OTUs that differed in relative abundance in %s samples (comparing self
+    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to learn more about it!
+    Click on the taxonomy links for each OTU to do a google search for that taxonomic group.
     <br/><br/>
 
     <table class="data-table">
