@@ -179,16 +179,13 @@ def create_personal_results(mapping_fp,
             alpha_diversity_boxplots_html = \
                     create_alpha_diversity_boxplots_html(plot_fps)
 
-        # Start of the actual "workflow" (in that QIIME scripts are actually
-        # being called).
-        commands = []
-
         ## Alpha rarefaction steps
         if not suppress_alpha_rarefaction:
             rarefaction_dir = join(output_fp, person_of_interest,
                                    'alpha_rarefaction')
             output_directories.append(rarefaction_dir)
 
+            commands = []
             cmd_title = 'Creating rarefaction plots (%s)' % person_of_interest
             cmd = 'make_rarefaction_plots.py -i %s -m %s -p %s -o %s' % (
                     collated_dir_fp, personal_mapping_file_fp, prefs_fp,
@@ -198,16 +195,23 @@ def create_personal_results(mapping_fp,
             raw_data_dirs.append(join(rarefaction_dir, 'average_plots'))
             raw_data_dirs.append(join(rarefaction_dir, 'average_tables'))
 
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
+
         ## Beta diversity steps
         if not suppress_beta_diversity:
             pcoa_dir = join(output_fp, person_of_interest, 'beta_diversity')
             output_directories.append(pcoa_dir)
 
+            commands = []
             cmd_title = 'Creating beta diversity plots (%s)' % \
                         person_of_interest
             cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
                     personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir)
             commands.append([(cmd_title, cmd)])
+
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
 
         ## Time series taxa summary plots steps
         if not suppress_taxa_summary_plots:
@@ -216,11 +220,15 @@ def create_personal_results(mapping_fp,
             output_directories.append(area_plots_dir)
 
             ## Split OTU table into self/other per-body-site tables
+            commands = []
             cmd_title = 'Splitting OTU table into self/other (%s)' % \
                         person_of_interest
             cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table,
                     personal_mapping_file_fp, column_title, area_plots_dir)
             commands.append([(cmd_title, cmd)])
+
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
 
             for column_title_value in column_title_values:
                 biom_fp = join(area_plots_dir,
@@ -233,6 +241,7 @@ def create_personal_results(mapping_fp,
 
                 body_site_dir = join(area_plots_dir, column_title_value)
 
+                commands = []
                 cmd_title = 'Splitting "%s" OTU table by body site (%s)' % \
                             (column_title_value, person_of_interest)
                 cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (biom_fp,
@@ -241,32 +250,43 @@ def create_personal_results(mapping_fp,
                 commands.append([(cmd_title, cmd)])
                 raw_data_dirs.append(body_site_dir)
 
+                command_handler(commands, status_update_callback, logger,
+                                close_logger_on_success=False)
+
+                commands = []
                 for cat_value in cat_values:
                     otu_table_fp = join(body_site_dir,
                             add_filename_suffix(biom_fp, '_%s' % cat_value))
 
-                    # Not supporting parameter files yet
-                    #if parameter_fp == None:
-                    #    parameter_fp = ''
-                    #else:
-                    #    parameter_fp = '-p %s' %parameter_fp
+                    # We won't always get an OTU table if the mapping file
+                    # category contains samples that aren't in the OTU table
+                    # (e.g. the 'na' state for body site).
+                    if exists(otu_table_fp):
+                        # Not supporting parameter files yet
+                        #if parameter_fp == None:
+                        #    parameter_fp = ''
+                        #else:
+                        #    parameter_fp = '-p %s' %parameter_fp
 
-                    plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
-                        column_title_value, cat_value))
+                        plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
+                            column_title_value, cat_value))
 
-                    cmd_title = 'Creating taxa summary plots (%s)' % \
-                                person_of_interest
-                    cmd = ('summarize_taxa_through_plots.py -i %s '
-                           '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
-                          time_series_category, personal_mapping_file_fp))
-                    commands.append([(cmd_title, cmd)])
+                        cmd_title = 'Creating taxa summary plots (%s)' % \
+                                    person_of_interest
+                        cmd = ('summarize_taxa_through_plots.py -i %s '
+                               '-o %s -c %s -m %s -s' % (otu_table_fp, plots,
+                              time_series_category, personal_mapping_file_fp))
+                        commands.append([(cmd_title, cmd)])
 
-                    raw_data_files.append(join(plots, '*.biom'))
-                    raw_data_files.append(join(plots, '*.txt'))
+                        raw_data_files.append(join(plots, '*.biom'))
+                        raw_data_files.append(join(plots, '*.txt'))
 
-                    create_comparative_taxa_plots_html(cat_value, 
-                            join(area_plots_dir, '%s_comparative.html' %
-                                                 cat_value))
+                        create_comparative_taxa_plots_html(cat_value, 
+                                join(area_plots_dir, '%s_comparative.html' %
+                                                     cat_value))
+
+                command_handler(commands, status_update_callback, logger,
+                                close_logger_on_success=False)
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
@@ -282,6 +302,7 @@ def create_personal_results(mapping_fp,
 
             # Rarefy OTU table (based on otu_category_significance.py
             # recommendataion).
+            commands = []
             cmd_title = 'Rarefying OTU table (%s)' % person_of_interest
             cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table,
                     rarefied_otu_table_fp, rarefaction_depth)
@@ -298,36 +319,38 @@ def create_personal_results(mapping_fp,
             commands.append([(cmd_title, cmd)])
             raw_data_dirs.append(body_site_dir)
 
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
+
             # For each body-site OTU table, run otu_category_significance.py
             # using self versus other category. Keep track of each output file
             # that is created because we need to parse these later on.
+            commands = []
             for cat_value in cat_values:
                 body_site_otu_table_fp = join(body_site_dir,
                         add_filename_suffix(rarefied_otu_table_fp,
                                             '_%s' % cat_value))
-                body_site_map_fp = join(body_site_dir,
-                                           'mapping_%s.txt' % cat_value)
+                if exists(body_site_otu_table_fp):
+                    body_site_map_fp = join(body_site_dir,
+                                            'mapping_%s.txt' % cat_value)
 
-                otu_cat_output_fp = join(otu_cat_sig_dir,
-                                         'otu_cat_sig_%s.txt' % cat_value)
-                otu_cat_sig_output_fps.append(otu_cat_output_fp)
+                    otu_cat_output_fp = join(otu_cat_sig_dir,
+                                             'otu_cat_sig_%s.txt' % cat_value)
+                    otu_cat_sig_output_fps.append(otu_cat_output_fp)
 
-                cmd_title = 'Testing for significant differences in OTU ' + \
-                            'abundances in "%s" body site (%s)' % (
-                            cat_value, person_of_interest)
-                cmd = ('otu_category_significance.py -i %s -m %s -c %s -o %s'
-                       % (body_site_otu_table_fp, body_site_map_fp,
-                          column_title, otu_cat_output_fp))
-                commands.append([(cmd_title, cmd)])
-                raw_data_files.append(otu_cat_output_fp)
+                    cmd_title = 'Testing for significant differences in ' + \
+                                'OTU abundances in "%s" body site (%s)' % (
+                                cat_value, person_of_interest)
+                    cmd = ('otu_category_significance.py -i %s -m %s -c %s -o %s'
+                           % (body_site_otu_table_fp, body_site_map_fp,
+                              column_title, otu_cat_output_fp))
+                    commands.append([(cmd_title, cmd)])
+                    raw_data_files.append(otu_cat_output_fp)
 
-        # We have all of our commands, so execute them.
-        command_handler(commands, status_update_callback, logger,
-                        close_logger_on_success=False)
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
 
-        # Now that we have our output files created, we can do post-processing
-        # stuff, like parsing/reformatting otu category significance tables.
-        if not suppress_otu_category_significance:
+            # Reformat otu category significance tables.
             otu_cat_sig_html_filenames = \
                     format_otu_category_significance_tables_as_html(
                             otu_cat_sig_output_fps, alpha, otu_cat_sig_dir)
