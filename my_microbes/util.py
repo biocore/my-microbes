@@ -22,6 +22,7 @@ from os.path import (abspath, basename, dirname, exists, join, normpath,
                      splitext)
 from shutil import copytree, rmtree
 from smtplib import SMTP
+from copy import deepcopy
 
 from cogent.util.misc import remove_files
 
@@ -60,8 +61,13 @@ def create_personal_mapping_file(map_as_list,
                                  personal_id_of_interest, 
                                  output_fp, 
                                  personal_id_index, 
-                                 individual_titles):
+                                 individual_titles,
+                                 site_id):
     """ creates mapping file on a per-individual basis """
+
+    header.append(site_id)
+    site_id_indices = [header.index(column) for column in site_id.split('&&')]
+
     if individual_titles == None: 
         individual_titles = ['Self', 'Other']
     else: 
@@ -74,7 +80,9 @@ def create_personal_mapping_file(map_as_list,
             i.append(individual_titles[0])
         else: 
             i.append(individual_titles[1])
-    personal_mapping_file = format_mapping_file(header, personal_map, comments) 
+        # create the site id value, by joining the list of selected columns
+        i.append('.'.join([i[index] for index in site_id_indices]))
+    personal_mapping_file = format_mapping_file(header, personal_map,comments)
     output_f = open(output_fp,'w')
     output_f.write(personal_mapping_file)
     output_f.close()
@@ -92,7 +100,6 @@ def create_personal_results(mapping_fp,
                             column_title='Self', 
                             individual_titles=None,
                             category_to_split='BodySite',
-                            site_id_category='SiteID',
                             time_series_category='WeeksSinceStart',
                             rarefaction_depth=10000,
                             alpha=0.05,
@@ -120,6 +127,11 @@ def create_personal_results(mapping_fp,
                          "header" % personal_id_field)
     header.append(column_title)
 
+    # column that differentiates between body-sites within a single individual
+    # used for the creation of the vectors in make_3d_plots.py, this data is
+    # created by concatenating the two columns when writing the mapping file
+    site_id_category = '%s&&%s' % (personal_id_field, category_to_split)
+
     if personal_ids == None: 
         personal_ids  = get_personal_ids(map_as_list, personal_id_index)
     else:
@@ -140,13 +152,16 @@ def create_personal_results(mapping_fp,
                                         'mapping_file.txt')
         html_fp = join(output_fp, person_of_interest, 'index.html')
 
+
+        # do not modify the input list of headers, since this is used later on
         personal_map = create_personal_mapping_file(map_as_list,
-                                                    header,
+                                                    deepcopy(header),
                                                     comments,
                                                     person_of_interest,
                                                     personal_mapping_file_fp,
                                                     personal_id_index,
-                                                    individual_titles)
+                                                    individual_titles,
+                                                    site_id_category)
         raw_data_files.append(personal_mapping_file_fp)
 
         column_title_index = header.index(column_title)
