@@ -92,8 +92,11 @@ def create_personal_results(output_dir,
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
     create_dir(output_dir)
-    copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
-             join(output_dir, 'support_files'))
+
+    support_files_dir = join(output_dir, 'support_files')
+    if not exists(support_files_dir):
+        copytree(join(get_project_dir(), 'my_microbes', 'support_files'),
+                 support_files_dir)
 
     logger = WorkflowLogger(generate_log_fp(output_dir))
 
@@ -112,7 +115,9 @@ def create_personal_results(output_dir,
     else:
         for pid in personal_ids:
             if pid not in all_personal_ids:
-                raise ValueError("%s is not an ID in the mapping file." % pid)
+                raise ValueError("'%s' is not a personal ID in the mapping "
+                                 "file column '%s'." %
+                                 (pid, personal_id_column))
 
     otu_table_title = splitext(basename(otu_table_fp))
 
@@ -120,7 +125,7 @@ def create_personal_results(output_dir,
     raw_data_files = []
     raw_data_dirs = []
     for person_of_interest in personal_ids:
-        create_dir(join(output_dir, person_of_interest), fail_on_exist=True)
+        create_dir(join(output_dir, person_of_interest))
 
         personal_mapping_file_fp = join(output_dir, person_of_interest,
                                         'mapping_file.txt')
@@ -148,7 +153,7 @@ def create_personal_results(output_dir,
         if not suppress_alpha_diversity_boxplots:
             adiv_boxplots_dir = join(output_dir, person_of_interest,
                                      'adiv_boxplots')
-            create_dir(adiv_boxplots_dir, fail_on_exist=True)
+            create_dir(adiv_boxplots_dir)
             output_directories.append(adiv_boxplots_dir)
 
             logger.write("\nGenerating alpha diversity boxplots (%s)\n\n" %
@@ -204,7 +209,7 @@ def create_personal_results(output_dir,
         ## Time series taxa summary plots steps
         if not suppress_taxa_summary_plots:
             area_plots_dir = join(output_dir, person_of_interest, 'time_series')
-            create_dir(area_plots_dir, fail_on_exist=True)
+            create_dir(area_plots_dir)
             output_directories.append(area_plots_dir)
 
             ## Split OTU table into self/other per-body-site tables
@@ -278,7 +283,7 @@ def create_personal_results(output_dir,
         if not suppress_otu_category_significance:
             otu_cat_sig_dir = join(output_dir, person_of_interest,
                                    'otu_category_significance')
-            create_dir(otu_cat_sig_dir, fail_on_exist=True)
+            create_dir(otu_cat_sig_dir)
             output_directories.append(otu_cat_sig_dir)
 
             rarefied_otu_table_fp = join(otu_cat_sig_dir,

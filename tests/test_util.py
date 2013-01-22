@@ -142,6 +142,12 @@ class UtilTests(TestCase):
                 self.mapping_fp, self.coord_fp, self.rarefaction_dir,
                 self.otu_table_fp, self.prefs_fp, 'foo')
 
+        # Invalid personal IDs.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'PersonalID',
+                personal_ids=['foo', 'bar'])
+
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
         
