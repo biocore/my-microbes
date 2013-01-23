@@ -305,9 +305,9 @@ def create_alpha_diversity_boxplots_html(plot_fps):
     plot_links_text = ''
 
     for plot_fp in plot_fps:
-        adiv_metric = splitext(basename(plot_fp))[0]
+        adiv_metric_title = format_title(splitext(basename(plot_fp))[0])
         plot_links_text += '<li><a href="%s">%s</a></li>' % (plot_fp,
-                                                             adiv_metric)
+                                                             adiv_metric_title)
 
     return alpha_diversity_boxplots_text % plot_links_text
 
@@ -477,3 +477,7 @@ def format_participant_table(participants_f, url_prefix):
     result += '</table>\n'
 
     return result
+
+def format_title(input_str):
+    """Return title-cased string, with underscores converted to spaces."""
+    return ' '.join(map(lambda e: e[0].upper() + e[1:], input_str.split('_')))

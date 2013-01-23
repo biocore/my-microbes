@@ -20,10 +20,13 @@ from shutil import rmtree
 
 from cogent.util.misc import remove_files
 
-from my_microbes.format import (format_participant_table,
-                               create_alpha_diversity_boxplots_html,
-                               create_otu_category_significance_html, 
-                               format_otu_category_significance_tables_as_html) 
+from my_microbes.format import (
+        format_otu_category_significance_tables_as_html,
+        format_participant_table,
+        format_title,
+        create_alpha_diversity_boxplots_html,
+        create_otu_category_significance_html)
+
 class FormatTests(TestCase):
     """Tests for the format.py module."""
     
@@ -143,9 +146,16 @@ class FormatTests(TestCase):
         out_f.close()
         self.assertEqual(obs, exp_otu_cat_sig_gut)
 
+    def test_format_title(self):
+        """Tests converting string to title."""
+        self.assertEqual(format_title("observed_species"), "Observed Species")
+        self.assertEqual(format_title("PD_whole_tree"), "PD Whole Tree")
+        self.assertEqual(format_title("chao1"), "Chao1")
+        self.assertEqual(format_title("shannon"), "Shannon")
+
 
 expected_alpha_diversity_boxplots = """
-<h2>Alpha Diversity Boxplots</h2>\nHere we present a series of comparative boxplots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals\' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in a reference phylogenetic tree that is observed in a sample. PD is a phylogenetic measure of richness, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.\n<br/><br/>\nYou should be able to answer several questions about your microbial communities from these plots:\n<ol>\n  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>\n  <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>\n</ol>\n\n\n<h3>Click on the following links to see your alpha diversity boxplots:</h3>\n<ul>\n  <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>\n</ul>
+<h2>Alpha Diversity Boxplots</h2>\nHere we present a series of comparative boxplots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals\' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in a reference phylogenetic tree that is observed in a sample. PD is a phylogenetic measure of richness, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.\n<br/><br/>\nYou should be able to answer several questions about your microbial communities from these plots:\n<ol>\n  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>\n  <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>\n</ol>\n\n\n<h3>Click on the following links to see your alpha diversity boxplots:</h3>\n<ul>\n  <li><a href="pd.txt">Pd</a></li><li><a href="chao.txt">Chao</a></li>\n</ul>
 """
 
 otu_category_significance_text = """
