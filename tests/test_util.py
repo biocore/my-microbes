@@ -168,6 +168,12 @@ class UtilTests(TestCase):
                 self.otu_table_fp, self.prefs_fp, 'PersonalID',
                 personal_ids=['foo', 'bar'])
 
+        # Invalid time series category.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'PersonalID',
+                time_series_category='foo')
+
     def test_create_personal_results_suppress_all(self): 
         """Test running workflow with all output types suppressed."""
         # No output directories should be created under each personal ID
@@ -281,25 +287,25 @@ class UtilTests(TestCase):
                 'BodySite', 'Self')
         self.assertEqual(obs, ([], []))
 
-mapping_str = """#SampleID\tBodySite\tPersonalID\tDescription
-S1\tPalm\tNAU123\tS1
-S2\tTongue\tNAU456\tS2
-S3\tPalm\tNAU789\tS3
-S4\tPalm\tNAU123\tS4
-S5\tTongue\tNAU123\tS5
-S6\tTongue\tNAU456\tS6
-S7\tTongue\tNAU123\tS7
-S8\tPalm\tNAU789\tS8"""
+mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tDescription
+S1\tPalm\tNAU123\t1\tS1
+S2\tTongue\tNAU456\t2\tS2
+S3\tPalm\tNAU789\t3\tS3
+S4\tPalm\tNAU123\t4\tS4
+S5\tTongue\tNAU123\t5\tS5
+S6\tTongue\tNAU456\t6\tS6
+S7\tTongue\tNAU123\t7\tS7
+S8\tPalm\tNAU789\t8\tS8"""
 
-personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tSelf\tSiteID\tDescription
-S1\tPalm\tNAU123\tSelf\tNAU123.Palm\tS1
-S2\tTongue\tNAU456\tOther\tNAU456.Tongue\tS2
-S3\tPalm\tNAU789\tOther\tNAU789.Palm\tS3
-S4\tPalm\tNAU123\tSelf\tNAU123.Palm\tS4
-S5\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS5
-S6\tTongue\tNAU456\tOther\tNAU456.Tongue\tS6
-S7\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS7
-S8\tPalm\tNAU789\tOther\tNAU789.Palm\tS8"""
+personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tSelf\tSiteID\tDescription
+S1\tPalm\tNAU123\t1\tSelf\tNAU123.Palm\tS1
+S2\tTongue\tNAU456\t2\tOther\tNAU456.Tongue\tS2
+S3\tPalm\tNAU789\t3\tOther\tNAU789.Palm\tS3
+S4\tPalm\tNAU123\t4\tSelf\tNAU123.Palm\tS4
+S5\tTongue\tNAU123\t5\tSelf\tNAU123.Tongue\tS5
+S6\tTongue\tNAU456\t6\tOther\tNAU456.Tongue\tS6
+S7\tTongue\tNAU123\t7\tSelf\tNAU123.Tongue\tS7
+S8\tPalm\tNAU789\t8\tOther\tNAU789.Palm\tS8"""
 
 collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
 alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8

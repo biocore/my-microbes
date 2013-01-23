@@ -141,6 +141,10 @@ def create_personal_results(output_dir,
                                  "file column '%s'." %
                                  (pid, personal_id_column))
 
+    if time_series_category not in header:
+        raise ValueError("Time series field '%s' is not a mapping file column "
+                         "header." % time_series_category)
+
     otu_table_title = splitext(basename(otu_table_fp))
 
     output_directories = []
