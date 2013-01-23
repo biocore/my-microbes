@@ -150,6 +150,24 @@ def create_personal_results(output_dir,
     output_directories = []
     raw_data_files = []
     raw_data_dirs = []
+
+    # Rarefy OTU table here (instead of on a per-individual basis) as we can
+    # use the same rarefied table for each individual.
+    if not suppress_otu_category_significance:
+        rarefied_otu_table_fp = join(output_dir,
+                add_filename_suffix(otu_table_fp,
+                                    '_even%d' % rarefaction_depth))
+
+        commands = []
+        cmd_title = 'Rarefying OTU table'
+        cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
+                rarefied_otu_table_fp, rarefaction_depth)
+        commands.append([(cmd_title, cmd)])
+        raw_data_files.append(rarefied_otu_table_fp)
+
+        command_handler(commands, status_update_callback, logger,
+                        close_logger_on_success=False)
+
     for person_of_interest in personal_ids:
         create_dir(join(output_dir, person_of_interest))
 
@@ -315,21 +333,10 @@ def create_personal_results(output_dir,
             create_dir(otu_cat_sig_dir)
             output_directories.append(otu_cat_sig_dir)
 
-            rarefied_otu_table_fp = join(otu_cat_sig_dir,
-                    add_filename_suffix(otu_table_fp,
-                                        '_even%d' % rarefaction_depth))
-
-            # Rarefy OTU table (based on otu_category_significance.py
-            # recommendataion).
-            commands = []
-            cmd_title = 'Rarefying OTU table (%s)' % person_of_interest
-            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
-                    rarefied_otu_table_fp, rarefaction_depth)
-            commands.append([(cmd_title, cmd)])
-            raw_data_files.append(rarefied_otu_table_fp)
-
             # Split OTU table into per-body-site tables.
             body_site_dir = join(otu_cat_sig_dir, 'split_tables')
+
+            commands = []
             cmd_title = 'Splitting OTU table by body site (%s)' % \
                         person_of_interest
             cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
