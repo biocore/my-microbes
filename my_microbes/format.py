@@ -70,7 +70,7 @@ index_text = """
           <li>What was the dominant phylum in your gut on the first week that you donated a sample?
           <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time? 
           <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?
-          <li>Does the composition of eahc of your body sites look consistent over time, or do certain groups appear to bloom and then die off?
+          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?
         </ol>
 
         <h3>Click on the following links to see your taxonomic summary plots:</h3>
