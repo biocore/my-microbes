@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "John Chase"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -12,12 +12,21 @@ __email__ = "jai.rideout@gmail.com"
 """Test suite for the format.py module."""
 
 from unittest import main, TestCase
+from os import chdir, getcwd
+from qiime.util import create_dir, get_qiime_temp_dir
+from os.path import exists, join
+from tempfile import mkdtemp
+from shutil import rmtree
 
-from my_microbes.format import format_participant_table
+from cogent.util.misc import remove_files
 
+from my_microbes.format import (format_participant_table,
+                               create_alpha_diversity_boxplots_html,
+                               create_otu_category_significance_html, 
+                               format_otu_category_significance_tables_as_html) 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
-
+    
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         # Standard recipients file with two recipients, one with multiple email
@@ -27,6 +36,56 @@ class FormatTests(TestCase):
 
         # An empty recipients file.
         self.empty_recipients = ["# a comment", " ", "\n\t\t\t\t"]
+        
+        # The prefix to use for temporary files. This prefix may be added to,
+        # but all temp dirs and files created by the tests will have this
+        # prefix at a minimum.
+        self.prefix = 'my_microbes_tests_'
+
+        self.start_dir = getcwd()
+        self.dirs_to_remove = []
+        self.files_to_remove = []
+
+        self.tmp_dir = get_qiime_temp_dir()
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
+            # If test creates the temp dir, also remove it.
+            self.dirs_to_remove.append(self.tmp_dir)
+
+        # Set up temporary input and output directories.
+        self.output_dir = mkdtemp(dir=self.tmp_dir,
+                                  prefix='%soutput_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.output_dir)
+        
+        # Set up temporary input and output directories.
+        self.input_dir = mkdtemp(dir=self.tmp_dir,
+                                  prefix='%sinput_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.input_dir)
+
+        # Data that will be used by the tests.
+        self.otu_cat_sig_gut_fp = join(self.input_dir, 'otu_cat_sig_gut.txt')
+        otu_cat_sig_gut_f = open(self.otu_cat_sig_gut_fp, 'w')
+        otu_cat_sig_gut_f.write(otu_cat_sig_gut_text)
+        otu_cat_sig_gut_f.close()
+        self.files_to_remove.append(self.otu_cat_sig_gut_fp)
+        
+        self.otu_cat_sig_palm_fp = join(self.input_dir, 'otu_cat_sig_palm.txt')
+        otu_cat_sig_palm_f = open(self.otu_cat_sig_palm_fp, 'w')
+        otu_cat_sig_palm_f.write(otu_cat_sig_gut_text)
+        otu_cat_sig_palm_f.close()
+        self.files_to_remove.append(self.otu_cat_sig_palm_fp)
+
+    def tearDown(self):
+        """Remove temporary files/dirs created by tests."""
+        # Change back to the start dir - some workflows change directory.
+        chdir(self.start_dir)
+
+        remove_files(self.files_to_remove)
+        # Remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories.
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
     def test_format_participant_table(self):
         """Test formatting an HTML table of study participants."""
@@ -54,7 +113,98 @@ class FormatTests(TestCase):
         obs = format_participant_table(self.empty_recipients,
                                        'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
+        
+    def test_create_alpha_diversity_boxplots_html(self): 
+        """Test alpha diversity boxplots"""
+        input = ('pd.txt', 'chao.txt')
+        exp = expected_alpha_diversity_boxplots
+        self.assertEqual(create_alpha_diversity_boxplots_html(input), exp)
+    
+    def test_create_otu_category_significance_html(self): 
+        """Test create_otu_category_significance"""
+        input = ('gut.html', 'palm.html')
+        exp = otu_category_significance_text
+        self.assertEqual(create_otu_category_significance_html(input), exp)
+    
+    def test_format_otu_category_significance_tables_as_html(self): 
+        """test that a value error is raised if number not between 0 and 1 is passed"""
+        self.assertRaises(ValueError, format_otu_category_significance_tables_as_html, otu_category_significance_text, 
+                          10, 'output_dir')
+                          
+        obs = format_otu_category_significance_tables_as_html([self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05, self.output_dir)
+        self.assertEquals(obs, ['gut.html', 'palm.html'])
+        
+        out_f = open(join(self.output_dir, 'gut.html'), 'U')
+        output_contents = out_f.read()
+        self.assertEqual(output_contents, exp_otu_cat_sig_gut)
 
+
+expected_alpha_diversity_boxplots = """
+<h2>Alpha Diversity Boxplots</h2>
+Here we present a series of comparative boxplots showing the
+distributions of your alpha diversity (<i>Self</i>) versus all other
+individuals' alpha diversity (<i>Other</i>) for each body site.
+Separate boxplots are provided for each alpha diversity metric. For
+more details about alpha diversity, please refer to the
+<b>Alpha Rarefaction</b> tab.
+
+<h3>Click on the following links to see your alpha diversity boxplots:</h3>
+<ul>
+  <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>
+</ul>
+"""
+
+otu_category_significance_text = """
+<h2>Differences in OTU Abundances</h2>
+Here we present OTUs that seemed to differ in their relative abundances when
+comparing you to all other individuals in the study.
+
+<h3>Click on the following links to see what OTU abundances differed by body
+site:</h3>
+<ul>
+  <li><a href="gut.html">Gut</a></li><li><a href="palm.html">Palm</a></li>
+</ul>
+"""
+
+otu_cat_sig_gut_text = """OTU	prob	Bonferroni_corrected	FDR_corrected	Self_mean	Other_mean	Consensus Lineage
+198792	9.85322211031e-11	5.38971249434e-08	5.38971249434e-08	0.0167	0.00249130434783	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__
+175844	9.11665166989e-10	4.98680846343e-07	2.49340423172e-07	0.0101	4.34782608696e-05	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__[Barnesiellaceae];  g__;  s__
+205836	1.13930778482e-09	6.23201358295e-07	2.07733786098e-07	0.00583	0.000726086956522	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__"""
+
+exp_otu_cat_sig_gut = """
+<html>
+<head>
+  <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
+  <link href="../../support_files/css/main.css" rel="stylesheet">
+
+  <script language="javascript" type="text/javascript">
+    function gg(targetq) {
+      window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
+    }
+  </script>
+</head>
+
+<body>
+  <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
+    <h2>OTUs that differed in relative abundance in gut samples (comparing self
+    versus other)</h2>
+    Click on the taxonomy links for each OTU to learn more about it!
+    <br/><br/>
+
+    <table class="data-table">
+      <tr>
+        <th>OTU ID</th>
+        <th>Taxonomy</th>
+      </tr>
+      <tr><td>198792</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('++g__Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
+<tr><td>175844</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a>;<a href=javascript:gg('++g__');>&nbsp;&nbsp;g__</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
+<tr><td>205836</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('++g__Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
+
+    </table>
+  </div>
+</body>
+</html>
+"""
 
 if __name__ == "__main__":
     main()
