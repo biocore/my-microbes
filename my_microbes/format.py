@@ -329,7 +329,7 @@ def create_otu_category_significance_html(table_fps):
     table_links_text = ''
 
     for table_fp in table_fps:
-        body_site = splitext(basename(table_fp))[0].split('otu_cat_sig_')[-1].title()
+        body_site = splitext(basename(table_fp))[0].title()
         table_links_text += '<li><a href="%s">%s</a></li>' % (table_fp,
                                                               body_site)
 

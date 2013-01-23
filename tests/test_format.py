@@ -122,7 +122,7 @@ class FormatTests(TestCase):
     
     def test_create_otu_category_significance_html(self): 
         """Test create_otu_category_significance"""
-        input = ('otu_cat_sig_gut.txt', 'otu_cat_sig_palm.txt')
+        input = ('gut.html', 'palm.html')
         exp = otu_category_significance_text
         self.assertEqual(create_otu_category_significance_html(input), exp)
     
@@ -162,7 +162,7 @@ comparing you to all other individuals in the study.
 <h3>Click on the following links to see what OTU abundances differed by body
 site:</h3>
 <ul>
-  <li><a href="otu_cat_sig_gut.txt">Gut</a></li><li><a href="otu_cat_sig_palm.txt">Palm</a></li>
+  <li><a href="gut.html">Gut</a></li><li><a href="palm.html">Palm</a></li>
 </ul>
 """
 
