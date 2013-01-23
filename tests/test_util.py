@@ -13,8 +13,9 @@ __email__ = "jc33@nau.edu"
 """Test suite for the util.py module."""
 
 import sys
+from glob import glob
 from os import chdir, getcwd
-from os.path import abspath, dirname, exists, join
+from os.path import abspath, basename, dirname, exists, isdir, isfile, join
 from shutil import rmtree
 from StringIO import StringIO
 from tempfile import mkdtemp
@@ -166,6 +167,38 @@ class UtilTests(TestCase):
                 self.mapping_fp, self.coord_fp, self.rarefaction_dir,
                 self.otu_table_fp, self.prefs_fp, 'PersonalID',
                 personal_ids=['foo', 'bar'])
+
+    def test_create_personal_results_suppress_all(self): 
+        """Test running workflow with all output types suppressed."""
+        # No output directories should be created under each personal ID
+        # directory. We should only end up with a log file, support_files
+        # directory, directories for each personal ID, and an index.html file
+        # in each.
+        exp_personal_ids = ['NAU123', 'NAU456', 'NAU789']
+
+        obs = create_personal_results(self.output_dir, self.mapping_fp,
+                self.coord_fp, self.rarefaction_dir, self.otu_table_fp,
+                self.prefs_fp, 'PersonalID',
+                suppress_alpha_rarefaction=True,
+                suppress_beta_diversity=True,
+                suppress_taxa_summary_plots=True,
+                suppress_alpha_diversity_boxplots=True,
+                suppress_otu_category_significance=True)
+        self.assertEqual(obs, [])
+
+        num_logs = len(glob(join(self.output_dir, 'log_*.txt')))
+        self.assertEqual(num_logs, 1)
+
+        support_files_exist = isdir(join(self.output_dir, 'support_files'))
+        self.assertTrue(support_files_exist)
+
+        for personal_id in exp_personal_ids:
+            personal_dir_exists = isdir(join(self.output_dir, personal_id))
+            self.assertTrue(personal_dir_exists)
+
+            personal_files = map(basename,
+                                 glob(join(self.output_dir, personal_id, '*')))
+            self.assertEqual(personal_files, ['index.html'])
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
