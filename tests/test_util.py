@@ -136,12 +136,30 @@ class UtilTests(TestCase):
         obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2, 1)
         self.assertEqual(obs, self.personal_mapping_data)
 
+    def test_create_personal_mapping_file_invalid_input(self): 
+        """Test creating a personalized mapping file given invalid input."""
+        # Invalid number of individual_titles.
+        self.assertRaises(ValueError, create_personal_mapping_file,
+                self.mapping_data, 'NAU123', 2, 1,
+                individual_titles=['Self', 'Other', 'SelfOther'])
+
+        # Non-distinct individual_titles.
+        self.assertRaises(ValueError, create_personal_mapping_file,
+                self.mapping_data, 'NAU123', 2, 1,
+                individual_titles=['Self', 'Self'])
+
     def test_create_personal_results_invalid_input(self): 
         """Test running workflow on invalid input (should throw errors)."""
         # Invalid personal ID column name.
         self.assertRaises(ValueError, create_personal_results, self.output_dir,
                 self.mapping_fp, self.coord_fp, self.rarefaction_dir,
                 self.otu_table_fp, self.prefs_fp, 'foo')
+
+        # Invalid category to split.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'PersonalID',
+                category_to_split='foo')
 
         # Invalid personal IDs.
         self.assertRaises(ValueError, create_personal_results, self.output_dir,

@@ -4,7 +4,7 @@ from __future__ import division
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
-    "Yoshiki Vazquez-Baeza"]
+               "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -58,6 +58,11 @@ def create_personal_mapping_file(mapping_data, personal_id_of_interest,
     """
     if individual_titles == None:
         individual_titles = ['Self', 'Other']
+    else:
+        # Make sure we were given exactly two (distinct) values.
+        if len(individual_titles) != 2 or len(set(individual_titles)) != 2:
+            raise ValueError("Must provide exactly two distinct values for "
+                             "individual titles (e.g. 'Self' and 'Other').")
 
     site_id_indices = [personal_id_index, bodysite_index]
 
