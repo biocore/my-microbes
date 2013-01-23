@@ -130,11 +130,12 @@ class FormatTests(TestCase):
         """test that a value error is raised if number not between 0 and 1 is passed"""
         self.assertRaises(ValueError,
                           format_otu_category_significance_tables_as_html,
-                          otu_category_significance_text, 10, 'output_dir')
+                          otu_category_significance_text, 10, 'output_dir',
+                          ['Self','Other'])
 
         obs = format_otu_category_significance_tables_as_html(
                 [self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05,
-                self.output_dir)
+                self.output_dir,['Self','Other'])
         self.assertEquals(obs, ['gut.html', 'palm.html'])
 
         out_f = open(join(self.output_dir, 'gut.html'), 'U')
@@ -152,7 +153,7 @@ otu_category_significance_text = """
 """
 
 otu_cat_sig_gut_text = """OTU	prob	Bonferroni_corrected	FDR_corrected	Self_mean	Other_mean	Consensus Lineage
-198792	9.85322211031e-11	5.38971249434e-08	5.38971249434e-08	0.0167	0.00249130434783	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__
+198792	9.85322211031e-11	5.38971249434e-08	5.38971249434e-08	0.0000167	0.00249130434783	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__
 175844	9.11665166989e-10	4.98680846343e-07	2.49340423172e-07	0.0101	4.34782608696e-05	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__[Barnesiellaceae];  g__;  s__
 205836	1.13930778482e-09	6.23201358295e-07	2.07733786098e-07	0.00583	0.000726086956522	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__"""
 
@@ -173,7 +174,7 @@ exp_otu_cat_sig_gut = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in gut samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to do a google search for that taxonomic group.
+    Click on the taxonomy links for each OTU to do a google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>Self</i> than in <i>Other</i>, and OTU IDs with a blue background are found in higher abundance in <i>Self</i> than in <i>Other</i>.
     <br/><br/>
 
     <table class="data-table">
@@ -181,9 +182,9 @@ exp_otu_cat_sig_gut = """
         <th>OTU ID</th>
         <th>Taxonomy</th>
       </tr>
-      <tr><td>198792</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
-<tr><td>175844</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
-<tr><td>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
+      <tr><td bgcolor=#FF9900>198792</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
+<tr><td bgcolor=#99CCFF>175844</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
+<tr><td bgcolor=#99CCFF>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
 
     </table>
   </div>
