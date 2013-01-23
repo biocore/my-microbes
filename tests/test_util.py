@@ -13,8 +13,9 @@ __email__ = "jc33@nau.edu"
 """Test suite for the util.py module."""
 
 import sys
+from glob import glob
 from os import chdir, getcwd
-from os.path import abspath, dirname, exists, join
+from os.path import abspath, basename, dirname, exists, isdir, isfile, join
 from shutil import rmtree
 from StringIO import StringIO
 from tempfile import mkdtemp
@@ -23,6 +24,7 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir, get_qiime_temp_dir, MetadataMap
+from qiime.workflow import print_commands
 
 from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               create_personal_mapping_file,
@@ -125,29 +127,121 @@ class UtilTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_get_personal_ids(self): 
+    def test_get_personal_ids(self):
         """Test extracting a set of personal IDs."""
         exp = set(['NAU123', 'NAU789', 'NAU456'])
         obs = get_personal_ids(self.mapping_data, 2)
         self.assertEqual(obs, exp)
 
-    def test_create_personal_mapping_file(self): 
+    def test_create_personal_mapping_file(self):
         """Test creating a personalized mapping file (adding a new column)."""
         obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2, 1)
         self.assertEqual(obs, self.personal_mapping_data)
 
-    def test_create_personal_results_invalid_input(self): 
+    def test_create_personal_mapping_file_invalid_input(self):
+        """Test creating a personalized mapping file given invalid input."""
+        # Invalid number of individual_titles.
+        self.assertRaises(ValueError, create_personal_mapping_file,
+                self.mapping_data, 'NAU123', 2, 1,
+                individual_titles=['Self', 'Other', 'SelfOther'])
+
+        # Non-distinct individual_titles.
+        self.assertRaises(ValueError, create_personal_mapping_file,
+                self.mapping_data, 'NAU123', 2, 1,
+                individual_titles=['Self', 'Self'])
+
+    def test_create_personal_results_invalid_input(self):
         """Test running workflow on invalid input (should throw errors)."""
         # Invalid personal ID column name.
         self.assertRaises(ValueError, create_personal_results, self.output_dir,
                 self.mapping_fp, self.coord_fp, self.rarefaction_dir,
                 self.otu_table_fp, self.prefs_fp, 'foo')
 
+        # Invalid category to split.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'PersonalID',
+                category_to_split='foo')
+
         # Invalid personal IDs.
         self.assertRaises(ValueError, create_personal_results, self.output_dir,
                 self.mapping_fp, self.coord_fp, self.rarefaction_dir,
                 self.otu_table_fp, self.prefs_fp, 'PersonalID',
                 personal_ids=['foo', 'bar'])
+
+        # Invalid time series category.
+        self.assertRaises(ValueError, create_personal_results, self.output_dir,
+                self.mapping_fp, self.coord_fp, self.rarefaction_dir,
+                self.otu_table_fp, self.prefs_fp, 'PersonalID',
+                time_series_category='foo')
+
+    def test_create_personal_results_suppress_all(self):
+        """Test running workflow with all output types suppressed."""
+        # No output directories should be created under each personal ID
+        # directory. We should only end up with a log file, support_files
+        # directory, directories for each personal ID, and an index.html file
+        # in each.
+        exp_personal_ids = ['NAU123', 'NAU456', 'NAU789']
+
+        obs = create_personal_results(self.output_dir, self.mapping_fp,
+                self.coord_fp, self.rarefaction_dir, self.otu_table_fp,
+                self.prefs_fp, 'PersonalID',
+                suppress_alpha_rarefaction=True,
+                suppress_beta_diversity=True,
+                suppress_taxa_summary_plots=True,
+                suppress_alpha_diversity_boxplots=True,
+                suppress_otu_category_significance=True)
+        self.assertEqual(obs, [])
+
+        num_logs = len(glob(join(self.output_dir, 'log_*.txt')))
+        self.assertEqual(num_logs, 1)
+
+        support_files_exist = isdir(join(self.output_dir, 'support_files'))
+        self.assertTrue(support_files_exist)
+
+        for personal_id in exp_personal_ids:
+            personal_dir_exists = isdir(join(self.output_dir, personal_id))
+            self.assertTrue(personal_dir_exists)
+
+            personal_files = map(basename,
+                                 glob(join(self.output_dir, personal_id, '*')))
+            self.assertEqual(personal_files, ['index.html'])
+
+    def test_create_personal_results_print_only(self):
+        """Test running workflow, but only printing the commands."""
+        # Save stdout and replace it with something that will capture the print
+        # statement. Note: this code was taken from here:
+        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
+        #     with-nosetest-unittest-in-python/4220278#4220278
+        saved_stdout = sys.stdout
+
+        try:
+            out = StringIO()
+            sys.stdout = out
+
+            obs = create_personal_results(self.output_dir, self.mapping_fp,
+                    self.coord_fp, self.rarefaction_dir, self.otu_table_fp,
+                    self.prefs_fp, 'PersonalID', rarefaction_depth=10,
+                    command_handler=print_commands)
+            obs_output = out.getvalue().strip()
+        finally:
+            sys.stdout = saved_stdout
+
+        exp = set(['NAU123/time_series', 'NAU123/beta_diversity',
+                   'NAU789/beta_diversity', 'NAU789/otu_category_significance',
+                   'NAU789/alpha_rarefaction', 'NAU456/time_series',
+                   'NAU123/alpha_rarefaction', 'NAU456/adiv_boxplots',
+                   'NAU456/otu_category_significance', 'NAU123/adiv_boxplots',
+                   'NAU123/otu_category_significance', 'NAU789/adiv_boxplots',
+                   'NAU789/time_series', 'NAU456/alpha_rarefaction',
+                   'NAU456/beta_diversity'])
+        fps = []
+        for fp in obs:
+            fps.append(join(basename(dirname(fp)), basename(fp)))
+        # Order is not guaranteed.
+        fps = set(fps)
+
+        self.assertEqual(fps, exp)
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
@@ -230,25 +324,25 @@ class UtilTests(TestCase):
                 'BodySite', 'Self')
         self.assertEqual(obs, ([], []))
 
-mapping_str = """#SampleID\tBodySite\tPersonalID\tDescription
-S1\tPalm\tNAU123\tS1
-S2\tTongue\tNAU456\tS2
-S3\tPalm\tNAU789\tS3
-S4\tPalm\tNAU123\tS4
-S5\tTongue\tNAU123\tS5
-S6\tTongue\tNAU456\tS6
-S7\tTongue\tNAU123\tS7
-S8\tPalm\tNAU789\tS8"""
+mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tDescription
+S1\tPalm\tNAU123\t1\tS1
+S2\tTongue\tNAU456\t2\tS2
+S3\tPalm\tNAU789\t3\tS3
+S4\tPalm\tNAU123\t4\tS4
+S5\tTongue\tNAU123\t5\tS5
+S6\tTongue\tNAU456\t6\tS6
+S7\tTongue\tNAU123\t7\tS7
+S8\tPalm\tNAU789\t8\tS8"""
 
-personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tSelf\tSiteID\tDescription
-S1\tPalm\tNAU123\tSelf\tNAU123.Palm\tS1
-S2\tTongue\tNAU456\tOther\tNAU456.Tongue\tS2
-S3\tPalm\tNAU789\tOther\tNAU789.Palm\tS3
-S4\tPalm\tNAU123\tSelf\tNAU123.Palm\tS4
-S5\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS5
-S6\tTongue\tNAU456\tOther\tNAU456.Tongue\tS6
-S7\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS7
-S8\tPalm\tNAU789\tOther\tNAU789.Palm\tS8"""
+personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tSelf\tSiteID\tDescription
+S1\tPalm\tNAU123\t1\tSelf\tNAU123.Palm\tS1
+S2\tTongue\tNAU456\t2\tOther\tNAU456.Tongue\tS2
+S3\tPalm\tNAU789\t3\tOther\tNAU789.Palm\tS3
+S4\tPalm\tNAU123\t4\tSelf\tNAU123.Palm\tS4
+S5\tTongue\tNAU123\t5\tSelf\tNAU123.Tongue\tS5
+S6\tTongue\tNAU456\t6\tOther\tNAU456.Tongue\tS6
+S7\tTongue\tNAU123\t7\tSelf\tNAU123.Tongue\tS7
+S8\tPalm\tNAU789\t8\tOther\tNAU789.Palm\tS8"""
 
 collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
 alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8
