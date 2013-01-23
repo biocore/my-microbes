@@ -384,10 +384,20 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                     # Taken from qiime.plot_taxa_summary.
                     taxa_links = []
                     for tax_level in taxonomy.split(';'):
-                        taxa_links.append(
-                                '<a href="javascript:gg(\'%s\');">%s</a>' %
-                                (tax_level.replace(' ', '+'),
-                                 tax_level.replace(' ', '&nbsp;')))
+                        # identify the taxa name (e.g., everything after the
+                        # first double underscore) - we only want to include this
+                        # in the google links for better search sensitivity
+                        tax_name = tax_level.split('__',1)[1]
+                        if len(tax_name) == 0:
+                            # if there is no taxa name (e.g., tax_level == "s__")
+                            # don't print anything for this level or any levels
+                            # below it (which all should have no name anyway)
+                            break
+                        else:
+                            taxa_links.append(
+                                    '<a href="javascript:gg(\'%s\');">%s</a>' %
+                                    (tax_name.replace(' ', '+'),
+                                     tax_level.replace(' ', '&nbsp;')))
                     taxonomy = ';'.join(taxa_links).replace('"', '')
 
                     html_row_text += '<tr><td>%s</td><td>%s</td></tr>\n' % (
