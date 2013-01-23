@@ -370,24 +370,41 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                 otu_id_idx = cells.index('OTU')
                 p_value_idx = cells.index('FDR_corrected')
                 taxonomy_idx = cells.index('Consensus Lineage')
+                self_idx = cells.index('Self_mean')
+                other_idx = cells.index('Other_mean')
                 processed_header = True
             else:
                 otu_id = cells[otu_id_idx]
                 p_value = float(cells[p_value_idx])
                 taxonomy = cells[taxonomy_idx]
+                self_mean = float(cells[self_idx])
+                other_mean = float(cells[other_idx])
 
                 if p_value <= alpha:
                     # Taken from qiime.plot_taxa_summary.
                     taxa_links = []
                     for tax_level in taxonomy.split(';'):
-                        taxa_links.append(
-                                '<a href="javascript:gg(\'%s\');">%s</a>' %
-                                (tax_level.replace(' ', '+'),
-                                 tax_level.replace(' ', '&nbsp;')))
+                        # identify the taxa name (e.g., everything after the
+                        # first double underscore) - we only want to include this
+                        # in the google links for better search sensitivity
+                        tax_name = tax_level.split('__',1)[1]
+                        if len(tax_name) == 0:
+                            # if there is no taxa name (e.g., tax_level == "s__")
+                            # don't print anything for this level or any levels
+                            # below it (which all should have no name anyway)
+                            break
+                        else:
+                            taxa_links.append(
+                                    '<a href="javascript:gg(\'%s\');">%s</a>' %
+                                    (tax_name.replace(' ', '+'),
+                                     tax_level.replace(' ', '&nbsp;')))
                     taxonomy = ';'.join(taxa_links).replace('"', '')
-
-                    html_row_text += '<tr><td>%s</td><td>%s</td></tr>\n' % (
-                            otu_id, taxonomy)
+                    if self_mean > other_mean:
+                        row_color = "#FF9900"
+                    else:
+                        row_color = "#99CCFF"
+                    html_row_text += '<tr><td bgcolor=%s>%s</td><td>%s</td></tr>\n' % (
+                            row_color, otu_id, taxonomy)
 
         out_html_f.write(otu_category_significance_table_text %
                          (body_site, html_row_text))
@@ -414,7 +431,7 @@ otu_category_significance_table_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>OTUs that differed in relative abundance in %s samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to learn more about it!
+    Click on the taxonomy links for each OTU to learn more about it! OTU IDs with an orange backgraound are found in lower abundance in you than in the average, and OTU IDs with a blue background are found in higher abundance in you than in the average.
     <br/><br/>
 
     <table class="data-table">
