@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
+    "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -132,7 +133,7 @@ class UtilTests(TestCase):
 
     def test_create_personal_mapping_file(self): 
         """Test creating a personalized mapping file (adding a new column)."""
-        obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2)
+        obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2, 1)
         self.assertEqual(obs, self.personal_mapping_data)
 
     def test_create_personal_results_invalid_input(self): 
@@ -239,15 +240,15 @@ S6\tTongue\tNAU456\tS6
 S7\tTongue\tNAU123\tS7
 S8\tPalm\tNAU789\tS8"""
 
-personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tSelf\tDescription
-S1\tPalm\tNAU123\tSelf\tS1
-S2\tTongue\tNAU456\tOther\tS2
-S3\tPalm\tNAU789\tOther\tS3
-S4\tPalm\tNAU123\tSelf\tS4
-S5\tTongue\tNAU123\tSelf\tS5
-S6\tTongue\tNAU456\tOther\tS6
-S7\tTongue\tNAU123\tSelf\tS7
-S8\tPalm\tNAU789\tOther\tS8"""
+personal_mapping_str = """#SampleID\tBodySite\tPersonalID\tSelf\tSiteID\tDescription
+S1\tPalm\tNAU123\tSelf\tNAU123.Palm\tS1
+S2\tTongue\tNAU456\tOther\tNAU456.Tongue\tS2
+S3\tPalm\tNAU789\tOther\tNAU789.Palm\tS3
+S4\tPalm\tNAU123\tSelf\tNAU123.Palm\tS4
+S5\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS5
+S6\tTongue\tNAU456\tOther\tNAU456.Tongue\tS6
+S7\tTongue\tNAU123\tSelf\tNAU123.Tongue\tS7
+S8\tPalm\tNAU789\tOther\tNAU789.Palm\tS8"""
 
 collated_alpha_div_str = """\tsequences per sample\titeration\tS1\tS2\tS3\tS4\tS5\tS6\tS7\tS8
 alpha_rarefaction_10_0.biom\t10\t0\t1\t2\t3\t4\t5\t6\t7\t8
