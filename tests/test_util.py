@@ -24,6 +24,7 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir, get_qiime_temp_dir, MetadataMap
+from qiime.workflow import print_commands
 
 from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               create_personal_mapping_file,
@@ -126,18 +127,18 @@ class UtilTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_get_personal_ids(self): 
+    def test_get_personal_ids(self):
         """Test extracting a set of personal IDs."""
         exp = set(['NAU123', 'NAU789', 'NAU456'])
         obs = get_personal_ids(self.mapping_data, 2)
         self.assertEqual(obs, exp)
 
-    def test_create_personal_mapping_file(self): 
+    def test_create_personal_mapping_file(self):
         """Test creating a personalized mapping file (adding a new column)."""
         obs = create_personal_mapping_file(self.mapping_data, 'NAU123', 2, 1)
         self.assertEqual(obs, self.personal_mapping_data)
 
-    def test_create_personal_mapping_file_invalid_input(self): 
+    def test_create_personal_mapping_file_invalid_input(self):
         """Test creating a personalized mapping file given invalid input."""
         # Invalid number of individual_titles.
         self.assertRaises(ValueError, create_personal_mapping_file,
@@ -149,7 +150,7 @@ class UtilTests(TestCase):
                 self.mapping_data, 'NAU123', 2, 1,
                 individual_titles=['Self', 'Self'])
 
-    def test_create_personal_results_invalid_input(self): 
+    def test_create_personal_results_invalid_input(self):
         """Test running workflow on invalid input (should throw errors)."""
         # Invalid personal ID column name.
         self.assertRaises(ValueError, create_personal_results, self.output_dir,
@@ -174,7 +175,7 @@ class UtilTests(TestCase):
                 self.otu_table_fp, self.prefs_fp, 'PersonalID',
                 time_series_category='foo')
 
-    def test_create_personal_results_suppress_all(self): 
+    def test_create_personal_results_suppress_all(self):
         """Test running workflow with all output types suppressed."""
         # No output directories should be created under each personal ID
         # directory. We should only end up with a log file, support_files
@@ -205,6 +206,48 @@ class UtilTests(TestCase):
             personal_files = map(basename,
                                  glob(join(self.output_dir, personal_id, '*')))
             self.assertEqual(personal_files, ['index.html'])
+
+    def test_create_personal_results_print_only(self):
+        """Test running workflow, but only printing the commands."""
+        # Save stdout and replace it with something that will capture the print
+        # statement. Note: this code was taken from here:
+        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
+        #     with-nosetest-unittest-in-python/4220278#4220278
+        saved_stdout = sys.stdout
+        exp_personal_ids = ['NAU123', 'NAU456', 'NAU789']
+
+        try:
+            out = StringIO()
+            sys.stdout = out
+
+            obs = create_personal_results(self.output_dir, self.mapping_fp,
+                    self.coord_fp, self.rarefaction_dir, self.otu_table_fp,
+                    self.prefs_fp, 'PersonalID', rarefaction_depth=10,
+                    command_handler=print_commands)
+            #self.assertEqual(obs, [])
+
+            obs_output = out.getvalue().strip()
+            #self.assertEqual(obs_output, exp_dry_run_output)
+
+            #num_logs = len(glob(join(self.output_dir, 'log_*.txt')))
+            #self.assertEqual(num_logs, 1)
+
+            #support_files_exist = isdir(join(self.output_dir, 'support_files'))
+            #self.assertTrue(support_files_exist)
+
+            #for personal_id in exp_personal_ids:
+            #    personal_dir_exists = isdir(join(self.output_dir, personal_id))
+            #    self.assertTrue(personal_dir_exists)
+#
+#                personal_files = map(basename,
+#                                     glob(join(self.output_dir, personal_id, '*')))
+#                self.assertEqual(personal_files, ['index.html'])
+        finally:
+            sys.stdout = saved_stdout
+
+        print obs
+        print
+        print obs_output
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
