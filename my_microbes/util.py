@@ -354,8 +354,6 @@ def create_personal_results(output_dir,
                                             '_%s' % cat_value))
 
                 if exists(body_site_otu_table_fp):
-                    body_site_map_fp = join(per_body_site_dir,
-                                            'mapping_%s.txt' % cat_value)
                     otu_cat_output_fp = join(otu_cat_sig_dir,
                                              'otu_cat_sig_%s.txt' % cat_value)
 
@@ -363,8 +361,10 @@ def create_personal_results(output_dir,
                                  'OTU abundances in "%s" body site (%s)' % (
                                  cat_value, person_of_interest))
                     cmd = ('otu_category_significance.py -i %s -m %s -c %s '
-                           '-o %s' % (body_site_otu_table_fp, body_site_map_fp,
-                                      column_title, otu_cat_output_fp))
+                           '-o %s' % (body_site_otu_table_fp,
+                                      personal_mapping_file_fp,
+                                      column_title,
+                                      otu_cat_output_fp))
                     commands.append([(cmd_title, cmd)])
                     raw_data_files.append(otu_cat_output_fp)
                     otu_cat_sig_output_fps.append(otu_cat_output_fp)
