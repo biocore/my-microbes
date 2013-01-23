@@ -128,42 +128,27 @@ class FormatTests(TestCase):
     
     def test_format_otu_category_significance_tables_as_html(self): 
         """test that a value error is raised if number not between 0 and 1 is passed"""
-        self.assertRaises(ValueError, format_otu_category_significance_tables_as_html, otu_category_significance_text, 
-                          10, 'output_dir')
-                          
-        obs = format_otu_category_significance_tables_as_html([self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05, self.output_dir)
+        self.assertRaises(ValueError,
+                          format_otu_category_significance_tables_as_html,
+                          otu_category_significance_text, 10, 'output_dir')
+
+        obs = format_otu_category_significance_tables_as_html(
+                [self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05,
+                self.output_dir)
         self.assertEquals(obs, ['gut.html', 'palm.html'])
-        
+
         out_f = open(join(self.output_dir, 'gut.html'), 'U')
-        output_contents = out_f.read()
-        self.assertEqual(output_contents, exp_otu_cat_sig_gut)
+        obs = out_f.read()
+        out_f.close()
+        self.assertEqual(obs, exp_otu_cat_sig_gut)
 
 
 expected_alpha_diversity_boxplots = """
-<h2>Alpha Diversity Boxplots</h2>
-Here we present a series of comparative boxplots showing the
-distributions of your alpha diversity (<i>Self</i>) versus all other
-individuals' alpha diversity (<i>Other</i>) for each body site.
-Separate boxplots are provided for each alpha diversity metric. For
-more details about alpha diversity, please refer to the
-<b>Alpha Rarefaction</b> tab.
-
-<h3>Click on the following links to see your alpha diversity boxplots:</h3>
-<ul>
-  <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>
-</ul>
+<h2>Alpha Diversity Boxplots</h2>\nHere we present a series of comparative boxplots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals\' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in a reference phylogenetic tree that is observed in a sample. PD is a phylogenetic measure of richness, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.\n<br/><br/>\nYou should be able to answer several questions about your microbial communities from these plots:\n<ol>\n  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>\n  <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>\n</ol>\n\n\n<h3>Click on the following links to see your alpha diversity boxplots:</h3>\n<ul>\n  <li><a href="pd.txt">pd</a></li><li><a href="chao.txt">chao</a></li>\n</ul>
 """
 
 otu_category_significance_text = """
-<h2>Differences in OTU Abundances</h2>
-Here we present OTUs that seemed to differ in their relative abundances when
-comparing you to all other individuals in the study.
-
-<h3>Click on the following links to see what OTU abundances differed by body
-site:</h3>
-<ul>
-  <li><a href="gut.html">Gut</a></li><li><a href="palm.html">Palm</a></li>
-</ul>
+<h2>Differences in OTU Abundances</h2>\nHere we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else\'s) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs. \n<br/><br/>\nHere we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)\n\n<h3>Click on the following links to see what OTU abundances differed by body\nsite:</h3>\n<ul>\n  <li><a href="gut.html">Gut</a></li><li><a href="palm.html">Palm</a></li>\n</ul>
 """
 
 otu_cat_sig_gut_text = """OTU	prob	Bonferroni_corrected	FDR_corrected	Self_mean	Other_mean	Consensus Lineage
@@ -186,9 +171,9 @@ exp_otu_cat_sig_gut = """
 
 <body>
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
-    <h2>OTUs that differed in relative abundance in gut samples (comparing self
+    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in gut samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to learn more about it!
+    Click on the taxonomy links for each OTU to do a google search for that taxonomic group.
     <br/><br/>
 
     <table class="data-table">
@@ -196,15 +181,16 @@ exp_otu_cat_sig_gut = """
         <th>OTU ID</th>
         <th>Taxonomy</th>
       </tr>
-      <tr><td>198792</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('++g__Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
-<tr><td>175844</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a>;<a href=javascript:gg('++g__');>&nbsp;&nbsp;g__</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
-<tr><td>205836</td><td><a href=javascript:gg('k__Bacteria');>k__Bacteria</a>;<a href=javascript:gg('++p__Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('++c__Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('++o__Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('++f__Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('++g__Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a>;<a href=javascript:gg('++s__');>&nbsp;&nbsp;s__</a></td></tr>
+      <tr><td>198792</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
+<tr><td>175844</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
+<tr><td>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
 
     </table>
   </div>
 </body>
 </html>
 """
+
 
 if __name__ == "__main__":
     main()
