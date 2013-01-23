@@ -112,8 +112,8 @@ script_info['optional_options'] = [
     make_option('-r','--individual_titles',
         default="Self,Other", type='string',
         help='Comma seperated values describing how to name '
-        'the individuals in the new column_title column '
-        '[default: %default]'),
+        'the individuals in the new column_title column. Must be exactly two '
+        'distinct values [default: %default]'),
     make_option('-d','--rarefaction_depth',
         default=10000, type='int',
         help='single rarefaction depth (seqs/sample) to use when generating '
