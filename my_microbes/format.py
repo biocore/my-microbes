@@ -405,9 +405,9 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                                      tax_level.replace(' ', '&nbsp;')))
                     taxonomy = ';'.join(taxa_links).replace('"', '')
                     if individual_title0_mean < individual_title1_mean:
-                        row_color = "#FF9900"
+                        row_color = "#FF9900" # orange
                     else:
-                        row_color = "#99CCFF"
+                        row_color = "#99CCFF" # blue
                     html_row_text += '<tr><td bgcolor=%s>%s</td><td>%s</td></tr>\n' % (
                             row_color, otu_id, taxonomy)
 
