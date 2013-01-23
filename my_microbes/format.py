@@ -137,7 +137,7 @@ index_text = """
           <li>If we were to collect more sequences per sample, do you expect that your answers to questions 1 and 2 would change?</li>
         </ol>
 
-        <h3>Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots.</h3>
+        <h3>Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. Select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.</h3>
       </div>
     </div>
 
