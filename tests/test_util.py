@@ -214,7 +214,6 @@ class UtilTests(TestCase):
         # http://stackoverflow.com/questions/4219717/how-to-assert-output-
         #     with-nosetest-unittest-in-python/4220278#4220278
         saved_stdout = sys.stdout
-        exp_personal_ids = ['NAU123', 'NAU456', 'NAU789']
 
         try:
             out = StringIO()
@@ -224,30 +223,25 @@ class UtilTests(TestCase):
                     self.coord_fp, self.rarefaction_dir, self.otu_table_fp,
                     self.prefs_fp, 'PersonalID', rarefaction_depth=10,
                     command_handler=print_commands)
-            #self.assertEqual(obs, [])
-
             obs_output = out.getvalue().strip()
-            #self.assertEqual(obs_output, exp_dry_run_output)
-
-            #num_logs = len(glob(join(self.output_dir, 'log_*.txt')))
-            #self.assertEqual(num_logs, 1)
-
-            #support_files_exist = isdir(join(self.output_dir, 'support_files'))
-            #self.assertTrue(support_files_exist)
-
-            #for personal_id in exp_personal_ids:
-            #    personal_dir_exists = isdir(join(self.output_dir, personal_id))
-            #    self.assertTrue(personal_dir_exists)
-#
-#                personal_files = map(basename,
-#                                     glob(join(self.output_dir, personal_id, '*')))
-#                self.assertEqual(personal_files, ['index.html'])
         finally:
             sys.stdout = saved_stdout
 
-        print obs
-        print
-        print obs_output
+        exp = set(['NAU123/time_series', 'NAU123/beta_diversity',
+                   'NAU789/beta_diversity', 'NAU789/otu_category_significance',
+                   'NAU789/alpha_rarefaction', 'NAU456/time_series',
+                   'NAU123/alpha_rarefaction', 'NAU456/adiv_boxplots',
+                   'NAU456/otu_category_significance', 'NAU123/adiv_boxplots',
+                   'NAU123/otu_category_significance', 'NAU789/adiv_boxplots',
+                   'NAU789/time_series', 'NAU456/alpha_rarefaction',
+                   'NAU456/beta_diversity'])
+        fps = []
+        for fp in obs:
+            fps.append(join(basename(dirname(fp)), basename(fp)))
+        # Order is not guaranteed.
+        fps = set(fps)
+
+        self.assertEqual(fps, exp)
 
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected
