@@ -151,8 +151,9 @@ def create_personal_results(output_dir,
     raw_data_files = []
     raw_data_dirs = []
 
-    # Rarefy OTU table here (instead of on a per-individual basis) as we can
-    # use the same rarefied table for each individual.
+    # Rarefy the OTU table and split by body site here (instead of on a
+    # per-individual basis) as we can use the same rarefied and split tables
+    # for each individual.
     if not suppress_otu_category_significance:
         rarefied_otu_table_fp = join(output_dir,
                 add_filename_suffix(otu_table_fp,
@@ -164,6 +165,15 @@ def create_personal_results(output_dir,
                 rarefied_otu_table_fp, rarefaction_depth)
         commands.append([(cmd_title, cmd)])
         raw_data_files.append(rarefied_otu_table_fp)
+
+        per_body_site_dir = join(output_dir, 'per_body_site_otu_tables')
+
+        cmd_title = 'Splitting rarefied OTU table by body site'
+        cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                rarefied_otu_table_fp, mapping_fp, category_to_split,
+                per_body_site_dir)
+        commands.append([(cmd_title, cmd)])
+        raw_data_dirs.append(per_body_site_dir)
 
         command_handler(commands, status_update_callback, logger,
                         close_logger_on_success=False)
@@ -333,45 +343,31 @@ def create_personal_results(output_dir,
             create_dir(otu_cat_sig_dir)
             output_directories.append(otu_cat_sig_dir)
 
-            # Split OTU table into per-body-site tables.
-            body_site_dir = join(otu_cat_sig_dir, 'split_tables')
-
-            commands = []
-            cmd_title = 'Splitting OTU table by body site (%s)' % \
-                        person_of_interest
-            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
-                    rarefied_otu_table_fp, personal_mapping_file_fp,
-                    category_to_split, body_site_dir)
-            commands.append([(cmd_title, cmd)])
-            raw_data_dirs.append(body_site_dir)
-
-            command_handler(commands, status_update_callback, logger,
-                            close_logger_on_success=False)
-
-            # For each body-site OTU table, run otu_category_significance.py
-            # using self versus other category. Keep track of each output file
-            # that is created because we need to parse these later on.
+            # For each body-site rarefied OTU table, run
+            # otu_category_significance.py using self versus other category.
+            # Keep track of each output file that is created because we need to
+            # parse these later on.
             commands = []
             for cat_value in cat_values:
-                body_site_otu_table_fp = join(body_site_dir,
+                body_site_otu_table_fp = join(per_body_site_dir,
                         add_filename_suffix(rarefied_otu_table_fp,
                                             '_%s' % cat_value))
-                if exists(body_site_otu_table_fp):
-                    body_site_map_fp = join(body_site_dir,
-                                            'mapping_%s.txt' % cat_value)
 
+                if exists(body_site_otu_table_fp):
                     otu_cat_output_fp = join(otu_cat_sig_dir,
                                              'otu_cat_sig_%s.txt' % cat_value)
-                    otu_cat_sig_output_fps.append(otu_cat_output_fp)
 
-                    cmd_title = 'Testing for significant differences in ' + \
-                                'OTU abundances in "%s" body site (%s)' % (
-                                cat_value, person_of_interest)
-                    cmd = ('otu_category_significance.py -i %s -m %s -c %s -o %s'
-                           % (body_site_otu_table_fp, body_site_map_fp,
-                              column_title, otu_cat_output_fp))
+                    cmd_title = ('Testing for significant differences in '
+                                 'OTU abundances in "%s" body site (%s)' % (
+                                 cat_value, person_of_interest))
+                    cmd = ('otu_category_significance.py -i %s -m %s -c %s '
+                           '-o %s' % (body_site_otu_table_fp,
+                                      personal_mapping_file_fp,
+                                      column_title,
+                                      otu_cat_output_fp))
                     commands.append([(cmd_title, cmd)])
                     raw_data_files.append(otu_cat_output_fp)
+                    otu_cat_sig_output_fps.append(otu_cat_output_fp)
 
             command_handler(commands, status_update_callback, logger,
                             close_logger_on_success=False)
