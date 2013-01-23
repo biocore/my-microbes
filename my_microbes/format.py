@@ -352,7 +352,8 @@ site:</h3>
 """
 
 def format_otu_category_significance_tables_as_html(table_fps, alpha,
-                                                    output_dir):
+                                                    output_dir,
+                                                    individual_titles):
     if alpha < 0 or alpha > 1:
         raise ValueError("Alpha must be between zero and one.")
 
@@ -374,15 +375,15 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                 otu_id_idx = cells.index('OTU')
                 p_value_idx = cells.index('FDR_corrected')
                 taxonomy_idx = cells.index('Consensus Lineage')
-                self_idx = cells.index('Self_mean')
-                other_idx = cells.index('Other_mean')
+                individual_title0_idx = cells.index('%s_mean' % individual_titles[0])
+                individual_title1_idx = cells.index('%s_mean' % individual_titles[1])
                 processed_header = True
             else:
                 otu_id = cells[otu_id_idx]
                 p_value = float(cells[p_value_idx])
                 taxonomy = cells[taxonomy_idx]
-                self_mean = float(cells[self_idx])
-                other_mean = float(cells[other_idx])
+                individual_title0_mean = float(cells[individual_title0_idx])
+                individual_title1_mean = float(cells[individual_title1_idx])
 
                 if p_value <= alpha:
                     # Taken from qiime.plot_taxa_summary.
@@ -403,7 +404,7 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                                     (tax_name.replace(' ', '+'),
                                      tax_level.replace(' ', '&nbsp;')))
                     taxonomy = ';'.join(taxa_links).replace('"', '')
-                    if self_mean > other_mean:
+                    if individual_title0_mean < individual_title1_mean:
                         row_color = "#FF9900"
                     else:
                         row_color = "#99CCFF"
@@ -411,7 +412,9 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                             row_color, otu_id, taxonomy)
 
         out_html_f.write(otu_category_significance_table_text %
-                         (body_site, html_row_text))
+                         (body_site, individual_titles[0], 
+                          individual_titles[1], individual_titles[0], 
+                          individual_titles[1], html_row_text))
         out_html_f.close()
         table_f.close()
 
@@ -435,7 +438,7 @@ otu_category_significance_table_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to do a google search for that taxonomic group. OTU IDs with an orange backgraound are found in lower abundance in you than in the average, and OTU IDs with a blue background are found in higher abundance in you than in the average.
+    Click on the taxonomy links for each OTU to do a google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
     <br/><br/>
 
     <table class="data-table">
