@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "John Chase"
 __copyright__ = "Copyright 2013, The QIIME project"
-__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
+    "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
 __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
@@ -49,7 +50,8 @@ def get_personal_ids(mapping_data, personal_id_index):
     return set([line[personal_id_index] for line in mapping_data])
 
 def create_personal_mapping_file(mapping_data, personal_id_of_interest,
-                                 personal_id_index, individual_titles=None):
+                                 personal_id_index, bodysite_index,
+                                 individual_titles=None):
     """Creates mapping file on a per-individual basis.
 
     Inserts new column designating self versus other.
@@ -57,14 +59,18 @@ def create_personal_mapping_file(mapping_data, personal_id_of_interest,
     if individual_titles == None:
         individual_titles = ['Self', 'Other']
 
+    site_id_indices = [personal_id_index, bodysite_index]
+
     personal_map = []
     for line in mapping_data:
         if line[personal_id_index] == personal_id_of_interest:
             individual_title = individual_titles[0]
         else:
             individual_title = individual_titles[1]
-        personal_map.append(line[:-1] + [individual_title] + [line[-1]])
-
+        # append the individual title and the site_id values before the last
+        # column to conserve the mapping file in a QIIME compliant format
+        personal_map.append(line[:-1] + [individual_title] +\
+            ['.'.join([line[index] for index in site_id_indices])] + [line[-1]])
     return personal_map
 
 def create_personal_results(output_dir,
@@ -106,8 +112,19 @@ def create_personal_results(output_dir,
     except ValueError:
         raise ValueError("Personal ID field '%s' is not a mapping file column "
                          "header." % personal_id_column)
+    try:
+        bodysite_index = header.index(category_to_split)
+    except ValueError:
+        raise ValueError("Category to split field '%s' is not a mapping file "
+            "column header." % category_to_split)
 
     header = header[:-1] + [column_title] + [header[-1]]
+
+    # column that differentiates between body-sites within a single individual
+    # used for the creation of the vectors in make_3d_plots.py, this data is
+    # created by concatenating the two columns when writing the mapping file
+    site_id_category = '%s&&%s' % (personal_id_column, category_to_split)
+    header.insert(len(header)-1, site_id_category)
 
     all_personal_ids = get_personal_ids(mapping_data, personal_id_index)
     if personal_ids == None: 
@@ -132,7 +149,8 @@ def create_personal_results(output_dir,
         html_fp = join(output_dir, person_of_interest, 'index.html')
 
         personal_mapping_data = create_personal_mapping_file(mapping_data,
-                person_of_interest, personal_id_index, individual_titles)
+                person_of_interest, personal_id_index, bodysite_index,
+                individual_titles)
 
         personal_mapping_f = open(personal_mapping_file_fp, 'w')
         personal_mapping_f.write(
@@ -199,8 +217,10 @@ def create_personal_results(output_dir,
             commands = []
             cmd_title = 'Creating beta diversity plots (%s)' % \
                         person_of_interest
-            cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s' % (
-                    personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir)
+            cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s --custom_axes=' % (
+                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir) +\
+                '\'%s\' --add_vectors=\'%s,%s\'' % (time_series_category,
+                site_id_category, time_series_category)
             commands.append([(cmd_title, cmd)])
 
             command_handler(commands, status_update_callback, logger,
