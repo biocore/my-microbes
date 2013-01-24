@@ -479,5 +479,14 @@ def format_participant_table(participants_f, url_prefix):
     return result
 
 def format_title(input_str):
-    """Return title-cased string, with underscores converted to spaces."""
-    return ' '.join(map(lambda e: e[0].upper() + e[1:], input_str.split('_')))
+    """Return title-cased string, with underscores converted to spaces.
+
+    If input_str has a mapping in title_mapping, this will be used instead.
+    """
+    title_mapping = {'PD_whole_tree': 'Phylogenetic Diversity'}
+
+    if input_str in title_mapping:
+        return title_mapping[input_str]
+    else:
+        return ' '.join(map(lambda e: e[0].upper() + e[1:],
+                            input_str.split('_')))

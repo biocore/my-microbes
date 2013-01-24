@@ -149,9 +149,12 @@ class FormatTests(TestCase):
     def test_format_title(self):
         """Tests converting string to title."""
         self.assertEqual(format_title("observed_species"), "Observed Species")
-        self.assertEqual(format_title("PD_whole_tree"), "PD Whole Tree")
         self.assertEqual(format_title("chao1"), "Chao1")
         self.assertEqual(format_title("shannon"), "Shannon")
+
+        # Test special mapping.
+        self.assertEqual(format_title("PD_whole_tree"),
+                         "Phylogenetic Diversity")
 
 
 expected_alpha_diversity_boxplots = """
