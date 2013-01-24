@@ -168,8 +168,7 @@ exp_otu_cat_sig_gut = """
   <script language="javascript" type="text/javascript">
     $(function() {
       // Initialize all dialogs and make sure they are hidden.
-      $( ".rep-seq-dialog" ).dialog();
-      $( ".rep-seq-dialog" ).dialog("close");
+      $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
     });
 
     /*
@@ -251,7 +250,8 @@ exp_otu_cat_sig_gut = """
     abundance in <i>Self</i> than in <i>Other</i>, and OTU IDs with a blue
     background are found in higher abundance in <i>Self</i> than in <i>Other</i>.
     Click on the OTU ID to view the representative sequence for that OTU (try
-    BLASTing these!).
+    <a target="_blank"
+    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">

@@ -424,6 +424,13 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                     otu_id_html = otu_id
                     if otu_id in otu_id_lookup:
                         rep_seq = otu_id_lookup[otu_id]
+
+                        # Splitting code taken from
+                        # http://code.activestate.com/recipes/496784-split-
+                        # string-into-n-size-pieces/
+                        rep_seq = '\n'.join([rep_seq[i:i+40]
+                            for i in range(0, len(rep_seq), 40)])
+
                         rep_seq_div_id = '%s-rep-seq' % otu_id
                         otu_id_html = ('<a href="#" id="%s" '
                                        'onclick="openDialog(\'%s\', \'%s\'); '
@@ -459,8 +466,7 @@ otu_category_significance_table_text = """
   <script language="javascript" type="text/javascript">
     $(function() {
       // Initialize all dialogs and make sure they are hidden.
-      $( ".rep-seq-dialog" ).dialog();
-      $( ".rep-seq-dialog" ).dialog("close");
+      $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
     });
 
     /*
@@ -542,7 +548,8 @@ otu_category_significance_table_text = """
     abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue
     background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
     Click on the OTU ID to view the representative sequence for that OTU (try
-    BLASTing these!).
+    <a target="_blank"
+    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">
