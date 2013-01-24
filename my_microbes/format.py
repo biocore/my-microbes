@@ -11,6 +11,8 @@ __email__ = "jc33@nau.edu"
 
 from os.path import basename, join, splitext
 
+from cogent.parse.fasta import MinimalFastaParser
+
 from my_microbes.parse import parse_recipients
 
 index_text = """
@@ -353,9 +355,16 @@ site:</h3>
 
 def format_otu_category_significance_tables_as_html(table_fps, alpha,
                                                     output_dir,
-                                                    individual_titles):
+                                                    individual_titles,
+                                                    rep_set_fp=None):
     if alpha < 0 or alpha > 1:
         raise ValueError("Alpha must be between zero and one.")
+
+    otu_id_lookup = {}
+    if rep_set_fp is not None:
+        for seq_id, seq in MinimalFastaParser(open(rep_set_fp, 'U')):
+            seq_id = seq_id.strip().split()[0]
+            otu_id_lookup[seq_id] = seq
 
     created_files = []
     for table_fp in table_fps:
@@ -367,6 +376,7 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
         created_files.append(basename(out_html_fp))
 
         html_row_text = ''
+        rep_seq_html = ''
         processed_header = False
         for line in table_f:
             cells = map(lambda e: e.strip(), line.strip().split('\t'))
@@ -408,13 +418,37 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                         row_color = "#FF9900" # orange
                     else:
                         row_color = "#99CCFF" # blue
+
+                    # If we have a rep seq for the current OTU ID, create a
+                    # link. If not, simply display the OTU ID as text.
+                    otu_id_html = otu_id
+                    if otu_id in otu_id_lookup:
+                        rep_seq = otu_id_lookup[otu_id]
+
+                        # Splitting code taken from
+                        # http://code.activestate.com/recipes/496784-split-
+                        # string-into-n-size-pieces/
+                        rep_seq = '\n'.join([rep_seq[i:i+40]
+                            for i in range(0, len(rep_seq), 40)])
+
+                        rep_seq_div_id = '%s-rep-seq' % otu_id
+                        otu_id_html = ('<a href="#" id="%s" '
+                                       'onclick="openDialog(\'%s\', \'%s\'); '
+                                       'return false;">%s</a>' % (otu_id,
+                                       rep_seq_div_id, otu_id, otu_id))
+                        rep_seq_html += ('<div id="%s" class="rep-seq-dialog" '
+                                         'title="Representative Sequence for '
+                                         'OTU ID %s">\n<pre>&gt;%s\n%s</pre>\n'
+                                         '</div>\n' % (rep_seq_div_id, otu_id,
+                                                       otu_id, rep_seq))
+
                     html_row_text += '<tr><td bgcolor=%s>%s</td><td>%s</td></tr>\n' % (
-                            row_color, otu_id, taxonomy)
+                            row_color, otu_id_html, taxonomy)
 
         out_html_f.write(otu_category_significance_table_text %
                          (body_site, individual_titles[0], 
                           individual_titles[1], individual_titles[0], 
-                          individual_titles[1], html_row_text))
+                          individual_titles[1], html_row_text, rep_seq_html))
         out_html_f.close()
         table_f.close()
 
@@ -427,7 +461,78 @@ otu_category_significance_table_text = """
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
 
+  <script src="../../support_files/js/jquery.js"></script>
+  <script src="../../support_files/js/jquery-ui.js"></script>
   <script language="javascript" type="text/javascript">
+    $(function() {
+      // Initialize all dialogs and make sure they are hidden.
+      $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
+    });
+
+    /*
+     * This function accepts a dialog id as a parameter, and opens the dialog
+     * box that is bound to that id. A second optional parameter, target, is
+     * the id of the element where the dialog should appear next to. If this
+     * parameter is null, the dialog will open at its default location,
+     * according to its configured options.
+     *
+     * For example, if the user clicks a link to view more info, the dialog
+     * should appear next to that link, instead of appearing in a location
+     * relative to the dialog element, which is hidden. Therefore, the id of
+     * the link that opens the dialog should be supplied as the second
+     * parameter.
+     */
+    function openDialog(dialog, target) {
+      var dialogId = "#" + dialog;
+
+      if (typeof(target) != "undefined") {
+        var targetId = "#" + target;
+        var scrollOffsets = getScrollXY();
+
+        // Move a little to the left.
+        var leftPos = ($(targetId).position().left - scrollOffsets[0] + 95);
+        var topPos = ($(targetId).position().top - scrollOffsets[1]);
+
+        $(dialogId).dialog("option", "position", [leftPos, topPos]);
+      }
+
+      $(dialogId).dialog("open");
+    }
+
+    /*
+     * Returns an array with the scrolling offsets (useful for displaying
+     * tooltips/dialogs in the same place even when the user has scrolled on
+     * the page and then opens a new dialog).
+     *
+     * Returns [scrollOffsetX, scrollOffsetY]. This function works in all
+     * browsers.
+     *
+     * Code taken from: http://stackoverflow.com/a/745126
+     */
+    function getScrollXY() {
+      var scrOfX = 0, scrOfY = 0;
+      if (typeof(window.pageYOffset) == 'number') {
+        // Netscape compliant.
+        scrOfY = window.pageYOffset;
+        scrOfX = window.pageXOffset;
+      }
+      else if (document.body && (document.body.scrollLeft ||
+                                 document.body.scrollTop)) {
+        // DOM compliant.
+        scrOfY = document.body.scrollTop;
+        scrOfX = document.body.scrollLeft;
+      }
+      else if (document.documentElement &&
+               (document.documentElement.scrollLeft ||
+                document.documentElement.scrollTop)) {
+        // IE6 standards compliant mode.
+        scrOfY = document.documentElement.scrollTop;
+        scrOfX = document.documentElement.scrollLeft;
+      }
+
+      return [scrOfX, scrOfY];
+    }
+
     function gg(targetq) {
       window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
     }
@@ -438,7 +543,13 @@ otu_category_significance_table_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to do a google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
+    Click on the taxonomy links for each OTU to do a Google search for that
+    taxonomic group. OTU IDs with an orange background are found in lower
+    abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue
+    background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
+    Click on the OTU ID to view the representative sequence for that OTU (try
+    <a target="_blank"
+    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">
@@ -448,6 +559,7 @@ otu_category_significance_table_text = """
       </tr>
       %s
     </table>
+    %s
   </div>
 </body>
 </html>
