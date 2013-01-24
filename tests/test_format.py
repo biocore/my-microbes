@@ -163,7 +163,79 @@ exp_otu_cat_sig_gut = """
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
 
+  <script src="../support_files/js/jquery.js"></script>
+  <script src="../support_files/js/jquery-ui.js"></script>
   <script language="javascript" type="text/javascript">
+    $(function() {
+      // Initialize all dialogs and make sure they are hidden.
+      $( ".rep-seq-dialog" ).dialog();
+      $( ".rep-seq-dialog" ).dialog("close");
+    });
+
+    /*
+     * This function accepts a dialog id as a parameter, and opens the dialog
+     * box that is bound to that id. A second optional parameter, target, is
+     * the id of the element where the dialog should appear next to. If this
+     * parameter is null, the dialog will open at its default location,
+     * according to its configured options.
+     *
+     * For example, if the user clicks a link to view more info, the dialog
+     * should appear next to that link, instead of appearing in a location
+     * relative to the dialog element, which is hidden. Therefore, the id of
+     * the link that opens the dialog should be supplied as the second
+     * parameter.
+     */
+    function openDialog(dialog, target) {
+      var dialogId = "#" + dialog;
+
+      if (typeof(target) != "undefined") {
+        var targetId = "#" + target;
+        var scrollOffsets = getScrollXY();
+
+        // Move a little to the left.
+        var leftPos = ($(targetId).position().left - scrollOffsets[0] + 95);
+        var topPos = ($(targetId).position().top - scrollOffsets[1]);
+
+        $(dialogId).dialog("option", "position", [leftPos, topPos]);
+      }
+
+      $(dialogId).dialog("open");
+    }
+
+    /*
+     * Returns an array with the scrolling offsets (useful for displaying
+     * tooltips/dialogs in the same place even when the user has scrolled on
+     * the page and then opens a new dialog).
+     *
+     * Returns [scrollOffsetX, scrollOffsetY]. This function works in all
+     * browsers.
+     *
+     * Code taken from: http://stackoverflow.com/a/745126
+     */
+    function getScrollXY() {
+      var scrOfX = 0, scrOfY = 0;
+      if (typeof(window.pageYOffset) == 'number') {
+        // Netscape compliant.
+        scrOfY = window.pageYOffset;
+        scrOfX = window.pageXOffset;
+      }
+      else if (document.body && (document.body.scrollLeft ||
+                                 document.body.scrollTop)) {
+        // DOM compliant.
+        scrOfY = document.body.scrollTop;
+        scrOfX = document.body.scrollLeft;
+      }
+      else if (document.documentElement &&
+               (document.documentElement.scrollLeft ||
+                document.documentElement.scrollTop)) {
+        // IE6 standards compliant mode.
+        scrOfY = document.documentElement.scrollTop;
+        scrOfX = document.documentElement.scrollLeft;
+      }
+
+      return [scrOfX, scrOfY];
+    }
+
     function gg(targetq) {
       window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
     }
@@ -174,7 +246,12 @@ exp_otu_cat_sig_gut = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in gut samples (comparing self
     versus other)</h2>
-    Click on the taxonomy links for each OTU to do a google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>Self</i> than in <i>Other</i>, and OTU IDs with a blue background are found in higher abundance in <i>Self</i> than in <i>Other</i>.
+    Click on the taxonomy links for each OTU to do a Google search for that
+    taxonomic group. OTU IDs with an orange background are found in lower
+    abundance in <i>Self</i> than in <i>Other</i>, and OTU IDs with a blue
+    background are found in higher abundance in <i>Self</i> than in <i>Other</i>.
+    Click on the OTU ID to view the representative sequence for that OTU (try
+    BLASTing these!).
     <br/><br/>
 
     <table class="data-table">
@@ -187,6 +264,7 @@ exp_otu_cat_sig_gut = """
 <tr><td bgcolor=#99CCFF>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
 
     </table>
+    
   </div>
 </body>
 </html>

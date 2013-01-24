@@ -381,7 +381,7 @@ def create_personal_results(output_dir,
             otu_cat_sig_html_filenames = \
                     format_otu_category_significance_tables_as_html(
                             otu_cat_sig_output_fps, alpha, otu_cat_sig_dir, 
-                            individual_titles)
+                            individual_titles, rep_set_fp=rep_set_fp)
 
             # Create relative paths for use with the index page.
             rel_otu_cat_sig_dir = basename(normpath(otu_cat_sig_dir))
