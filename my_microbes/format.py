@@ -454,8 +454,8 @@ otu_category_significance_table_text = """
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
 
-  <script src="../support_files/js/jquery.js"></script>
-  <script src="../support_files/js/jquery-ui.js"></script>
+  <script src="../../support_files/js/jquery.js"></script>
+  <script src="../../support_files/js/jquery-ui.js"></script>
   <script language="javascript" type="text/javascript">
     $(function() {
       // Initialize all dialogs and make sure they are hidden.
