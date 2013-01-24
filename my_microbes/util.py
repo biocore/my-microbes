@@ -92,6 +92,7 @@ def create_personal_results(output_dir,
                             time_series_category='WeeksSinceStart',
                             rarefaction_depth=10000,
                             alpha=0.05,
+                            rep_set_fp=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -376,7 +377,7 @@ def create_personal_results(output_dir,
             otu_cat_sig_html_filenames = \
                     format_otu_category_significance_tables_as_html(
                             otu_cat_sig_output_fps, alpha, otu_cat_sig_dir, 
-                            individual_titles)
+                            individual_titles, rep_set_fp=rep_set_fp)
 
             # Create relative paths for use with the index page.
             rel_otu_cat_sig_dir = basename(normpath(otu_cat_sig_dir))

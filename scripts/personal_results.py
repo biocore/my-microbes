@@ -134,6 +134,12 @@ script_info['optional_options'] = [
         'category significance tables. For an OTU to be included in the '
         'table, it must have an FDR-corrected p-value <= to alpha '
         '[default: %default]'),
+    make_option('--rep_set_fp',
+        help='Input representative set of sequences (with IDs matching those '
+        'found in the OTU table supplied with -a). If supplied, the OTU '
+        'category significance tables will have clickable OTU IDs that will '
+        'open the fasta-formatted representative sequence in a dialog '
+        '[default: %default]', type='existing_filepath', default=None),
     make_option('--retain_raw_data', default=False, action='store_true',
          help='Retain raw data files (OTU tables, taxa summary files, etc.). '
                'By default, these files will be cleaned up by the script, as '
@@ -206,6 +212,7 @@ def main():
                             opts.time_series_category,
                             rarefaction_depth=opts.rarefaction_depth,
                             alpha=opts.alpha,
+                            rep_set_fp=opts.rep_set_fp,
                             retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,
