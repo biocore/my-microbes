@@ -41,6 +41,7 @@ from my_microbes.format import (create_index_html,
         create_comparative_taxa_plots_html,
         create_otu_category_significance_html,
         format_otu_category_significance_tables_as_html,
+        format_title,
         get_personalized_notification_email_text,
         notification_email_subject)
 from my_microbes.parse import parse_email_settings, parse_recipients
@@ -457,7 +458,7 @@ def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
                                          x_tick_labels=x_tick_labels,
                                          title=plot_title,
                                          x_label='Grouping',
-                                         y_label=adiv_metric)
+                                         y_label=format_title(adiv_metric))
         plot_fp = join(output_dir, '%s.png' % adiv_metric)
         plot_figure.savefig(plot_fp)
         created_files.append(basename(plot_fp))
