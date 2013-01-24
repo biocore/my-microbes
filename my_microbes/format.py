@@ -438,7 +438,7 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
                                        rep_seq_div_id, otu_id, otu_id))
                         rep_seq_html += ('<div id="%s" class="rep-seq-dialog" '
                                          'title="Representative Sequence for '
-                                         'OTU ID %s"><pre>&gt;%s\n%s</pre>'
+                                         'OTU ID %s">\n<pre>&gt;%s\n%s</pre>\n'
                                          '</div>\n' % (rep_seq_div_id, otu_id,
                                                        otu_id, rep_seq))
 

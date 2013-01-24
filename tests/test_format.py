@@ -75,6 +75,12 @@ class FormatTests(TestCase):
         otu_cat_sig_palm_f.close()
         self.files_to_remove.append(self.otu_cat_sig_palm_fp)
 
+        self.rep_seqs_fp = join(self.input_dir, 'rep_seqs.fna')
+        rep_seqs_f = open(self.rep_seqs_fp, 'w')
+        rep_seqs_f.write(rep_seqs_text)
+        rep_seqs_f.close()
+        self.files_to_remove.append(self.rep_seqs_fp)
+
     def tearDown(self):
         """Remove temporary files/dirs created by tests."""
         # Change back to the start dir - some workflows change directory.
@@ -135,7 +141,7 @@ class FormatTests(TestCase):
 
         obs = format_otu_category_significance_tables_as_html(
                 [self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05,
-                self.output_dir,['Self','Other'])
+                self.output_dir,['Self','Other'], rep_set_fp=self.rep_seqs_fp)
         self.assertEquals(obs, ['gut.html', 'palm.html'])
 
         out_f = open(join(self.output_dir, 'gut.html'), 'U')
@@ -156,6 +162,9 @@ otu_cat_sig_gut_text = """OTU	prob	Bonferroni_corrected	FDR_corrected	Self_mean	
 198792	9.85322211031e-11	5.38971249434e-08	5.38971249434e-08	0.0000167	0.00249130434783	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__
 175844	9.11665166989e-10	4.98680846343e-07	2.49340423172e-07	0.0101	4.34782608696e-05	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__[Barnesiellaceae];  g__;  s__
 205836	1.13930778482e-09	6.23201358295e-07	2.07733786098e-07	0.00583	0.000726086956522	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__"""
+
+rep_seqs_text = """>175844 PC.635_779
+TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCCCGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAGTGAAACCATGCGGAAATACTATACTATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCAA"""
 
 exp_otu_cat_sig_gut = """
 <html>
@@ -260,11 +269,21 @@ exp_otu_cat_sig_gut = """
         <th>Taxonomy</th>
       </tr>
       <tr><td bgcolor=#FF9900>198792</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
-<tr><td bgcolor=#99CCFF>175844</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
+<tr><td bgcolor=#99CCFF><a href="#" id="175844" onclick="openDialog('175844-rep-seq', '175844'); return false;">175844</a></td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
 <tr><td bgcolor=#99CCFF>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
 
     </table>
-    
+    <div id="175844-rep-seq" class="rep-seq-dialog" title="Representative Sequence for OTU ID 175844">
+<pre>&gt;175844
+TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCT
+CAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCC
+CGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGA
+AATTCTTTAATAGTGAAACCATGCGGAAATACTATACTAT
+CGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTA
+TCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTC
+GCCATCAA</pre>
+</div>
+
   </div>
 </body>
 </html>
