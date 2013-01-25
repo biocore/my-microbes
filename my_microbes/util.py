@@ -94,6 +94,7 @@ def create_personal_results(output_dir,
                             rarefaction_depth=10000,
                             alpha=0.05,
                             rep_set_fp=None,
+                            parameter_fp=None,
                             body_site_rarefied_otu_table_dir=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
@@ -328,6 +329,9 @@ def create_personal_results(output_dir,
                                (body_site_otu_table_fp, plots,
                                 time_series_category,
                                 personal_mapping_file_fp))
+                        if parameter_fp is not None:
+                            cmd += ' -p %s' % parameter_fp
+                            
                         commands.append([(cmd_title, cmd)])
 
                         raw_data_files.append(join(plots, '*.biom'))
