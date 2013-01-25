@@ -94,6 +94,7 @@ def create_personal_results(output_dir,
                             rarefaction_depth=10000,
                             alpha=0.05,
                             rep_set_fp=None,
+                            parameter_fp=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -101,8 +102,7 @@ def create_personal_results(output_dir,
                             suppress_alpha_diversity_boxplots=False,
                             suppress_otu_category_significance=False,
                             command_handler=call_commands_serially,
-                            status_update_callback=no_status_updates, 
-                            parameter_fp=None):
+                            status_update_callback=no_status_updates):
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
     create_dir(output_dir)

@@ -1,1 +1,1 @@
-plot_taxa_summary:LABEL_TYPE numeric 
+plot_taxa_summary:label_type numeric

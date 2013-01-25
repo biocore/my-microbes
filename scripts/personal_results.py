@@ -218,6 +218,7 @@ def main():
                             rarefaction_depth=opts.rarefaction_depth,
                             alpha=opts.alpha,
                             rep_set_fp=opts.rep_set_fp,
+                            parameter_fp=opts.parameter_fp,
                             retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,
@@ -225,8 +226,7 @@ def main():
                             suppress_alpha_diversity_boxplots=opts.suppress_alpha_diversity_boxplots,
                             suppress_otu_category_significance=opts.suppress_otu_category_significance,
                             command_handler=command_handler,
-                            status_update_callback=status_update_callback,
-                            parameter_fp=opts.parameter_fp)
+                            status_update_callback=status_update_callback)
 
 
 if __name__ == "__main__":
