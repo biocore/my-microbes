@@ -167,7 +167,13 @@ script_info['optional_options'] = [
                '[default: %default]')),
     make_option('-w', '--print_only', action='store_true',
         help='Print the commands but don\'t call them -- useful for debugging '
-        '[default: %default]', default=False)
+        '[default: %default]', default=False),
+    make_option('--parameter_fp',
+        default=None, 
+        help=('Pass a parameters file path. I.e, a parameter file that will be passed ' 
+             'to summarize_taxa_through_plots that will allow for correct time series ' 
+             'x-axis where time increments are not even.'
+             '[default: %default]')),      
 ]
 
 script_info['version'] = __version__
@@ -220,7 +226,8 @@ def main():
                             suppress_alpha_diversity_boxplots=opts.suppress_alpha_diversity_boxplots,
                             suppress_otu_category_significance=opts.suppress_otu_category_significance,
                             command_handler=command_handler,
-                            status_update_callback=status_update_callback)
+                            status_update_callback=status_update_callback,
+                            parameter_fp=opts.parameter_fp)
 
 
 if __name__ == "__main__":

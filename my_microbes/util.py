@@ -101,7 +101,8 @@ def create_personal_results(output_dir,
                             suppress_alpha_diversity_boxplots=False,
                             suppress_otu_category_significance=False,
                             command_handler=call_commands_serially,
-                            status_update_callback=no_status_updates):
+                            status_update_callback=no_status_updates, 
+                            parameter_fp=None):
     # Create our output directory and copy over the resources the personalized
     # pages need (e.g. javascript, images, etc.).
     create_dir(output_dir)
@@ -324,6 +325,9 @@ def create_personal_results(output_dir,
                                (body_site_otu_table_fp, plots,
                                 time_series_category,
                                 personal_mapping_file_fp))
+                        if parameter_fp is not None:
+                            cmd += ' -p %s' % parameter_fp
+                            
                         commands.append([(cmd_title, cmd)])
 
                         raw_data_files.append(join(plots, '*.biom'))
