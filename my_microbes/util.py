@@ -94,6 +94,7 @@ def create_personal_results(output_dir,
                             rarefaction_depth=10000,
                             alpha=0.05,
                             rep_set_fp=None,
+                            parameter_fp=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -251,15 +252,25 @@ def create_personal_results(output_dir,
         ## Beta diversity steps
         if not suppress_beta_diversity:
             pcoa_dir = join(output_dir, person_of_interest, 'beta_diversity')
+            pcoa_time_series_dir = join(output_dir, person_of_interest, 
+                                         'beta_diversity_time_series')
             output_directories.append(pcoa_dir)
+            output_directories.append(pcoa_time_series_dir)
 
             commands = []
-            cmd_title = 'Creating beta diversity plots (%s)' % \
+            cmd_title = 'Creating beta diversity time series plots (%s)' % \
                         person_of_interest
             cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s --custom_axes=' % (
-                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir) +\
+                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_time_series_dir) +\
                 '\'%s\' --add_vectors=\'%s,%s\'' % (time_series_category,
                 site_id_category, time_series_category)
+            commands.append([(cmd_title, cmd)])
+            
+            cmd_title = 'Creating beta diversity plots (%s)' % \
+                        person_of_interest
+            cmd = 'make_3d_plots.py  -m %s -p %s -i %s -o %s' % (personal_mapping_file_fp,
+                                                                 prefs_fp, coord_fp, 
+                                                                 pcoa_dir)
             commands.append([(cmd_title, cmd)])
 
             command_handler(commands, status_update_callback, logger,
@@ -324,6 +335,9 @@ def create_personal_results(output_dir,
                                (body_site_otu_table_fp, plots,
                                 time_series_category,
                                 personal_mapping_file_fp))
+                        if parameter_fp is not None:
+                            cmd += ' -p %s' % parameter_fp
+                            
                         commands.append([(cmd_title, cmd)])
 
                         raw_data_files.append(join(plots, '*.biom'))
