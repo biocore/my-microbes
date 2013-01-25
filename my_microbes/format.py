@@ -126,6 +126,7 @@ index_text = """
         While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 
         <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots.</h3>
+        <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
       </div>
 
       <div id="alpha-diversity-boxplots">%s</div>
