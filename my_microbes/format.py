@@ -48,8 +48,13 @@ index_text = """
         </p>
         <center>
           <noscript>
-            <h2 class="error">You <em>must</em> have JavaScript enabled to use My Microbes.</h1>
+            <h2 class="error">You <em>must</em> have JavaScript enabled to use My Microbes.</h2>
           </noscript>
+
+          <!--[if ie]>
+            <br/><br/>
+            <h2 class="error">Internet Explorer is not a recommened browser to use with My Microbes. We recommend using either Firefox or Safari.</h2>
+          <![endif]-->
         </center>
       </div>
     </div>
@@ -70,10 +75,10 @@ index_text = """
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
-          <li>What was the dominant phylum in your gut on the first week that you donated a sample?
-          <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time? 
-          <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?
-          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?
+          <li>What was the dominant phylum in your gut on the first week that you donated a sample?</li>
+          <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time?</li>
+          <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?</li>
+          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?</li>
         </ol>
 
         <h3>Click on the following links to see your taxonomic summary plots:</h3>
