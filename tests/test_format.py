@@ -180,7 +180,8 @@ rep_seqs_text = """>175844 PC.635_779
 TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCCCGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAGTGAAACCATGCGGAAATACTATACTATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCAA"""
 
 exp_otu_cat_sig_gut = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">

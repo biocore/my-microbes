@@ -16,7 +16,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from my_microbes.parse import parse_recipients
 
 index_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <link href="../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
     <link href="../support_files/css/main.css" rel="stylesheet">
@@ -47,8 +48,13 @@ index_text = """
         </p>
         <center>
           <noscript>
-            <h2 class="error">You <em>must</em> have JavaScript enabled to use My Microbes.</h1>
+            <h2 class="error">You <em>must</em> have JavaScript enabled to use My Microbes.</h2>
           </noscript>
+
+          <!--[if ie]>
+            <br/><br/>
+            <h2 class="error">Internet Explorer is not a recommended browser to use with My Microbes as some features will not be available. We recommend using either Firefox or Safari.</h2>
+          <![endif]-->
         </center>
       </div>
     </div>
@@ -69,10 +75,10 @@ index_text = """
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
-          <li>What was the dominant phylum in your gut on the first week that you donated a sample?
-          <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time? 
-          <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?
-          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?
+          <li>What was the dominant phylum in your gut on the first week that you donated a sample?</li>
+          <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time?</li>
+          <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?</li>
+          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?</li>
         </ol>
 
         <h3>Click on the following links to see your taxonomic summary plots:</h3>
@@ -238,7 +244,8 @@ def create_index_html(personal_id, output_fp,
 #
 # See http://stackoverflow.com/a/5664399 for more details.
 comparative_taxa_plots_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
@@ -558,7 +565,8 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
 
 # gg() function taken from qiime.plot_taxa_summary.
 otu_category_significance_table_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">

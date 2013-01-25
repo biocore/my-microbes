@@ -19,6 +19,11 @@
   margin-right: auto;
 }
 
+/* IE puts borders around links that are images */
+a img {
+  border: 0;
+}
+
 .text {
   padding: 1.0em 1.4em;
 }
