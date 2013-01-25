@@ -53,7 +53,7 @@ index_text = """
 
           <!--[if ie]>
             <br/><br/>
-            <h2 class="error">Internet Explorer is not a recommened browser to use with My Microbes. We recommend using either Firefox or Safari.</h2>
+            <h2 class="error">Internet Explorer is not a recommended browser to use with My Microbes as some features will not be available. We recommend using either Firefox or Safari.</h2>
           <![endif]-->
         </center>
       </div>
