@@ -243,27 +243,83 @@ comparative_taxa_plots_text = """
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
 
+  <script src="../../support_files/js/jquery.js"></script>
+  <script src="../../support_files/js/jquery-ui.js"></script>
+
   <script language="javascript" type="text/javascript">
+    $(function() {
+      $("#loading-dialog").dialog({
+        modal: true,
+        resizable: false,
+        closeText: '',
+        closeOnEscape: false,
+        draggable: false,
+        open: function(event, ui) {
+          $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+        },
+        position: {
+          my: "center top", at: "center top", of: window
+        }
+      });
+    });
+
     function init() {
-      document.getElementById("selfIFrame").contentWindow.onscroll = syncOther;
-      document.getElementById("otherIFrame").contentWindow.onscroll = syncSelf;
+      layout = 'vertical';
+      toggleLayout();
+    }
+
+    function toggleLayout() {
+      window.scrollTo(0, 0);
+
+      if (layout == 'vertical') {
+        $(".vertical").hide();
+        $(".horizontal").show();
+        layout = 'horizontal';
+
+        var selfIFrame = document.getElementById("horizontalSelfIFrame");
+        var otherIFrame = document.getElementById('horizontalOtherIFrame');
+        var selfIFrameHeight = selfIFrame.contentWindow.document.body.scrollHeight;
+        var otherIFrameHeight = otherIFrame.contentWindow.document.body.scrollHeight;
+        var height = Math.max(selfIFrameHeight, otherIFrameHeight);
+
+        selfIFrame.style.height = height + 'px';
+        otherIFrame.style.height = height + 'px';
+      }
+      else {
+        document.getElementById("verticalSelfIFrame").contentWindow.onscroll = syncOther;
+        document.getElementById("verticalOtherIFrame").contentWindow.onscroll = syncSelf;
+
+        $(".horizontal").hide();
+        $(".vertical").show();
+        layout = 'vertical';
+      }
+
+      $("#loading-dialog").dialog("close");
+      window.scrollTo(0, 0);
     }
 
     function syncSelf() {
-      selfContent = document.getElementById("selfIFrame").contentWindow;
-      otherContent = document.getElementById("otherIFrame").contentWindow;
+      var selfContent = document.getElementById("verticalSelfIFrame").contentWindow;
+      var otherContent = document.getElementById("verticalOtherIFrame").contentWindow;
       selfContent.scrollTo(otherContent.scrollX, otherContent.scrollY);
     }
 
     function syncOther() {
-      selfContent = document.getElementById("selfIFrame").contentWindow;
-      otherContent = document.getElementById("otherIFrame").contentWindow;
+      var selfContent = document.getElementById("verticalSelfIFrame").contentWindow;
+      var otherContent = document.getElementById("verticalOtherIFrame").contentWindow;
       otherContent.scrollTo(selfContent.scrollX, selfContent.scrollY);
     }
   </script>
 </head>
 
-<body onload="init()">
+<body onload="init();">
+  <div id="loading-dialog" title="Loading...">
+    <center>
+      <p>Loading, please wait...</p>
+      <img src="../../support_files/images/loading.gif"/>
+    </center>
+  </div>
+
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>%s taxonomic composition plots (comparing self versus other)</h2>
     The two panels below show taxonomic composition plots for yourself and all
@@ -271,27 +327,72 @@ comparative_taxa_plots_text = """
     number that the samples were taken from so that you can see how the community
     composition changes over time.
     <br/><br/>
-    The two panels are synchronized such that when you scroll one, the other will
-    also scroll. This makes it easier to compare your results to all other
-    individuals in the study.
+
+    By default, the <i>Self</i> versus <i>Other</i> plots are positioned
+    side-by-side for easy comparison on wide monitors. If you're having trouble
+    comparing the plots because they are overlapping each other, try clicking
+    the button below to switch to a vertical layout.
+    <br/><br/>
+
+    <button id="toggleViewButton" type="button" onclick="toggleLayout();">
+      Switch Layout
+    </button>
+
+    <div class="vertical">
+      <br/>
+      The two panels are synchronized such that when you scroll one, the other will
+      also scroll. This makes it easier to compare your results to all other
+      individuals in the study.
+    </div>
   </div>
 
-  <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
-  <div style="margin: 0 auto; width:90%%; height:48%%">
-    <iframe id="selfIFrame"
-            src="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html"
-            frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
-            scrolling="auto">
-    </iframe>
+  <div class="horizontal">
+    <table height="100%%" width="100%%" cellpadding=0 cellspacing=0>
+      <tr>
+        <td>
+          <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
+        </td>
+        <td>
+          <h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <iframe id="horizontalSelfIFrame"
+                  src="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html"
+                  frameborder="0" style="width:100%%;"
+                  scrolling="no">
+          </iframe>
+        </td>
+        <td>
+          <iframe id="horizontalOtherIFrame"
+                  src="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html"
+                  frameborder="0" style="width:100%%;"
+                  scrolling="no">
+          </iframe>
+        </td>
+      </tr>
+    </table>
   </div>
 
-  <h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
-  <div style="margin: 0 auto; width:90%%; height:48%%;">
-    <iframe id="otherIFrame"
-            src="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html"
-            frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
-            scrolling="auto">
-    </iframe>
+  <div class="vertical">
+    <h3>%s taxonomic composition by weeks since experiment start (self)</h3>
+    <div id="selfContainer" style="margin: 0 auto; width:90%%; height:48%%">
+      <iframe id="verticalSelfIFrame"
+              src="taxa_plots_Self_%s/taxa_summary_plots/area_charts.html"
+              frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
+              scrolling="auto">
+      </iframe>
+    </div>
+
+    <h3>%s taxonomic composition by weeks since experiment start (other; average)</h3>
+    <div id="otherContainer" style="margin: 0 auto; width:90%%; height:48%%;">
+      <iframe id="verticalOtherIFrame"
+              src="taxa_plots_Other_%s/taxa_summary_plots/area_charts.html"
+              frameborder="0" style="width:100%%; height:100%%; margin:1%%;"
+              scrolling="auto">
+      </iframe>
+    </div>
   </div>
 </body>
 </html>
@@ -300,6 +401,7 @@ comparative_taxa_plots_text = """
 def create_comparative_taxa_plots_html(category, output_fp):
     output_f = open(output_fp,'w')
     output_f.write(comparative_taxa_plots_text % (category.title(),
+            category.title(), category.title(), category, category,
             category.title(), category, category.title(), category))
     output_f.close()
 
