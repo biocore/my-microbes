@@ -16,7 +16,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from my_microbes.parse import parse_recipients
 
 index_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <link href="../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
     <link href="../support_files/css/main.css" rel="stylesheet">
@@ -238,7 +239,8 @@ def create_index_html(personal_id, output_fp,
 #
 # See http://stackoverflow.com/a/5664399 for more details.
 comparative_taxa_plots_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
@@ -456,7 +458,8 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
 
 # gg() function taken from qiime.plot_taxa_summary.
 otu_category_significance_table_text = """
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
   <link href="../../support_files/css/main.css" rel="stylesheet">
