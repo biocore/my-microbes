@@ -56,11 +56,10 @@ index_text = """
 
     <div id="tabs">
       <ul>
-        <li><a href="#taxonomic-composition">Taxonomic Composition</a></li>
-        <li><a href="#beta-diversity">Beta Diversity</a></li>
-        <li><a href="#alpha-diversity-boxplots">Alpha Diversity Boxplots</a></li>
-        <li><a href="#differential-otus">Differential OTUs</a></li>
-        <li><a href="#alpha-rarefaction">Alpha Rarefaction</a></li>
+        <li><a href="#taxonomic-composition">Which microbes live on my body?</a></li>
+        <li><a href="#beta-diversity">Are my microbes different from everyone else's?</a></li>
+        <li><a href="#alpha-diversity-boxplots">How many types of microbes live on my body?</a></li>
+        <li><a href="#differential-otus">Which microbes differentiate me from everyone else?</a></li>
       </ul>
 
       <div id="taxonomic-composition">
@@ -126,21 +125,6 @@ index_text = """
 
       <div id="differential-otus">%s</div>
 
-      <div id="alpha-rarefaction">
-        <h2>Alpha Rarefaction</h2>
-        Alpha rarefaction plots are a tool for interpreting measures of alpha diversity. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in the Greengenes tree that is observed in a sample. PD is a phylogenetic measure, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.
-        <br/><br/>
-        Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). This is done because a measure of richness is very dependent on how much sampling effort was applied. For example, in macro-scale ecology, if you're interested in counting the number of different insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The analog to area in sequence-based studies of microbial ecology is the number of sequences collected. An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis).
-        <br/><br/>
-        You should be able to answer several questions about your microbial communities from these plots:
-        <ol>
-          <li>How rich are the microbial communities at your different body sites relative to the average for that body site (e.g., is your gut community more diverse than the average gut community)?</li>
-          <li>Which of your body sites is most diverse, and which is least diverse? Do others exhibit the same pattern?</li>
-          <li>If we were to collect more sequences per sample, do you expect that your answers to questions 1 and 2 would change?</li>
-        </ol>
-
-        <h3>Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. Select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.</h3>
-      </div>
     </div>
 
     <div id="footer">
