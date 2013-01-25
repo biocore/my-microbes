@@ -95,6 +95,7 @@ def create_personal_results(output_dir,
                             alpha=0.05,
                             rep_set_fp=None,
                             parameter_fp=None,
+                            body_site_rarefied_otu_table_dir=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -162,24 +163,27 @@ def create_personal_results(output_dir,
                 add_filename_suffix(otu_table_fp,
                                     '_even%d' % rarefaction_depth))
 
-        commands = []
-        cmd_title = 'Rarefying OTU table'
-        cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
-                rarefied_otu_table_fp, rarefaction_depth)
-        commands.append([(cmd_title, cmd)])
-        raw_data_files.append(rarefied_otu_table_fp)
+        if body_site_rarefied_otu_table_dir is None:
+            commands = []
+            cmd_title = 'Rarefying OTU table'
+            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
+                    rarefied_otu_table_fp, rarefaction_depth)
+            commands.append([(cmd_title, cmd)])
+            raw_data_files.append(rarefied_otu_table_fp)
 
-        per_body_site_dir = join(output_dir, 'per_body_site_otu_tables')
+            per_body_site_dir = join(output_dir, 'per_body_site_otu_tables')
 
-        cmd_title = 'Splitting rarefied OTU table by body site'
-        cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
-                rarefied_otu_table_fp, mapping_fp, category_to_split,
-                per_body_site_dir)
-        commands.append([(cmd_title, cmd)])
-        raw_data_dirs.append(per_body_site_dir)
+            cmd_title = 'Splitting rarefied OTU table by body site'
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                    rarefied_otu_table_fp, mapping_fp, category_to_split,
+                    per_body_site_dir)
+            commands.append([(cmd_title, cmd)])
+            raw_data_dirs.append(per_body_site_dir)
 
-        command_handler(commands, status_update_callback, logger,
-                        close_logger_on_success=False)
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
+        else:
+            per_body_site_dir = body_site_rarefied_otu_table_dir
 
     for person_of_interest in personal_ids:
         create_dir(join(output_dir, person_of_interest))
