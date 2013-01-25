@@ -408,12 +408,15 @@ You should be able to answer several questions about your microbial communities 
   <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
   <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>
 </ol>
-
-
-<h3>Click on the following links to see your alpha diversity boxplots:</h3>
 <ul>
   %s
 </ul>
+<b>Advanced</b>: Measurements of alpha diversity are strongly affected by the sampling effort applied in a study. For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If alpha diversity is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
+<br/><br/>
+Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 and 2 would change?</i>
+<br/><br/>
+Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. After clicking the link, select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.
+
 """
 
 def create_otu_category_significance_html(table_fps):
