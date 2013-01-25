@@ -135,7 +135,7 @@ script_info['optional_options'] = [
         'table, it must have an FDR-corrected p-value <= to alpha '
         '[default: %default]'),
     make_option('--rep_set_fp',
-        help='Input representative set of sequences (with IDs matching those '
+        help='input representative set of sequences (with IDs matching those '
         'found in the OTU table supplied with -a). If supplied, the OTU '
         'category significance tables will have clickable OTU IDs that will '
         'open the fasta-formatted representative sequence in a dialog '
@@ -145,6 +145,18 @@ script_info['optional_options'] = [
              'to summarize_taxa_through_plots that will allow for correct time series ' 
              'x-axis where time increments are not even.'
              '[default: %default]', type='existing_filepath', default=None),        
+    make_option('--body_site_rarefied_otu_table_dir',
+        help='path to directory containing per-body-site OTU tables that were '
+        'split from a rarefied OTU table. If provided, the '
+        'single_rarefaction.py and split_otu_table.py steps are skipped when '
+        'generating the OTU category significance tables (the tables in this '
+        'directory are used instead). This option only applies if OTU '
+        'category significance tables are not suppressed. This option is '
+        'useful if you are running this script many times on subsets of '
+        'individuals, so that rarefaction/splitting doesn\'t occur each time '
+        'the script is run. The tables\' filenames must be in the format '
+        '\'<otu table name>_even<rarefaction depth>_<body site>.<extension>\' '
+        '[default: %default]', type='existing_dirpath', default=None),
     make_option('--retain_raw_data', default=False, action='store_true',
          help='Retain raw data files (OTU tables, taxa summary files, etc.). '
                'By default, these files will be cleaned up by the script, as '
@@ -219,6 +231,7 @@ def main():
                             alpha=opts.alpha,
                             rep_set_fp=opts.rep_set_fp,
                             parameter_fp=opts.parameter_fp,
+                            body_site_rarefied_otu_table_dir=opts.body_site_rarefied_otu_table_dir,
                             retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
                             suppress_beta_diversity=opts.suppress_beta_diversity,
