@@ -26,11 +26,18 @@ index_text = """
     <script src="../support_files/js/jquery-ui.js"></script>
     <script>
       $(function() {
-        $("#tabs").tabs({
+        $("#accordion").accordion({
+          collapsible: true,
+          active: false,
+          heightStyle: "content"
+        });
+        /*
+        {
           select: function(event, ui) {                   
             window.location.hash = ui.tab.hash;
           }
-        });
+        }
+        */
       });
     </script>
 
@@ -60,16 +67,18 @@ index_text = """
     </div>
     <br/>
 
-    <div id="tabs">
+    <div id="accordion">
+      <!--
       <ul>
         <li><a href="#taxonomic-composition">Which microbes live on my body?</a></li>
         <li><a href="#beta-diversity">Are my microbes different from everyone else's?</a></li>
         <li><a href="#alpha-diversity-boxplots">How many types of microbes live on my body?</a></li>
         <li><a href="#differential-otus">Which microbes differentiate me from everyone else?</a></li>
       </ul>
+      -->
 
+      <h2>Which microbes live on my body?</h2>
       <div id="taxonomic-composition">
-        <h2>Which microbes live on my body?</h2>
         Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
         <br/><br/>
         You should be able to answer several questions from these plots:
@@ -108,8 +117,8 @@ index_text = """
         </table>
       </div>
 
+      <h2>Are my microbes different from everyone else's?</h2>
       <div id="beta-diversity">
-        <h2>Are my microbes different from everyone else's?</h2>
         Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
         Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
@@ -128,10 +137,11 @@ index_text = """
         <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
       </div>
 
+      <h2>How many types of microbes live on my body?</h2>
       <div id="alpha-diversity-boxplots">%s</div>
 
+      <h2>Which microbes differentiate me from everyone else?</h2>
       <div id="differential-otus">%s</div>
-
     </div>
 
     <div id="footer">
@@ -408,7 +418,6 @@ def create_alpha_diversity_boxplots_html(plot_fps):
     return alpha_diversity_boxplots_text % plot_links_text
 
 alpha_diversity_boxplots_text = """
-<h2>How many types of microbes live on my body?</h2>
 Here we present two plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
 <br/><br/>
 The two measures that we present here are <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each OTU are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.
@@ -442,7 +451,6 @@ def create_otu_category_significance_html(table_fps):
     return otu_category_significance_text % table_links_text
 
 otu_category_significance_text = """
-<h2>Which microbes differentiate me from everyone else?</h2>
 Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
 <br/><br/>
 Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
