@@ -25,19 +25,35 @@ index_text = """
     <script src="../support_files/js/jquery.js"></script>
     <script src="../support_files/js/jquery-ui.js"></script>
     <script>
+      // The following code to remember accordion state is modified from
+      // http://www.boduch.ca/2011/05/remembering-jquery-ui-accordion.html
       $(function() {
-        $("#accordion").accordion({
-          collapsible: true,
-          active: false,
-          heightStyle: "content"
-        });
-        /*
-        {
-          select: function(event, ui) {                   
-            window.location.hash = ui.tab.hash;
+        // Find the index of our accordion header based on the current url
+        // hash. If it can't be found (e.g. bad url hash or one isn't defined),
+        // close the accordion completely to simulate a fresh page view with no
+        // url hash.
+        var index = $('#accordion h3.accordion-header').index(
+          $('#accordion h3.accordion-header a[href="' +
+             window.location.hash + '"]').parent());
+
+        if (index < 0) {
+          index = false;
+        }
+
+        var change = function(event, ui) {
+          var hash = ui.newHeader.children('a').attr('href');
+
+          if (hash !== undefined) {
+            window.location.hash = hash;
           }
         }
-        */
+
+        $("#accordion").accordion({
+          collapsible: true,
+          active: index,
+          change: change,
+          heightStyle: "content"
+        });
       });
     </script>
 
@@ -68,17 +84,8 @@ index_text = """
     <br/>
 
     <div id="accordion">
-      <!--
-      <ul>
-        <li><a href="#taxonomic-composition">Which microbes live on my body?</a></li>
-        <li><a href="#beta-diversity">Are my microbes different from everyone else's?</a></li>
-        <li><a href="#alpha-diversity-boxplots">How many types of microbes live on my body?</a></li>
-        <li><a href="#differential-otus">Which microbes differentiate me from everyone else?</a></li>
-      </ul>
-      -->
-
-      <h2>Which microbes live on my body?</h2>
-      <div id="taxonomic-composition">
+      <h3 class="accordion-header"><a href="#taxonomic-composition">Which microbes live on my body?</a></h3>
+      <div>
         Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
         <br/><br/>
         You should be able to answer several questions from these plots:
@@ -117,8 +124,8 @@ index_text = """
         </table>
       </div>
 
-      <h2>Are my microbes different from everyone else's?</h2>
-      <div id="beta-diversity">
+      <h3 class="accordion-header"><a href="#beta-diversity">Are my microbes different from everyone else's?</a></h3>
+      <div>
         Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
         Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
@@ -137,11 +144,11 @@ index_text = """
         <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
       </div>
 
-      <h2>How many types of microbes live on my body?</h2>
-      <div id="alpha-diversity-boxplots">%s</div>
+      <h3 class="accordion-header"><a href="#alpha-diversity">How many types of microbes live on my body?</a></h3>
+      <div>%s</div>
 
-      <h2>Which microbes differentiate me from everyone else?</h2>
-      <div id="differential-otus">%s</div>
+      <h3 class="accordion-header"><a href="#differential-otus">Which microbes differentiate me from everyone else?</a></h3>
+      <div>%s</div>
     </div>
 
     <div id="footer">
