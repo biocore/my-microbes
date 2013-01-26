@@ -6,7 +6,7 @@
   Author: Jai Ram Rideout
 */
 
-#header, #tabs, #footer {
+#header, #accordion, #footer {
   background-color: white;
   margin: 0 auto;
   width: 75%;
