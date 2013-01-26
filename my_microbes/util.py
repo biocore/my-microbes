@@ -94,7 +94,6 @@ def create_personal_results(output_dir,
                             rarefaction_depth=10000,
                             alpha=0.05,
                             rep_set_fp=None,
-                            parameter_fp=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -268,7 +267,8 @@ def create_personal_results(output_dir,
 
         ## Time series taxa summary plots steps
         if not suppress_taxa_summary_plots:
-            area_plots_dir = join(output_dir, person_of_interest, 'time_series')
+            area_plots_dir = join(output_dir, person_of_interest,
+                                  'time_series')
             create_dir(area_plots_dir)
             output_directories.append(area_plots_dir)
 
@@ -317,28 +317,51 @@ def create_personal_results(output_dir,
                     if exists(body_site_otu_table_fp):
                         plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
                             column_title_value, cat_value))
+                        create_dir(plots)
 
-                        cmd_title = 'Creating taxa summary plots (%s)' % \
-                                    person_of_interest
-                        cmd = ('summarize_taxa_through_plots.py -i %s '
-                               '-o %s -c %s -m %s -s' %
-                               (body_site_otu_table_fp, plots,
-                                time_series_category,
-                                personal_mapping_file_fp))
-                        if parameter_fp is not None:
-                            cmd += ' -p %s' % parameter_fp
-                            
+                        # Summarize.
+                        summarized_otu_table_fp = join(plots,
+                                '%s_otu_table.biom' % time_series_category)
+
+                        cmd_title = ('Summarizing OTU table by category (%s)' %
+                                     person_of_interest)
+                        cmd = ('summarize_otu_by_cat.py -i %s -c %s -o %s '
+                               '-m %s ' % (personal_mapping_file_fp,
+                               body_site_otu_table_fp, summarized_otu_table_fp,
+                               time_series_category))
+                        commands.append([(cmd_title, cmd)])
+
+                        # Sort.
+                        sorted_otu_table_fp = join(plots,
+                                '%s_otu_table_sorted.biom' %
+                                time_series_category)
+
+                        cmd_title = ('Sorting OTU table (%s)' %
+                                     person_of_interest)
+                        cmd = ('sort_otu_table.py -i %s -o %s' % (
+                               summarized_otu_table_fp, sorted_otu_table_fp))
+                        commands.append([(cmd_title, cmd)])
+
+                        # Summarize taxa.
+                        cmd_title = ('Summarizing taxa (%s)' %
+                                     person_of_interest)
+                        cmd = ('summarize_taxa.py -i %s -o %s' % (
+                               sorted_otu_table_fp, plots))
                         commands.append([(cmd_title, cmd)])
 
                         raw_data_files.append(join(plots, '*.biom'))
                         raw_data_files.append(join(plots, '*.txt'))
 
-                        create_comparative_taxa_plots_html(cat_value, 
+                        create_comparative_taxa_plots_html(cat_value,
                                 join(area_plots_dir, '%s_comparative.html' %
                                                      cat_value))
 
                 command_handler(commands, status_update_callback, logger,
                                 close_logger_on_success=False)
+
+            # TODO Add compare_taxa_summaries.py and plot_taxa_summary.py.
+            commands = []
+            for cat_value in cat_values:
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
