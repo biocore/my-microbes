@@ -228,13 +228,17 @@ class UtilTests(TestCase):
             sys.stdout = saved_stdout
 
         exp = set(['NAU123/time_series', 'NAU123/beta_diversity',
-                   'NAU789/beta_diversity', 'NAU789/otu_category_significance',
+                   'NAU123/beta_diversity_time_series',
+                   'NAU789/beta_diversity',
+                   'NAU789/beta_diversity_time_series',
+                   'NAU789/otu_category_significance',
                    'NAU789/alpha_rarefaction', 'NAU456/time_series',
                    'NAU123/alpha_rarefaction', 'NAU456/adiv_boxplots',
                    'NAU456/otu_category_significance', 'NAU123/adiv_boxplots',
                    'NAU123/otu_category_significance', 'NAU789/adiv_boxplots',
                    'NAU789/time_series', 'NAU456/alpha_rarefaction',
-                   'NAU456/beta_diversity'])
+                   'NAU456/beta_diversity',
+                   'NAU456/beta_diversity_time_series'])
         fps = []
         for fp in obs:
             fps.append(join(basename(dirname(fp)), basename(fp)))
