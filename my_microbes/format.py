@@ -25,11 +25,34 @@ index_text = """
     <script src="../support_files/js/jquery.js"></script>
     <script src="../support_files/js/jquery-ui.js"></script>
     <script>
+      // The following code to remember accordion state is modified from
+      // http://www.boduch.ca/2011/05/remembering-jquery-ui-accordion.html
       $(function() {
-        $("#tabs").tabs({
-          select: function(event, ui) {                   
-            window.location.hash = ui.tab.hash;
+        // Find the index of our accordion header based on the current url
+        // hash. If it can't be found (e.g. bad url hash or one isn't defined),
+        // close the accordion completely to simulate a fresh page view with no
+        // url hash.
+        var index = $('#accordion h3.accordion-header').index(
+          $('#accordion h3.accordion-header a[href="' +
+             window.location.hash + '"]').parent());
+
+        if (index < 0) {
+          index = false;
+        }
+
+        var change = function(event, ui) {
+          var hash = ui.newHeader.children('a').attr('href');
+
+          if (hash !== undefined) {
+            window.location.hash = hash;
           }
+        }
+
+        $("#accordion").accordion({
+          collapsible: true,
+          active: index,
+          change: change,
+          heightStyle: "content"
         });
       });
     </script>
@@ -60,17 +83,9 @@ index_text = """
     </div>
     <br/>
 
-    <div id="tabs">
-      <ul>
-        <li><a href="#taxonomic-composition">Taxonomic Composition</a></li>
-        <li><a href="#beta-diversity">Beta Diversity</a></li>
-        <li><a href="#alpha-diversity-boxplots">Alpha Diversity Boxplots</a></li>
-        <li><a href="#differential-otus">Differential OTUs</a></li>
-        <li><a href="#alpha-rarefaction">Alpha Rarefaction</a></li>
-      </ul>
-
-      <div id="taxonomic-composition">
-        <h2>Taxonomic Composition</h2>
+    <div id="accordion">
+      <h3 class="accordion-header"><a href="#taxonomic-composition">Which microbes live on my body?</a></h3>
+      <div>
         Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
         <br/><br/>
         You should be able to answer several questions from these plots:
@@ -109,8 +124,8 @@ index_text = """
         </table>
       </div>
 
-      <div id="beta-diversity">
-        <h2>Beta Diversity</h2>
+      <h3 class="accordion-header"><a href="#beta-diversity">Are my microbes different from everyone else's?</a></h3>
+      <div>
         Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
         Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
@@ -126,27 +141,14 @@ index_text = """
         While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 
         <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots.</h3>
+        <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
       </div>
 
-      <div id="alpha-diversity-boxplots">%s</div>
+      <h3 class="accordion-header"><a href="#alpha-diversity">How many types of microbes live on my body?</a></h3>
+      <div>%s</div>
 
-      <div id="differential-otus">%s</div>
-
-      <div id="alpha-rarefaction">
-        <h2>Alpha Rarefaction</h2>
-        Alpha rarefaction plots are a tool for interpreting measures of alpha diversity. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in the Greengenes tree that is observed in a sample. PD is a phylogenetic measure, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.
-        <br/><br/>
-        Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). This is done because a measure of richness is very dependent on how much sampling effort was applied. For example, in macro-scale ecology, if you're interested in counting the number of different insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The analog to area in sequence-based studies of microbial ecology is the number of sequences collected. An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis).
-        <br/><br/>
-        You should be able to answer several questions about your microbial communities from these plots:
-        <ol>
-          <li>How rich are the microbial communities at your different body sites relative to the average for that body site (e.g., is your gut community more diverse than the average gut community)?</li>
-          <li>Which of your body sites is most diverse, and which is least diverse? Do others exhibit the same pattern?</li>
-          <li>If we were to collect more sequences per sample, do you expect that your answers to questions 1 and 2 would change?</li>
-        </ol>
-
-        <h3>Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. Select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.</h3>
-      </div>
+      <h3 class="accordion-header"><a href="#differential-otus">Which microbes differentiate me from everyone else?</a></h3>
+      <div>%s</div>
     </div>
 
     <div id="footer">
@@ -423,20 +425,26 @@ def create_alpha_diversity_boxplots_html(plot_fps):
     return alpha_diversity_boxplots_text % plot_links_text
 
 alpha_diversity_boxplots_text = """
-<h2>Alpha Diversity Boxplots</h2>
-Here we present a series of comparative boxplots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and is a measure of the number of different types of organisms that are present in a given sample (i.e., the richness of the sample) or some other property of a single sample, such as the shape of the taxonomic distribution (i.e., the evenness of the sample). Here we look at richness using two measures: <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Phylogenetic Diversity</i> (PD), which in our case is the sum of the branch length in a reference phylogenetic tree that is observed in a sample. PD is a phylogenetic measure of richness, meaning that the evolutionary relatedness of different organisms is taken into account via the phylogenetic tree, while observed species is a non-phylogenetic measure, meaning that all of the different organisms are treated as equally related.
+Here we present two plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
+<br/><br/>
+The two measures that we present here are <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each OTU are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.
 <br/><br/>
 You should be able to answer several questions about your microbial communities from these plots:
 <ol>
   <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
-  <li>Which of your body sites is most diverse, and which is least diverse? Do other individuals exhibit the same pattern?</li>
+  <li>Which of your body sites is most rich, and which is least rich? Do other individuals exhibit the same pattern of richness?</li>
+  <li>Which of your body sites exhibits the most even distribution of species, and which exhibits the least even distribution of species? Do other individuals exhibit the same pattern of evenness?</li>
 </ol>
-
-
-<h3>Click on the following links to see your alpha diversity boxplots:</h3>
 <ul>
   %s
 </ul>
+<hr>
+<b>Advanced</b>: Measurements of alpha diversity are strongly affected by the sampling effort applied in a study. For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If alpha diversity is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
+<br/><br/>
+Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
+<br/><br/>
+Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. After clicking the link, select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.
+
 """
 
 def create_otu_category_significance_html(table_fps):
@@ -450,13 +458,11 @@ def create_otu_category_significance_html(table_fps):
     return otu_category_significance_text % table_links_text
 
 otu_category_significance_text = """
-<h2>Differences in OTU Abundances</h2>
-Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs. 
+Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
 <br/><br/>
 Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
-<h3>Click on the following links to see what OTU abundances differed by body
-site:</h3>
+<h3>Click on the following links to see what OTU abundances differed by body site:</h3>
 <ul>
   %s
 </ul>

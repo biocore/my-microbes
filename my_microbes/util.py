@@ -94,6 +94,7 @@ def create_personal_results(output_dir,
                             rarefaction_depth=10000,
                             alpha=0.05,
                             rep_set_fp=None,
+                            body_site_rarefied_otu_table_dir=None,
                             retain_raw_data=False,
                             suppress_alpha_rarefaction=False,
                             suppress_beta_diversity=False,
@@ -161,24 +162,27 @@ def create_personal_results(output_dir,
                 add_filename_suffix(otu_table_fp,
                                     '_even%d' % rarefaction_depth))
 
-        commands = []
-        cmd_title = 'Rarefying OTU table'
-        cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
-                rarefied_otu_table_fp, rarefaction_depth)
-        commands.append([(cmd_title, cmd)])
-        raw_data_files.append(rarefied_otu_table_fp)
+        if body_site_rarefied_otu_table_dir is None:
+            commands = []
+            cmd_title = 'Rarefying OTU table'
+            cmd = 'single_rarefaction.py -i %s -o %s -d %s' % (otu_table_fp,
+                    rarefied_otu_table_fp, rarefaction_depth)
+            commands.append([(cmd_title, cmd)])
+            raw_data_files.append(rarefied_otu_table_fp)
 
-        per_body_site_dir = join(output_dir, 'per_body_site_otu_tables')
+            per_body_site_dir = join(output_dir, 'per_body_site_otu_tables')
 
-        cmd_title = 'Splitting rarefied OTU table by body site'
-        cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
-                rarefied_otu_table_fp, mapping_fp, category_to_split,
-                per_body_site_dir)
-        commands.append([(cmd_title, cmd)])
-        raw_data_dirs.append(per_body_site_dir)
+            cmd_title = 'Splitting rarefied OTU table by body site'
+            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                    rarefied_otu_table_fp, mapping_fp, category_to_split,
+                    per_body_site_dir)
+            commands.append([(cmd_title, cmd)])
+            raw_data_dirs.append(per_body_site_dir)
 
-        command_handler(commands, status_update_callback, logger,
-                        close_logger_on_success=False)
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
+        else:
+            per_body_site_dir = body_site_rarefied_otu_table_dir
 
     for person_of_interest in personal_ids:
         create_dir(join(output_dir, person_of_interest))
@@ -251,15 +255,25 @@ def create_personal_results(output_dir,
         ## Beta diversity steps
         if not suppress_beta_diversity:
             pcoa_dir = join(output_dir, person_of_interest, 'beta_diversity')
+            pcoa_time_series_dir = join(output_dir, person_of_interest, 
+                                         'beta_diversity_time_series')
             output_directories.append(pcoa_dir)
+            output_directories.append(pcoa_time_series_dir)
 
             commands = []
-            cmd_title = 'Creating beta diversity plots (%s)' % \
+            cmd_title = 'Creating beta diversity time series plots (%s)' % \
                         person_of_interest
             cmd = 'make_3d_plots.py -m %s -p %s -i %s -o %s --custom_axes=' % (
-                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_dir) +\
+                personal_mapping_file_fp, prefs_fp, coord_fp, pcoa_time_series_dir) +\
                 '\'%s\' --add_vectors=\'%s,%s\'' % (time_series_category,
                 site_id_category, time_series_category)
+            commands.append([(cmd_title, cmd)])
+            
+            cmd_title = 'Creating beta diversity plots (%s)' % \
+                        person_of_interest
+            cmd = 'make_3d_plots.py  -m %s -p %s -i %s -o %s' % (personal_mapping_file_fp,
+                                                                 prefs_fp, coord_fp, 
+                                                                 pcoa_dir)
             commands.append([(cmd_title, cmd)])
 
             command_handler(commands, status_update_callback, logger,
