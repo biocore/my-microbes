@@ -81,8 +81,10 @@ function initializeGlossary() {
 
   var beta_diversity_html = "<div id='bdiv-definition' class='glossary-item' title='Beta Diversity'><p>Beta diversity measures between-sample diversity tells us the similarity or dissimilarity of a pair of samples. This information is most useful when you're comparing more than two samples, which is almost always, as beta diversity can then tell you about the relative similarity or dissimilarity between all pairs of your samples. For example, if you have human gut microbial communities from three individuals (say, individuals <i>A</i>, <i>B</i>, and <i>C</i>), and compute beta diversity for each pair of those three samples, you results may tell you that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity. The metric we use here is called UniFrac (see <a href='http://www.ncbi.nlm.nih.gov/pubmed/16332807'>Lozupone and Knight, 2005</a> for a discussion of UniFrac).</p></div>";
 
+  var ordination_html = "<div id='ordination-definition' class='glossary-item' title='Ordination'><p>Ecologists often use ordination techniques to visually summarize the relative similarity of collections of samples (i.e., the beta diversity values between all of their pairs of samples). In the Student Microbiome Project, for example, we compared over 3700 samples. This resulted in over 6,841,300 pairwise distances between samples, so visualization is essential to exploring that data. An ordination technique can be used to arrange this large number of distances in a few dimensions, which are often viewed in two or three dimensional scatter plots. In an ordination plot, the distances between the points represent their relative similarity, such that points (i.e., samples) that are closer to one another in the scatter plot are more similar to each other than points that are farther apart. Two of the most commonly used ordination techniques in microbial ecology are Principal Coordinates Analysis (PCoA) and Non-metric Multidimensional Scaling (NMDS).";
+
   $("body").append(otu_definition_html, alpha_diversity_html,
-                   beta_diversity_html);
+                   beta_diversity_html, ordination_html);
 
   $(".glossary-item").dialog({
     autoOpen: false,
@@ -106,6 +108,11 @@ function initializeGlossary() {
 
   $(".bdiv").click(function(event) {
     openDialog("bdiv-definition", event.target.id);
+    return false;
+  });
+
+  $(".ordination").click(function(event) {
+    openDialog("ordination-definition", event.target.id);
     return false;
   });
 }
