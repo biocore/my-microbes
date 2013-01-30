@@ -100,37 +100,37 @@ index_text = """
         <table cellpadding="5px">
           <tr>
             <td><b>Tongue:</b></td>
-            <td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html">Other</a></td><td><a href="time_series/tongue_comparative.html">Self versus Other</a></td>
+            <td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
+            <td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td><td><a href="time_series/tongue_comparative.html" target="_blank">Self versus Other</a></td>
           </tr>
           <tr>
             <td><b>Palm:</b></td>
-            <td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html">Other</a></td>
-            <td><a href="time_series/palm_comparative.html">Self versus Other</a></td>
+            <td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
+            <td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
+            <td><a href="time_series/palm_comparative.html" target="_blank">Self versus Other</a></td>
           </tr>
           <tr>
             <td><b>Gut:</b></td>
-            <td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html">Other</a></td>
-            <td><a href="time_series/gut_comparative.html">Self versus Other</a></td>
+            <td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
+            <td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
+            <td><a href="time_series/gut_comparative.html" target="_blank">Self versus Other</a></td>
           </tr>
           <tr>
             <td><b>Forehead:</b></td>
-            <td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html">Other</a></td>
-            <td><a href="time_series/forehead_comparative.html">Self versus Other</a></td>
+            <td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
+            <td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
+            <td><a href="time_series/forehead_comparative.html" target="_blank">Self versus Other</a></td>
           </tr>
         </table>
       </div>
 
       <h3 class="accordion-header"><a href="#beta-diversity">Are my microbes different from everyone else's?</a></h3>
       <div>
-        Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
+        Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807" target="_blank">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
-        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar.
+        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar. The ordination technique that we apply here is called Principal Coordinates Analysis (PCoA), and the result is a PCoA plot.
         <br/><br/>
-        The plots presented here allow you to view the general clustering patterns observed in the Student Microbiome Project. We have colored these ordination plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in lighter shades of the same colors.
+        The plots presented here allow you to view the general sample clustering patterns observed in the Student Microbiome Project. One of these (the <i>beta diversity PCoA plots</i>) is a strict PCoA plot, while the other (the <i>beta diversity PCoA plots with explicit time axis</i>) shows the first two dimensions of the strict PCoA plot, and adds a time dimension that illustrates time since the start of the experiment. Each point in the plot represents a microbial community from one individual at one body site from one timepoint. We have colored the points in these plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in lighter shades of the same colors. You can view the <i>beta diversity PCoA plots with explicit time axis</i> to see how your samples changed over time. 
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
@@ -140,8 +140,8 @@ index_text = """
         </ol>
         While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
 
-        <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots.</h3>
-        <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
+        <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots.</h3>
+        <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
       </div>
 
       <h3 class="accordion-header"><a href="#alpha-diversity">How many types of microbes live on my body?</a></h3>
@@ -419,7 +419,7 @@ def create_alpha_diversity_boxplots_html(plot_fps):
 
     for plot_fp in plot_fps:
         adiv_metric_title = format_title(splitext(basename(plot_fp))[0])
-        plot_links_text += '<li><a href="%s">%s</a></li>' % (plot_fp,
+        plot_links_text += '<li><a href="%s" target="_blank">%s</a></li>' % (plot_fp,
                                                              adiv_metric_title)
 
     return alpha_diversity_boxplots_text % plot_links_text
@@ -442,7 +442,7 @@ You should be able to answer several questions about your microbial communities 
 <br/><br/>
 Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
 <br/><br/>
-Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
+Click <a href="./alpha_rarefaction/rarefaction_plots.html" target="_blank">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
 
 """
 
@@ -451,13 +451,13 @@ def create_otu_category_significance_html(table_fps):
 
     for table_fp in table_fps:
         body_site = splitext(basename(table_fp))[0].title()
-        table_links_text += '<li><a href="%s">%s</a></li>' % (table_fp,
-                                                              body_site)
+        table_links_text += '<li><a href="%s" target="_blank">%s</a></li>' %\
+            (table_fp, body_site)
 
     return otu_category_significance_text % table_links_text
 
 otu_category_significance_text = """
-Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
+Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com" target="_blank">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
 <br/><br/>
 Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
@@ -664,7 +664,7 @@ otu_category_significance_table_text = """
     background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
     Click on the OTU ID to view the representative sequence for that OTU (try
     <a target="_blank"
-    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
+    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome" target="_blank">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">
