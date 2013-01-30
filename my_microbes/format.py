@@ -24,6 +24,8 @@ index_text = """
 
     <script src="../support_files/js/jquery.js"></script>
     <script src="../support_files/js/jquery-ui.js"></script>
+    <script src="../support_files/js/helpers.js"></script>
+
     <script>
       // The following code to remember accordion state is modified from
       // http://www.boduch.ca/2011/05/remembering-jquery-ui-accordion.html
@@ -54,6 +56,8 @@ index_text = """
           change: change,
           heightStyle: "content"
         });
+
+        initializeGlossary();
       });
     </script>
 
@@ -126,11 +130,11 @@ index_text = """
 
       <h3 class="accordion-header"><a href="#beta-diversity">Are my microbes different from everyone else's?</a></h3>
       <div>
-        Beta diversity measures between sample diversity, in contrast to alpha (or within-sample) diversity.  For example, if you have human gut microbial communities from three individuals, a beta diversity metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807" target="_blank">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
+        <a href="#" id="bdiv-ref-1" class="bdiv">Beta diversity</a> measures between-sample diversity, in contrast to <a href="#" id="adiv-ref-1" class="adiv">alpha (or within-sample) diversity</a>.  For example, if you have human gut microbial communities from three individuals, a <a href="#" id="bdiv-ref-2" class="bdiv">beta diversity</a> metric will tell you the relative similarity or dissimilarity of those samples: perhaps that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure <a href="#" id="bdiv-ref-3" class="bdiv">beta diversity</a> - the metric we use here is called UniFrac (see <a href="http://www.ncbi.nlm.nih.gov/pubmed/16332807" target="_blank">Lozupone and Knight, 2005</a> for a discussion of UniFrac).
         <br/><br/>
-        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use ordination techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an ordination plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar. The ordination technique that we apply here is called Principal Coordinates Analysis (PCoA), and the result is a PCoA plot.
+        Because we're often looking at more than three samples (for example, in the Student Microbiome Project we compared over 3700 samples) ecologists often use <a href="#" id="ordination-ref-1" class="ordination">ordination</a> techniques to summarize pairwise distances between samples in a two- or three-dimensional scatter plot. In an <a href="#" id="ordination-ref-2" class="ordination">ordination</a> plot, points that are closer to each other in space are more similar to one another, and points that are more distant from one another are more dissimilar. The <a href="#" id="ordination-ref-3" class="ordination">ordination</a> technique that we apply here is called Principal Coordinates Analysis (PCoA), and the result is a PCoA plot.
         <br/><br/>
-        The plots presented here allow you to view the general sample clustering patterns observed in the Student Microbiome Project. One of these (the <i>beta diversity PCoA plots</i>) is a strict PCoA plot, while the other (the <i>beta diversity PCoA plots with explicit time axis</i>) shows the first two dimensions of the strict PCoA plot, and adds a time dimension that illustrates time since the start of the experiment. Each point in the plot represents a microbial community from one individual at one body site from one timepoint. We have colored the points in these plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in lighter shades of the same colors. You can view the <i>beta diversity PCoA plots with explicit time axis</i> to see how your samples changed over time. 
+        The plots presented here allow you to view the general sample clustering patterns observed in the Student Microbiome Project. One of these (the <i><a href="#" id="bdiv-ref-4" class="bdiv">beta diversity</a> PCoA plots</i>) is a strict PCoA plot, while the other (the <i><a href="#" id="bdiv-ref-5" class="bdiv">beta diversity</a> PCoA plots with explicit time axis</i>) shows the first two dimensions of the strict PCoA plot, and adds a time dimension that illustrates time since the start of the experiment. Each point in the plot represents a microbial community from one individual at one body site from one timepoint. We have colored the points in these plots so forehead samples are yellow, palm samples are orange, gut samples are blue and tongue samples are red. You can tell your samples from those of the rest of the participants as yours are colored in lighter shades of the same colors. You can view the <i><a href="#" id="bdiv-ref-6" class="bdiv">beta diversity</a> PCoA plots with explicit time axis</i> to see how your samples changed over time.
         <br/><br/>
         You should be able to answer several questions from these plots:
         <ol>
@@ -138,7 +142,8 @@ index_text = """
           <li>Do your microbial communities look typical of each body site, or are they outliers?</li>
           <li>Which body sites exhibit the most variability across individuals?</li> 
         </ol>
-        While many of the results apparent in this ordination plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of beta diversity analyses and the uniqueness of our dataset.
+
+        While many of the results apparent in this <a href="#" id="ordination-ref-4" class="ordination">ordination</a> plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of <a href="#" id="bdiv-ref-7" class="bdiv">beta diversity</a> analyses and the uniqueness of our dataset.
 
         <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots.</h3>
         <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
@@ -425,9 +430,9 @@ def create_alpha_diversity_boxplots_html(plot_fps):
     return alpha_diversity_boxplots_text % plot_links_text
 
 alpha_diversity_boxplots_text = """
-Here we present plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
+Here we present plots showing the distributions of your <a href="#" id="adiv-ref-2" class="adiv">alpha diversity</a> (<i>Self</i>) versus all other individuals' <a href="#" id="adiv-ref-3" class="adiv">alpha diversity</a> (<i>Other</i>), for each body site. <a href="#" id="adiv-ref-4" class="adiv">Alpha diversity</a> refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
 <br/><br/>
-We present the <i>Observed Species</i> for each of your body sites across the sampling period, as well as the average <i>Observed Species</i> across all individuals. <i>Observed Species</i> is a measure of richness, and here it is a count of the distinct Operational Taxonomic Units (OTUs) in a sample. An anology in macro-scale ecology would be identifying the number of insect species in a square kilometer of rainforest: when sampling this square kilometer, the <i>Observed Species</i> would simply be the number of distinct insect species that you observe.
+We present the <i>Observed Species</i> for each of your body sites across the sampling period, as well as the average <i>Observed Species</i> across all individuals. <i>Observed Species</i> is a measure of richness, and here it is a count of the distinct <a href="#" id="otu-ref-1" class="otus">Operational Taxonomic Units (OTUs)</a> in a sample. An anology in macro-scale ecology would be identifying the number of insect species in a square kilometer of rainforest: when sampling this square kilometer, the <i>Observed Species</i> would simply be the number of distinct insect species that you observe.
 <br/><br/>
 You should be able to answer several questions about your microbial communities from these plots:
 <ol>
@@ -438,9 +443,9 @@ You should be able to answer several questions about your microbial communities 
   %s
 </ul>
 <hr>
-<b>Advanced</b>: Measurements of alpha diversity are strongly affected by the sampling effort applied in a study. For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If alpha diversity is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
+<b>Advanced</b>: Measurements of <a href="#" id="adiv-ref-5" class="adiv">alpha diversity</a> are strongly affected by the sampling effort applied in a study.  For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If <a href="#" id="adiv-ref-6" class="adiv">alpha diversity</a> is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
 <br/><br/>
-Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
+Alpha rarefaction plots show the <a href="#" id="adiv-ref-7" class="adiv">alpha diversity</a> at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the <a href="#" id="adiv-ref-8" class="adiv">alpha diversity</a> (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
 <br/><br/>
 Click <a href="./alpha_rarefaction/rarefaction_plots.html" target="_blank">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
 
@@ -457,9 +462,9 @@ def create_otu_category_significance_html(table_fps):
     return otu_category_significance_text % table_links_text
 
 otu_category_significance_text = """
-Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com" target="_blank">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
+Here we present <a href="#" id="otu-ref-3" class="otus">Operational Taxonomic Units (OTUs)</a> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An <a href="#" id="otu-ref-4" class="otus">OTU</a> is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com" target="_blank">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference <a href="#" id="otu-ref-5" class="otus">OTUs</a>, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference <a href="#" id="otu-ref-6" class="otus">OTU</a>. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to <a href="#" id="otu-ref-7" class="otus">OTUs</a>.
 <br/><br/>
-Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
+Here we present the <a href="#" id="otu-ref-8" class="otus">OTUs</a> that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
 <h3>Click on the following links to see what OTU abundances differed by body site:</h3>
 <ul>
@@ -568,7 +573,6 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
 
     return created_files
 
-# gg() function taken from qiime.plot_taxa_summary.
 otu_category_significance_table_text = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -578,93 +582,21 @@ otu_category_significance_table_text = """
 
   <script src="../../support_files/js/jquery.js"></script>
   <script src="../../support_files/js/jquery-ui.js"></script>
+  <script src="../../support_files/js/helpers.js"></script>
+
   <script language="javascript" type="text/javascript">
     $(function() {
       // Initialize all dialogs and make sure they are hidden.
       $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
+
+      initializeGlossary();
     });
-
-    /*
-     * This function accepts a dialog id as a parameter, and opens the dialog
-     * box that is bound to that id. A second optional parameter, target, is
-     * the id of the element where the dialog should appear next to. If this
-     * parameter is null, the dialog will open at its default location,
-     * according to its configured options.
-     *
-     * For example, if the user clicks a link to view more info, the dialog
-     * should appear next to that link, instead of appearing in a location
-     * relative to the dialog element, which is hidden. Therefore, the id of
-     * the link that opens the dialog should be supplied as the second
-     * parameter.
-     */
-    function openDialog(dialog, target) {
-      var dialogId = "#" + dialog;
-
-      if (typeof(target) != "undefined") {
-        var targetId = "#" + target;
-        var scrollOffsets = getScrollXY();
-
-        // Move a little to the left.
-        var leftPos = ($(targetId).position().left - scrollOffsets[0] + 95);
-        var topPos = ($(targetId).position().top - scrollOffsets[1]);
-
-        $(dialogId).dialog("option", "position", [leftPos, topPos]);
-      }
-
-      $(dialogId).dialog("open");
-    }
-
-    /*
-     * Returns an array with the scrolling offsets (useful for displaying
-     * tooltips/dialogs in the same place even when the user has scrolled on
-     * the page and then opens a new dialog).
-     *
-     * Returns [scrollOffsetX, scrollOffsetY]. This function works in all
-     * browsers.
-     *
-     * Code taken from: http://stackoverflow.com/a/745126
-     */
-    function getScrollXY() {
-      var scrOfX = 0, scrOfY = 0;
-      if (typeof(window.pageYOffset) == 'number') {
-        // Netscape compliant.
-        scrOfY = window.pageYOffset;
-        scrOfX = window.pageXOffset;
-      }
-      else if (document.body && (document.body.scrollLeft ||
-                                 document.body.scrollTop)) {
-        // DOM compliant.
-        scrOfY = document.body.scrollTop;
-        scrOfX = document.body.scrollLeft;
-      }
-      else if (document.documentElement &&
-               (document.documentElement.scrollLeft ||
-                document.documentElement.scrollTop)) {
-        // IE6 standards compliant mode.
-        scrOfY = document.documentElement.scrollTop;
-        scrOfX = document.documentElement.scrollLeft;
-      }
-
-      return [scrOfX, scrOfY];
-    }
-
-    function gg(targetq) {
-      window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
-    }
   </script>
 </head>
 
 <body>
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
-    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self
-    versus other)</h2>
-    Click on the taxonomy links for each OTU to do a Google search for that
-    taxonomic group. OTU IDs with an orange background are found in lower
-    abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue
-    background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
-    Click on the OTU ID to view the representative sequence for that OTU (try
-    <a target="_blank"
-    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome" target="_blank">BLASTing</a> these!).
+    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self versus other)</h2> Click on the taxonomy links for each <a href="#" id="otu-ref-1" class="otus">OTU</a> to do a Google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue background are found in higher abundance in <i>%s</i> than in <i>%s</i>.  Click on the OTU ID to view the representative sequence for that OTU (try <a href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome" target="_blank">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">
