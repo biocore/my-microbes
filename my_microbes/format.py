@@ -24,6 +24,8 @@ index_text = """
 
     <script src="../support_files/js/jquery.js"></script>
     <script src="../support_files/js/jquery-ui.js"></script>
+    <script src="../support_files/js/helpers.js"></script>
+
     <script>
       // The following code to remember accordion state is modified from
       // http://www.boduch.ca/2011/05/remembering-jquery-ui-accordion.html
@@ -54,6 +56,8 @@ index_text = """
           change: change,
           heightStyle: "content"
         });
+
+        initializeGlossary();
       });
     </script>
 
@@ -427,7 +431,7 @@ def create_alpha_diversity_boxplots_html(plot_fps):
 alpha_diversity_boxplots_text = """
 Here we present two plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
 <br/><br/>
-The two measures that we present here are <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each OTU are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.
+The two measures that we present here are <i>Observed Species</i>, which is a count of the distinct <a href="#" id="otu-ref-1" class="otus">Operational Taxonomic Units (OTUs)</a> in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each <a href="#" id="otu-ref-2" class="otus">OTU</a> are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.
 <br/><br/>
 You should be able to answer several questions about your microbial communities from these plots:
 <ol>
@@ -458,9 +462,9 @@ def create_otu_category_significance_html(table_fps):
     return otu_category_significance_text % table_links_text
 
 otu_category_significance_text = """
-Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.
+Here we present <a href="#" id="otu-ref-3" class="otus">Operational Taxonomic Units (OTUs)</a> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An <a href="#" id="otu-ref-4" class="otus">OTU</a> is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference <a href="#" id="otu-ref-5" class="otus">OTUs</a>, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference <a href="#" id="otu-ref-6" class="otus">OTU</a>. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to <a href="#" id="otu-ref-7" class="otus">OTUs</a>.
 <br/><br/>
-Here we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
+Here we present the <a href="#" id="otu-ref-8" class="otus">OTUs</a> that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
 <h3>Click on the following links to see what OTU abundances differed by body site:</h3>
 <ul>
@@ -569,7 +573,6 @@ def format_otu_category_significance_tables_as_html(table_fps, alpha,
 
     return created_files
 
-# gg() function taken from qiime.plot_taxa_summary.
 otu_category_significance_table_text = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -579,93 +582,21 @@ otu_category_significance_table_text = """
 
   <script src="../../support_files/js/jquery.js"></script>
   <script src="../../support_files/js/jquery-ui.js"></script>
+  <script src="../../support_files/js/helpers.js"></script>
+
   <script language="javascript" type="text/javascript">
     $(function() {
       // Initialize all dialogs and make sure they are hidden.
       $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
+
+      initializeGlossary();
     });
-
-    /*
-     * This function accepts a dialog id as a parameter, and opens the dialog
-     * box that is bound to that id. A second optional parameter, target, is
-     * the id of the element where the dialog should appear next to. If this
-     * parameter is null, the dialog will open at its default location,
-     * according to its configured options.
-     *
-     * For example, if the user clicks a link to view more info, the dialog
-     * should appear next to that link, instead of appearing in a location
-     * relative to the dialog element, which is hidden. Therefore, the id of
-     * the link that opens the dialog should be supplied as the second
-     * parameter.
-     */
-    function openDialog(dialog, target) {
-      var dialogId = "#" + dialog;
-
-      if (typeof(target) != "undefined") {
-        var targetId = "#" + target;
-        var scrollOffsets = getScrollXY();
-
-        // Move a little to the left.
-        var leftPos = ($(targetId).position().left - scrollOffsets[0] + 95);
-        var topPos = ($(targetId).position().top - scrollOffsets[1]);
-
-        $(dialogId).dialog("option", "position", [leftPos, topPos]);
-      }
-
-      $(dialogId).dialog("open");
-    }
-
-    /*
-     * Returns an array with the scrolling offsets (useful for displaying
-     * tooltips/dialogs in the same place even when the user has scrolled on
-     * the page and then opens a new dialog).
-     *
-     * Returns [scrollOffsetX, scrollOffsetY]. This function works in all
-     * browsers.
-     *
-     * Code taken from: http://stackoverflow.com/a/745126
-     */
-    function getScrollXY() {
-      var scrOfX = 0, scrOfY = 0;
-      if (typeof(window.pageYOffset) == 'number') {
-        // Netscape compliant.
-        scrOfY = window.pageYOffset;
-        scrOfX = window.pageXOffset;
-      }
-      else if (document.body && (document.body.scrollLeft ||
-                                 document.body.scrollTop)) {
-        // DOM compliant.
-        scrOfY = document.body.scrollTop;
-        scrOfX = document.body.scrollLeft;
-      }
-      else if (document.documentElement &&
-               (document.documentElement.scrollLeft ||
-                document.documentElement.scrollTop)) {
-        // IE6 standards compliant mode.
-        scrOfY = document.documentElement.scrollTop;
-        scrOfX = document.documentElement.scrollLeft;
-      }
-
-      return [scrOfX, scrOfY];
-    }
-
-    function gg(targetq) {
-      window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
-    }
   </script>
 </head>
 
 <body>
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
-    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self
-    versus other)</h2>
-    Click on the taxonomy links for each OTU to do a Google search for that
-    taxonomic group. OTU IDs with an orange background are found in lower
-    abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue
-    background are found in higher abundance in <i>%s</i> than in <i>%s</i>.
-    Click on the OTU ID to view the representative sequence for that OTU (try
-    <a target="_blank"
-    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
+    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self versus other)</h2> Click on the taxonomy links for each <a href="#" id="otu-ref-1" class="otus">OTU</a> to do a Google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue background are found in higher abundance in <i>%s</i> than in <i>%s</i>.  Click on the OTU ID to view the representative sequence for that OTU (try <a target="_blank" href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome">BLASTing</a> these!).
     <br/><br/>
 
     <table class="data-table">
