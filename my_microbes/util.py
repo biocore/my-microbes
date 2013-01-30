@@ -297,6 +297,10 @@ def create_personal_results(output_dir,
             command_handler(commands, status_update_callback, logger,
                             close_logger_on_success=False)
 
+            # Prefix to be used for taxa summary plots dirs. Will be
+            # <taxa_plots_dir_prefix>_<self|other>_<body site>/.
+            taxa_plots_dir_prefix = 'taxa_plots'
+
             for column_title_value in column_title_values:
                 biom_fp = join(area_plots_dir,
                                add_filename_suffix(otu_table_fp,
@@ -329,12 +333,13 @@ def create_personal_results(output_dir,
                     # category contains samples that aren't in the OTU table
                     # (e.g. the 'na' state for body site).
                     if exists(body_site_otu_table_fp):
-                        plots = join(area_plots_dir, 'taxa_plots_%s_%s' % (
-                            column_title_value, cat_value))
-                        create_dir(plots)
+                        plots_dir = join(area_plots_dir, '%s_%s_%s' % (
+                                taxa_plots_dir_prefix, column_title_value,
+                                cat_value))
+                        create_dir(plots_dir)
 
                         # Summarize.
-                        summarized_otu_table_fp = join(plots,
+                        summarized_otu_table_fp = join(plots_dir,
                                 '%s_otu_table.biom' % time_series_category)
 
                         cmd_title = ('Summarizing OTU table by category (%s)' %
@@ -346,7 +351,7 @@ def create_personal_results(output_dir,
                         commands.append([(cmd_title, cmd)])
 
                         # Sort.
-                        sorted_otu_table_fp = join(plots,
+                        sorted_otu_table_fp = join(plots_dir,
                                 '%s_otu_table_sorted.biom' %
                                 time_series_category)
 
@@ -360,11 +365,11 @@ def create_personal_results(output_dir,
                         cmd_title = ('Summarizing taxa (%s)' %
                                      person_of_interest)
                         cmd = ('summarize_taxa.py -i %s -o %s' % (
-                               sorted_otu_table_fp, plots))
+                               sorted_otu_table_fp, plots_dir))
                         commands.append([(cmd_title, cmd)])
 
-                        raw_data_files.append(join(plots, '*.biom'))
-                        raw_data_files.append(join(plots, '*.txt'))
+                        raw_data_files.append(join(plots_dir, '*.biom'))
+                        raw_data_files.append(join(plots_dir, '*.txt'))
 
                         create_comparative_taxa_plots_html(cat_value,
                                 join(area_plots_dir, '%s_comparative.html' %
@@ -376,6 +381,77 @@ def create_personal_results(output_dir,
             # TODO Add compare_taxa_summaries.py and plot_taxa_summary.py.
             commands = []
             for cat_value in cat_values:
+                personal_column_vals = list(column_title_values)
+
+                plots_dir = join(area_plots_dir, '%s_%s_%s' % (
+                        taxa_plots_dir_prefix, personal_column_vals[0],
+                        cat_value))
+
+                if not exists(plots_dir):
+                    continue
+
+                taxa_summary_fps1 = sorted(glob(join(plots_dir,
+                        '%s_otu_table_sorted_L*.txt' % time_series_category)))
+
+                plots_dir = join(area_plots_dir, '%s_%s_%s' % (
+                        taxa_plots_dir_prefix, personal_column_vals[1],
+                        cat_value))
+
+                if not exists(plots_dir):
+                    continue
+
+                taxa_summary_fps2 = sorted(glob(join(plots_dir,
+                        '%s_otu_table_sorted_L*.txt' % time_series_category)))
+
+                if len(taxa_summary_fps1) != len(taxa_summary_fps2):
+                    raise ValueError("There are not an equal number of taxa "
+                                     "summary plots to compare between self "
+                                     "and other.")
+
+                compatible_ts_dir = join(area_plots_dir,
+                                         'compatible_ts_%s' % cat_value)
+                raw_data_dirs.append(compatible_ts_dir)
+
+                compatible_ts_fps = defaultdict(list)
+                for ts_fp1, ts_fp2 in zip(taxa_summary_fps1,
+                                          taxa_summary_fps2):
+                    if basename(ts_fp1) != basename(ts_fp2):
+                        raise ValueError("Could not find matching taxa "
+                                         "summaries between self and other to "
+                                         "compare.")
+
+                    # Make taxa summaries compatible.
+                    cmd_title = ('Making compatible taxa summaries (%s)' %
+                                 person_of_interest)
+                    cmd = ('compare_taxa_summaries.py -i %s,%s -o %s -m '
+                           'paired -n 0' % (ts_fp1, ts_fp2, compatible_ts_dir))
+                    commands.append([(cmd_title, cmd)])
+
+                    compatible_ts_fps[personal_column_vals[0]].append(
+                            join(compatible_ts_dir, add_filename_suffix(ts_fp1,
+                                '_sorted_and_filled_0')))
+
+                    compatible_ts_fps[personal_column_vals[1]].append(
+                            join(compatible_ts_dir, add_filename_suffix(ts_fp2,
+                                 '_sorted_and_filled_1')))
+
+                for column_title_value in column_title_values:
+                    # Plot taxa summaries.
+                    ts_fps = ','.join(
+                            sorted(compatible_ts_fps[column_title_value]))
+
+                    ts_plots_dir = join(area_plots_dir, '%s_%s_%s' % (
+                            taxa_plots_dir_prefix, column_title_value,
+                            cat_value), 'taxa_summary_plots')
+
+                    cmd_title = ('Plot taxa summaries (%s)' %
+                                 person_of_interest)
+                    cmd = ('plot_taxa_summary.py -i %s -o %s -a numeric' %
+                           (ts_fps, ts_plots_dir))
+                    commands.append([(cmd_title, cmd)])
+
+            command_handler(commands, status_update_callback, logger,
+                            close_logger_on_success=False)
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
