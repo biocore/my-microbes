@@ -286,172 +286,14 @@ def create_personal_results(output_dir,
             create_dir(area_plots_dir)
             output_directories.append(area_plots_dir)
 
-            ## Split OTU table into self/other per-body-site tables
-            commands = []
-            cmd_title = 'Splitting OTU table into self/other (%s)' % \
-                        person_of_interest
-            cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table_fp,
-                    personal_mapping_file_fp, column_title, area_plots_dir)
-            commands.append([(cmd_title, cmd)])
+            files_to_remove, dirs_to_remove = _generate_taxa_summary_plots(
+                    otu_table_fp, personal_mapping_file_fp, person_of_interest,
+                    column_title, column_title_values, category_to_split,
+                    cat_values, time_series_category, area_plots_dir,
+                    command_handler, status_update_callback, logger)
 
-            command_handler(commands, status_update_callback, logger,
-                            close_logger_on_success=False)
-
-            # Prefix to be used for taxa summary plots dirs. Will be
-            # <taxa_plots_dir_prefix>_<self|other>_<body site>/.
-            taxa_plots_dir_prefix = 'taxa_plots'
-
-            for column_title_value in column_title_values:
-                biom_fp = join(area_plots_dir,
-                               add_filename_suffix(otu_table_fp,
-                                                   '_%s' % column_title_value))
-                column_title_map_fp = join(area_plots_dir, 'mapping_%s.txt' %
-                                                           column_title_value)
-                raw_data_files.append(biom_fp)
-                raw_data_files.append(column_title_map_fp)
-
-                body_site_dir = join(area_plots_dir, column_title_value)
-
-                commands = []
-                cmd_title = 'Splitting "%s" OTU table by body site (%s)' % \
-                            (column_title_value, person_of_interest)
-                cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (biom_fp,
-                        personal_mapping_file_fp, category_to_split,
-                        body_site_dir)
-                commands.append([(cmd_title, cmd)])
-                raw_data_dirs.append(body_site_dir)
-
-                command_handler(commands, status_update_callback, logger,
-                                close_logger_on_success=False)
-
-                commands = []
-                for cat_value in cat_values:
-                    body_site_otu_table_fp = join(body_site_dir,
-                            add_filename_suffix(biom_fp, '_%s' % cat_value))
-
-                    # We won't always get an OTU table if the mapping file
-                    # category contains samples that aren't in the OTU table
-                    # (e.g. the 'na' state for body site).
-                    if exists(body_site_otu_table_fp):
-                        plots_dir = join(area_plots_dir, '%s_%s_%s' % (
-                                taxa_plots_dir_prefix, column_title_value,
-                                cat_value))
-                        create_dir(plots_dir)
-
-                        # Summarize.
-                        summarized_otu_table_fp = join(plots_dir,
-                                '%s_otu_table.biom' % time_series_category)
-
-                        cmd_title = ('Summarizing OTU table by category (%s)' %
-                                     person_of_interest)
-                        cmd = ('summarize_otu_by_cat.py -i %s -c %s -o %s '
-                               '-m %s ' % (personal_mapping_file_fp,
-                               body_site_otu_table_fp, summarized_otu_table_fp,
-                               time_series_category))
-                        commands.append([(cmd_title, cmd)])
-
-                        # Sort.
-                        sorted_otu_table_fp = join(plots_dir,
-                                '%s_otu_table_sorted.biom' %
-                                time_series_category)
-
-                        cmd_title = ('Sorting OTU table (%s)' %
-                                     person_of_interest)
-                        cmd = ('sort_otu_table.py -i %s -o %s' % (
-                               summarized_otu_table_fp, sorted_otu_table_fp))
-                        commands.append([(cmd_title, cmd)])
-
-                        # Summarize taxa.
-                        cmd_title = ('Summarizing taxa (%s)' %
-                                     person_of_interest)
-                        cmd = ('summarize_taxa.py -i %s -o %s' % (
-                               sorted_otu_table_fp, plots_dir))
-                        commands.append([(cmd_title, cmd)])
-
-                        raw_data_files.append(join(plots_dir, '*.biom'))
-                        raw_data_files.append(join(plots_dir, '*.txt'))
-
-                        create_comparative_taxa_plots_html(cat_value,
-                                join(area_plots_dir, '%s_comparative.html' %
-                                                     cat_value))
-
-                command_handler(commands, status_update_callback, logger,
-                                close_logger_on_success=False)
-
-            # TODO Add compare_taxa_summaries.py and plot_taxa_summary.py.
-            commands = []
-            for cat_value in cat_values:
-                personal_column_vals = list(column_title_values)
-
-                plots_dir = join(area_plots_dir, '%s_%s_%s' % (
-                        taxa_plots_dir_prefix, personal_column_vals[0],
-                        cat_value))
-
-                if not exists(plots_dir):
-                    continue
-
-                taxa_summary_fps1 = sorted(glob(join(plots_dir,
-                        '%s_otu_table_sorted_L*.txt' % time_series_category)))
-
-                plots_dir = join(area_plots_dir, '%s_%s_%s' % (
-                        taxa_plots_dir_prefix, personal_column_vals[1],
-                        cat_value))
-
-                if not exists(plots_dir):
-                    continue
-
-                taxa_summary_fps2 = sorted(glob(join(plots_dir,
-                        '%s_otu_table_sorted_L*.txt' % time_series_category)))
-
-                if len(taxa_summary_fps1) != len(taxa_summary_fps2):
-                    raise ValueError("There are not an equal number of taxa "
-                                     "summary plots to compare between self "
-                                     "and other.")
-
-                compatible_ts_dir = join(area_plots_dir,
-                                         'compatible_ts_%s' % cat_value)
-                raw_data_dirs.append(compatible_ts_dir)
-
-                compatible_ts_fps = defaultdict(list)
-                for ts_fp1, ts_fp2 in zip(taxa_summary_fps1,
-                                          taxa_summary_fps2):
-                    if basename(ts_fp1) != basename(ts_fp2):
-                        raise ValueError("Could not find matching taxa "
-                                         "summaries between self and other to "
-                                         "compare.")
-
-                    # Make taxa summaries compatible.
-                    cmd_title = ('Making compatible taxa summaries (%s)' %
-                                 person_of_interest)
-                    cmd = ('compare_taxa_summaries.py -i %s,%s -o %s -m '
-                           'paired -n 0' % (ts_fp1, ts_fp2, compatible_ts_dir))
-                    commands.append([(cmd_title, cmd)])
-
-                    compatible_ts_fps[personal_column_vals[0]].append(
-                            join(compatible_ts_dir, add_filename_suffix(ts_fp1,
-                                '_sorted_and_filled_0')))
-
-                    compatible_ts_fps[personal_column_vals[1]].append(
-                            join(compatible_ts_dir, add_filename_suffix(ts_fp2,
-                                 '_sorted_and_filled_1')))
-
-                for column_title_value in column_title_values:
-                    # Plot taxa summaries.
-                    ts_fps = ','.join(
-                            sorted(compatible_ts_fps[column_title_value]))
-
-                    ts_plots_dir = join(area_plots_dir, '%s_%s_%s' % (
-                            taxa_plots_dir_prefix, column_title_value,
-                            cat_value), 'taxa_summary_plots')
-
-                    cmd_title = ('Plot taxa summaries (%s)' %
-                                 person_of_interest)
-                    cmd = ('plot_taxa_summary.py -i %s -o %s -a numeric' %
-                           (ts_fps, ts_plots_dir))
-                    commands.append([(cmd_title, cmd)])
-
-            command_handler(commands, status_update_callback, logger,
-                            close_logger_on_success=False)
+            raw_data_files.extend(files_to_remove)
+            raw_data_dirs.extend(dirs_to_remove)
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
@@ -624,6 +466,169 @@ def _collect_alpha_diversity_boxplot_data(rarefaction_f, metadata_map,
         dists.append(dist)
 
     return x_tick_labels, dists
+
+def _generate_taxa_summary_plots(otu_table_fp, personal_map_fp, personal_id,
+        personal_cat, personal_cat_values, body_site_cat, body_site_cat_values,
+        time_series_cat, output_dir, command_handler, status_update_callback,
+        logger):
+    files_to_remove = []
+    dirs_to_remove = []
+
+    ## Split OTU table into self/other per-body-site tables
+    commands = []
+    cmd_title = 'Splitting OTU table into self/other (%s)' % personal_id
+    cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (otu_table_fp,
+            personal_map_fp, personal_cat, output_dir)
+    commands.append([(cmd_title, cmd)])
+
+    command_handler(commands, status_update_callback, logger,
+                    close_logger_on_success=False)
+
+    # Prefix to be used for taxa summary dirs. Will be
+    # <taxa_summary_dir_prefix>_<self|other>_<body site>/.
+    ts_dir_prefix = 'taxa_summaries'
+
+    # Create taxa summaries for self and other, per body site.
+    for personal_cat_value in personal_cat_values:
+        personal_cat_biom_fp = join(output_dir,
+                add_filename_suffix(otu_table_fp, '_%s' % personal_cat_value))
+        personal_cat_map_fp = join(output_dir,
+                                   'mapping_%s.txt' % personal_cat_value)
+        files_to_remove.append(personal_cat_biom_fp)
+        files_to_remove.append(personal_cat_map_fp)
+
+        body_site_dir = join(output_dir, personal_cat_value)
+
+        commands = []
+        cmd_title = 'Splitting "%s" OTU table by body site (%s)' % (
+                personal_cat_value, personal_id)
+        cmd = 'split_otu_table.py -i %s -m %s -f %s -o %s' % (
+                personal_cat_biom_fp, personal_map_fp, body_site_cat,
+                body_site_dir)
+        commands.append([(cmd_title, cmd)])
+        dirs_to_remove.append(body_site_dir)
+
+        command_handler(commands, status_update_callback, logger,
+                        close_logger_on_success=False)
+
+        commands = []
+        for body_site_cat_value in body_site_cat_values:
+            body_site_otu_table_fp = join(body_site_dir,
+                    add_filename_suffix(personal_cat_biom_fp,
+                                        '_%s' % body_site_cat_value))
+
+            # We won't always get an OTU table if the mapping file
+            # category contains samples that aren't in the OTU table
+            # (e.g. the 'na' state for body site).
+            if exists(body_site_otu_table_fp):
+                ts_dir = join(output_dir, '%s_%s_%s' % (ts_dir_prefix,
+                    personal_cat_value, body_site_cat_value))
+                create_dir(ts_dir)
+                dirs_to_remove.append(ts_dir)
+
+                # Summarize.
+                summarized_otu_table_fp = join(ts_dir,
+                        '%s_otu_table.biom' % time_series_cat)
+
+                cmd_title = ('Summarizing OTU table by category (%s)' %
+                             personal_id)
+                cmd = ('summarize_otu_by_cat.py -i %s -c %s -o %s '
+                       '-m %s ' % (personal_map_fp, body_site_otu_table_fp,
+                        summarized_otu_table_fp, time_series_cat))
+                commands.append([(cmd_title, cmd)])
+
+                # Sort.
+                sorted_otu_table_fp = join(ts_dir,
+                        '%s_otu_table_sorted.biom' % time_series_cat)
+
+                cmd_title = 'Sorting OTU table (%s)' % personal_id
+                cmd = ('sort_otu_table.py -i %s -o %s' % (
+                       summarized_otu_table_fp, sorted_otu_table_fp))
+                commands.append([(cmd_title, cmd)])
+
+                # Summarize taxa.
+                cmd_title = 'Summarizing taxa (%s)' % personal_id
+                cmd = ('summarize_taxa.py -i %s -o %s' % (
+                    sorted_otu_table_fp, ts_dir))
+                commands.append([(cmd_title, cmd)])
+
+                create_comparative_taxa_plots_html(body_site_cat_value,
+                        join(output_dir,
+                             '%s_comparative.html' % body_site_cat_value))
+
+        command_handler(commands, status_update_callback, logger,
+                        close_logger_on_success=False)
+
+    # Make each corresponding taxa summary compatible so that coloring matches
+    # between them. We want to be able to compare self versus other at each
+    # body site.
+    commands = []
+    for body_site_cat_value in body_site_cat_values:
+        personal_cat_vals = list(personal_cat_values)
+
+        ts_dir = join(output_dir, '%s_%s_%s' % (
+                ts_dir_prefix, personal_cat_vals[0], body_site_cat_value))
+
+        if not exists(ts_dir):
+            continue
+
+        ts_fps1 = sorted(glob(join(ts_dir,
+                '%s_otu_table_sorted_L*.txt' % time_series_cat)))
+
+        ts_dir = join(output_dir, '%s_%s_%s' % (
+                ts_dir_prefix, personal_cat_vals[1], body_site_cat_value))
+
+        if not exists(ts_dir):
+            continue
+
+        ts_fps2 = sorted(glob(join(ts_dir,
+                '%s_otu_table_sorted_L*.txt' % time_series_cat)))
+
+        if len(ts_fps1) != len(ts_fps2):
+            raise ValueError("There are not an equal number of taxa summaries "
+                             "to compare between self and other.")
+
+        compatible_ts_dir = join(output_dir,
+                                 'compatible_ts_%s' % body_site_cat_value)
+        dirs_to_remove.append(compatible_ts_dir)
+
+        compatible_ts_fps = defaultdict(list)
+        for ts_fp1, ts_fp2 in zip(ts_fps1, ts_fps2):
+            if basename(ts_fp1) != basename(ts_fp2):
+                raise ValueError("Could not find matching taxa summaries "
+                                 "between self and other to compare.")
+
+            # Make taxa summaries compatible.
+            cmd_title = 'Making compatible taxa summaries (%s)' % personal_id
+            cmd = ('compare_taxa_summaries.py -i %s,%s -o %s -m paired -n 0' %
+                   (ts_fp1, ts_fp2, compatible_ts_dir))
+            commands.append([(cmd_title, cmd)])
+
+            compatible_ts_fps[personal_cat_vals[0]].append(
+                    join(compatible_ts_dir, add_filename_suffix(ts_fp1,
+                        '_sorted_and_filled_0')))
+
+            compatible_ts_fps[personal_cat_vals[1]].append(
+                    join(compatible_ts_dir, add_filename_suffix(ts_fp2,
+                         '_sorted_and_filled_1')))
+
+        for personal_cat_value in personal_cat_values:
+            # Plot taxa summaries.
+            ts_fps = ','.join(sorted(compatible_ts_fps[personal_cat_value]))
+
+            ts_plots_dir = join(output_dir, 'taxa_plots_%s_%s' % (
+                    personal_cat_value, body_site_cat_value),
+                    'taxa_summary_plots')
+
+            cmd_title = 'Plot taxa summaries (%s)' % personal_id
+            cmd = ('plot_taxa_summary.py -i %s -o %s -a numeric' %
+                   (ts_fps, ts_plots_dir))
+            commands.append([(cmd_title, cmd)])
+
+    command_handler(commands, status_update_callback, logger,
+                    close_logger_on_success=False)
+
+    return files_to_remove, dirs_to_remove
 
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
     """Sends an email to each participant in the study.
