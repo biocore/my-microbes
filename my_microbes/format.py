@@ -425,15 +425,14 @@ def create_alpha_diversity_boxplots_html(plot_fps):
     return alpha_diversity_boxplots_text % plot_links_text
 
 alpha_diversity_boxplots_text = """
-Here we present two plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
+Here we present plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
 <br/><br/>
-The two measures that we present here are <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each OTU are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.
+We present the <i>Observed Species</i> for each of your body sites across the sampling period, as well as the average <i>Observed Species</i> across all individuals. <i>Observed Species</i> is a measure of richness, and here it is a count of the distinct Operational Taxonomic Units (OTUs) in a sample. An anology in macro-scale ecology would be identifying the number of insect species in a square kilometer of rainforest: when sampling this square kilometer, the <i>Observed Species</i> would simply be the number of distinct insect species that you observe.
 <br/><br/>
 You should be able to answer several questions about your microbial communities from these plots:
 <ol>
   <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
   <li>Which of your body sites is most rich, and which is least rich? Do other individuals exhibit the same pattern of richness?</li>
-  <li>Which of your body sites exhibits the most even distribution of species, and which exhibits the least even distribution of species? Do other individuals exhibit the same pattern of evenness?</li>
 </ol>
 <ul>
   %s
