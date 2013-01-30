@@ -442,7 +442,7 @@ You should be able to answer several questions about your microbial communities 
 <br/><br/>
 Alpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
 <br/><br/>
-Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. After clicking the link, select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.
+Click <a href="./alpha_rarefaction/rarefaction_plots.html">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
 
 """
 
