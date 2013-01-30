@@ -79,7 +79,10 @@ function initializeGlossary() {
 
   var alpha_diversity_html = "<div id='adiv-definition' class='glossary-item' title='Alpha Diversity'><p>Alpha diversity refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample. This is in contrast to beta diversity, which is a measure of between-sample diversity.";
 
-  $("body").append(otu_definition_html, alpha_diversity_html);
+  var beta_diversity_html = "<div id='bdiv-definition' class='glossary-item' title='Beta Diversity'><p>Beta diversity measures between-sample diversity tells us the similarity or dissimilarity of a pair of samples. This information is most useful when you're comparing more than two samples, which is almost always, as beta diversity can then tell you about the relative similarity or dissimilarity between all pairs of your samples. For example, if you have human gut microbial communities from three individuals (say, individuals <i>A</i>, <i>B</i>, and <i>C</i>), and compute beta diversity for each pair of those three samples, you results may tell you that individual <i>A</i> is more similar to individual <i>B</i> than either is to individual <i>C</i>. Ecologists use many different metrics to measure beta diversity. The metric we use here is called UniFrac (see <a href='http://www.ncbi.nlm.nih.gov/pubmed/16332807'>Lozupone and Knight, 2005</a> for a discussion of UniFrac).</p></div>";
+
+  $("body").append(otu_definition_html, alpha_diversity_html,
+                   beta_diversity_html);
 
   $(".glossary-item").dialog({
     autoOpen: false,
@@ -98,6 +101,11 @@ function initializeGlossary() {
 
   $(".adiv").click(function(event) {
     openDialog("adiv-definition", event.target.id);
+    return false;
+  });
+
+  $(".bdiv").click(function(event) {
+    openDialog("bdiv-definition", event.target.id);
     return false;
   });
 }
