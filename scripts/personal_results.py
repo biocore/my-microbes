@@ -140,11 +140,6 @@ script_info['optional_options'] = [
         'category significance tables will have clickable OTU IDs that will '
         'open the fasta-formatted representative sequence in a dialog '
         '[default: %default]', type='existing_filepath', default=None),
-    make_option('--parameter_fp',
-        help='Pass a parameters file path. I.e, a parameter file that will be passed ' 
-             'to summarize_taxa_through_plots that will allow for correct time series ' 
-             'x-axis where time increments are not even.'
-             '[default: %default]', type='existing_filepath', default=None),        
     make_option('--body_site_rarefied_otu_table_dir',
         help='path to directory containing per-body-site OTU tables that were '
         'split from a rarefied OTU table. If provided, the '
@@ -230,7 +225,6 @@ def main():
                             rarefaction_depth=opts.rarefaction_depth,
                             alpha=opts.alpha,
                             rep_set_fp=opts.rep_set_fp,
-                            parameter_fp=opts.parameter_fp,
                             body_site_rarefied_otu_table_dir=opts.body_site_rarefied_otu_table_dir,
                             retain_raw_data=opts.retain_raw_data,
                             suppress_alpha_rarefaction=opts.suppress_alpha_rarefaction,
