@@ -11,16 +11,16 @@ __email__ = "jai.rideout@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
-from my_microbes.format import format_participant_table
+from my_microbes.format import format_participant_list
 
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = "Generates a table of participant IDs with links to personalized results"
+script_info['brief_description'] = "Generates a list of participant IDs with links to personalized results"
 script_info['script_description'] = """
-This script generates a table containing participant IDs (i.e. personal IDs)
+This script generates a list containing participant IDs (i.e. personal IDs)
 with links to personalized results. Currently, the only supported output format
-is HTML. This table can then be dropped into a main index page to allow
+is HTML. This list can then be dropped into a main index page to allow
 participants to find links to their results (in addition to the email they
 should also receive).
 
@@ -34,8 +34,8 @@ will likely be the same list that you'll want to email.
 
 script_info['script_usage'] = []
 script_info['script_usage'].append((
-"Generate HTML table of participants",
-"The following command generates an HTMl table of all participants in "
+"Generate HTML list of participants",
+"The following command generates an HTMl list of all participants in "
 "participants.txt, using the provided URL prefix. An example of a "
 "personalized results link for personal ID 'NAU123' using the provided URL "
 "prefix is 'http://my-microbes.qiime.org/NAU123/index.html'.",
@@ -43,15 +43,15 @@ script_info['script_usage'].append((
 "participants.html"))
 
 script_info['output_description'] = """
-The script produces an output HTML file containing the table.
+The script produces an output HTML file containing the list.
 """
 
 script_info['required_options'] = [
     make_option('-p', '--participants', type='existing_filepath',
-        help='the list of participants to include in the table. This should '
-        'be in the same format as that accepted by notify_participants.py\'s '
-        '-r/--recipients option (provided for convenience). The email address '
-        'column will be ignored'),
+        help='the list of participants to include in the HTML list. This '
+        'should be in the same format as that accepted by '
+        'notify_participants.py\'s -r/--recipients option (provided for '
+        'convenience). The email address column will be ignored'),
     options_lookup['output_fp'],
     make_option('-u', '--url_prefix', type='string',
         help='the URL to prefix to each personal ID (used for personalized '
@@ -65,11 +65,11 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    participant_table = format_participant_table(open(opts.participants, 'U'),
-                                                  opts.url_prefix)
+    participant_list = format_participant_list(open(opts.participants, 'U'),
+                                                opts.url_prefix)
 
     with open(opts.output_fp, 'w') as output_f:
-        output_f.write(participant_table)
+        output_f.write(participant_list)
 
 
 if __name__ == "__main__":
