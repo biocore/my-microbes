@@ -15,6 +15,230 @@ from cogent.parse.fasta import MinimalFastaParser
 
 from my_microbes.parse import parse_recipients
 
+# The following formatting functions are not unit-tested.
+def create_index_html(personal_id, output_fp,
+                      alpha_diversity_boxplots_html='',
+                      otu_category_significance_html=''):
+    output_f = open(output_fp,'w')
+    output_f.write(index_text % (personal_id, personal_id,
+                                 alpha_diversity_boxplots_html,
+                                 otu_category_significance_html))
+    output_f.close()
+
+def create_alpha_diversity_boxplots_html(plot_fps):
+    return alpha_diversity_boxplots_text % \
+            _create_alpha_diversity_boxplots_links(plot_fps)
+
+def create_comparative_taxa_plots_html(category, output_fp):
+    output_f = open(output_fp,'w')
+    output_f.write(comparative_taxa_plots_text % (category.title(),
+            category.title(), category.title(), category, category,
+            category.title(), category, category.title(), category))
+    output_f.close()
+
+def create_otu_category_significance_html(table_fps):
+    return otu_category_significance_text % \
+            _create_otu_category_significance_links(table_fps)
+
+def get_personalized_notification_email_text(personal_id):
+    """Returns the text for the body of an email based on personal ID."""
+    return notification_email_text % (personal_id, personal_id)
+
+# The remaining functions are unit-tested.
+def _create_alpha_diversity_boxplots_links(plot_fps):
+    plot_links_text = '<ul>\n'
+
+    for plot_fp in plot_fps:
+        adiv_metric_title = format_title(splitext(basename(plot_fp))[0])
+        plot_links_text += '<li><a href="%s" target="_blank">%s</a></li>\n' % (
+                plot_fp, adiv_metric_title)
+
+    return plot_links_text + '</ul>\n'
+
+def _create_otu_category_significance_links(table_fps):
+    table_links_text = '<ul>\n'
+
+    for table_fp in table_fps:
+        body_site = splitext(basename(table_fp))[0].title()
+        table_links_text += ('<li><a href="%s" target="_blank">%s</a></li>\n' %
+            (table_fp, body_site))
+
+    return table_links_text + '</ul>\n'
+
+def create_otu_category_significance_html_tables(table_fps, alpha, output_dir,
+                                                 individual_titles,
+                                                 rep_set_fp=None):
+    per_body_site_tables = _format_otu_category_significance_tables_as_html(
+            table_fps, alpha, individual_titles, rep_set_fp)
+
+    created_files = []
+    for body_site, (table_html, rep_seq_html) in per_body_site_tables.items():
+        out_html_fp = join(output_dir, '%s.html' % body_site)
+        out_html_f = open(out_html_fp, 'w')
+
+        out_html_f.write(otu_category_significance_table_text % (body_site,
+                individual_titles[0], individual_titles[1],
+                individual_titles[0], individual_titles[1], table_html,
+                rep_seq_html))
+
+        out_html_f.close()
+        created_files.append(basename(out_html_fp))
+
+    return sorted(created_files)
+
+def _format_otu_category_significance_tables_as_html(table_fps, alpha,
+                                                     individual_titles,
+                                                     rep_set_fp=None):
+    if alpha < 0 or alpha > 1:
+        raise ValueError("Alpha must be between zero and one.")
+
+    otu_id_lookup = {}
+    if rep_set_fp is not None:
+        for seq_id, seq in MinimalFastaParser(open(rep_set_fp, 'U')):
+            seq_id = seq_id.strip().split()[0]
+            otu_id_lookup[seq_id] = seq
+
+    per_body_site_tables = {}
+    for table_fp in table_fps:
+        body_site = splitext(basename(table_fp))[0].split('otu_cat_sig_')[-1]
+        html_table_text = ('<table class="data-table">\n'
+                           '<tr>\n'
+                           '<th>OTU ID</th>\n'
+                           '<th>Taxonomy</th>\n'
+                           '</tr>\n')
+
+        rep_seq_html = ''
+        processed_header = False
+
+        with open(table_fp, 'U') as table_f:
+            for line in table_f:
+                cells = map(lambda e: e.strip(), line.strip().split('\t'))
+
+                if not processed_header:
+                    otu_id_idx = cells.index('OTU')
+                    p_value_idx = cells.index('FDR_corrected')
+                    taxonomy_idx = cells.index('Consensus Lineage')
+                    individual_title0_idx = cells.index('%s_mean' %
+                                                        individual_titles[0])
+                    individual_title1_idx = cells.index('%s_mean' %
+                                                        individual_titles[1])
+                    processed_header = True
+                    continue
+
+                otu_id = cells[otu_id_idx]
+                p_value = float(cells[p_value_idx])
+                taxonomy = cells[taxonomy_idx]
+                individual_title0_mean = float(cells[individual_title0_idx])
+                individual_title1_mean = float(cells[individual_title1_idx])
+
+                if p_value <= alpha:
+                    # Taken from qiime.plot_taxa_summary.
+                    taxa_links = []
+                    for tax_level in taxonomy.split(';'):
+                        # identify the taxa name (e.g., everything after the
+                        # first double underscore) - we only want to include
+                        # this in the google links for better search
+                        # sensitivity
+                        tax_name = tax_level.split('__',1)[1]
+                        if len(tax_name) == 0:
+                            # if there is no taxa name
+                            # (e.g., tax_level == "s__") don't print anything
+                            # for this level or any levels below it (which all
+                            # should have no name anyway)
+                            break
+                        else:
+                            taxa_links.append(
+                                    '<a href="javascript:gg(\'%s\');">%s</a>' %
+                                    (tax_name.replace(' ', '+'),
+                                     tax_level.replace(' ', '&nbsp;')))
+                    taxonomy = ';'.join(taxa_links).replace('"', '')
+                    if individual_title0_mean < individual_title1_mean:
+                        row_color = "#FF9900" # orange
+                    else:
+                        row_color = "#99CCFF" # blue
+
+                    # If we have a rep seq for the current OTU ID, create a
+                    # link. If not, simply display the OTU ID as text.
+                    otu_id_html = otu_id
+                    if otu_id in otu_id_lookup:
+                        rep_seq = otu_id_lookup[otu_id]
+
+                        # Splitting code taken from
+                        # http://code.activestate.com/recipes/496784-split-
+                        # string-into-n-size-pieces/
+                        rep_seq = '\n'.join([rep_seq[i:i+40]
+                            for i in range(0, len(rep_seq), 40)])
+
+                        rep_seq_div_id = '%s-rep-seq' % otu_id
+                        otu_id_html = ('<a href="#" id="%s" '
+                                       'onclick="openDialog(\'%s\', \'%s\'); '
+                                       'return false;">%s</a>' % (otu_id,
+                                       rep_seq_div_id, otu_id, otu_id))
+                        rep_seq_html += ('<div id="%s" class="rep-seq-dialog" '
+                                         'title="Representative Sequence for '
+                                         'OTU ID %s">\n<pre>&gt;%s\n%s</pre>\n'
+                                         '</div>\n' % (rep_seq_div_id, otu_id,
+                                                       otu_id, rep_seq))
+
+                    html_table_text += ('<tr>\n<td bgcolor=%s>%s</td>\n'
+                                        '<td>%s</td>\n</tr>\n' % (row_color,
+                                        otu_id_html, taxonomy))
+        html_table_text += '</table>\n'
+        per_body_site_tables[body_site] = (html_table_text, rep_seq_html)
+
+    return per_body_site_tables
+
+def format_title(input_str):
+    """Return title-cased string, with underscores converted to spaces.
+
+    If input_str has a mapping in title_mapping, this will be used instead.
+    """
+    title_mapping = {'PD_whole_tree': 'Phylogenetic Diversity'}
+
+    if input_str in title_mapping:
+        return title_mapping[input_str]
+    else:
+        return ' '.join(map(lambda e: e[0].upper() + e[1:],
+                            input_str.split('_')))
+
+def format_participant_table(participants_f, url_prefix):
+    """Formats an HTML table of personal IDs with links to personal results.
+
+    Returns the HTMl table as a string suitable for writing to a file. Personal
+    IDs will be sorted.
+
+    Arguments:
+        participants_f - file in same format as that accepted by
+            my_microbes.parse.parse_recipients. Email addresses are
+            ignored
+        url_prefix - URL to prefix each personal ID with to provide links to
+            personalized results (string)
+    """
+    personal_ids = sorted(parse_recipients(participants_f).keys())
+    url_prefix = url_prefix if url_prefix.endswith('/') else url_prefix + '/'
+
+    result = '<table class="data-table">\n<tr><th>Personal ID</th></tr>\n'
+    for personal_id in personal_ids:
+        url = url_prefix + personal_id + '/index.html'
+        result += '<tr><td><a href="%s">%s</a></td></tr>\n' % (url,
+                                                               personal_id)
+    result += '</table>\n'
+
+    return result
+
+top_level_index_text = """
+This page contains the personalized microbiome results generated by the <a href="https://github.com/qiime/my-microbes/">My Microbes</a> system for participants in the Student Microbiome Project at the University of Colorado at Boulder, Northern Arizona University, and North Carolina State University. You should have received a personalized link to your microbiome data by email. If you're not a participant in the study, but interested in seeing data, you can see example data from one of the participants:
+<br/><br/>
+<a href="./NAU144/index.html">Personal microbiome data for individual NAU144</a>
+<br/><br/>
+In this study, we asked students to collect weekly samples from their forehead, tongue, palm, armpit, and gut for ten-weeks. After the samples were collected, we extracted DNA from those samples (over 3700 samples in all), and sequenced the 16S rRNA gene from the bacteria and the archaea in these samples. We then used that DNA sequence data to characterize the microbial communities living at each of the sites that were sampled, as well as the temporal variability in those microbial communities. For details on the 16S rRNA gene, and why it's useful in this type of study, you can refer to <a href="http://www.microbe.net/fact-sheet-ribosomal-rna-rrna-the-details/">this discussion</a>. Due to technical limitations we were unable to sequence the armpit samples. We additionally were not able to sequence samples from individuals who turned in fewer than six weeks of samples.
+
+While producing this delivery system and the results presented has been a great deal of work, it is just the beginning. Analyses of these data are ongoing and interesting trends are beginning to emerge. We hope to publish our findings in the scientific literature within the year. As our analyses progress, we will send periodic updates and may have new results to share with you. Once again, we are grateful for your participation and hope you learned something along the way. Thank you!
+
+Please direct any questions you have about this study or your personal microbiome data to <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
+
+"""
+
 index_text = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -202,42 +426,25 @@ index_text = """
 </html>
 """
 
-notification_email_subject = "Your personal microbiome results are ready!"
+alpha_diversity_boxplots_text = """
+Here we present plots showing the distributions of your <a href="#" id="adiv-ref-2" class="adiv">alpha diversity</a> (<i>Self</i>) versus all other individuals' <a href="#" id="adiv-ref-3" class="adiv">alpha diversity</a> (<i>Other</i>), for each body site. <a href="#" id="adiv-ref-4" class="adiv">Alpha diversity</a> refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
+<br/><br/>
+We present the <i>Observed Species</i> for each of your body sites across the sampling period, as well as the average <i>Observed Species</i> across all individuals. <i>Observed Species</i> is a measure of richness, and here it is a count of the distinct <a href="#" id="otu-ref-1" class="otus">Operational Taxonomic Units (OTUs)</a> in a sample. An anology in macro-scale ecology would be identifying the number of insect species in a square kilometer of rainforest: when sampling this square kilometer, the <i>Observed Species</i> would simply be the number of distinct insect species that you observe.
+<br/><br/>
+You should be able to answer several questions about your microbial communities from these plots:
+<ol>
+  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
+  <li>Which of your body sites is most rich, and which is least rich? Do other individuals exhibit the same pattern of richness?</li>
+</ol>
+%s
+<hr>
+<b>Advanced</b>: Measurements of <a href="#" id="adiv-ref-5" class="adiv">alpha diversity</a> are strongly affected by the sampling effort applied in a study.  For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If <a href="#" id="adiv-ref-6" class="adiv">alpha diversity</a> is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
+<br/><br/>
+Alpha rarefaction plots show the <a href="#" id="adiv-ref-7" class="adiv">alpha diversity</a> at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the <a href="#" id="adiv-ref-8" class="adiv">alpha diversity</a> (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
+<br/><br/>
+Click <a href="./alpha_rarefaction/rarefaction_plots.html" target="_blank">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
 
-notification_email_text = """
-Dear participant,
-
-We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
-
-https://s3.amazonaws.com/my-microbes/index.html
-
-Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
-
-Your personal ID is %s.
-
-To view your personalized results, please visit the following link:
-
-https://s3.amazonaws.com/my-microbes/%s/index.html
-
-The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
-
-Thanks for participating in the study!
-
-The Student Microbiome Project Team
 """
-
-def get_personalized_notification_email_text(personal_id):
-    """Returns the text for the body of an email based on personal ID."""
-    return notification_email_text % (personal_id, personal_id)
-
-def create_index_html(personal_id, output_fp,
-                      alpha_diversity_boxplots_html='',
-                      otu_category_significance_html=''):
-    output_f = open(output_fp,'w')
-    output_f.write(index_text % (personal_id, personal_id,
-                                 alpha_diversity_boxplots_html,
-                                 otu_category_significance_html))
-    output_f.close()
 
 # This javascript synchronizes the scrolling of the two iframes. It has been
 # tested in Chrome, Safari, and Firefox. It will work in all browsers when
@@ -412,166 +619,14 @@ comparative_taxa_plots_text = """
 </html>
 """
 
-def create_comparative_taxa_plots_html(category, output_fp):
-    output_f = open(output_fp,'w')
-    output_f.write(comparative_taxa_plots_text % (category.title(),
-            category.title(), category.title(), category, category,
-            category.title(), category, category.title(), category))
-    output_f.close()
-
-def create_alpha_diversity_boxplots_html(plot_fps):
-    plot_links_text = ''
-
-    for plot_fp in plot_fps:
-        adiv_metric_title = format_title(splitext(basename(plot_fp))[0])
-        plot_links_text += '<li><a href="%s" target="_blank">%s</a></li>' % (plot_fp,
-                                                             adiv_metric_title)
-
-    return alpha_diversity_boxplots_text % plot_links_text
-
-alpha_diversity_boxplots_text = """
-Here we present plots showing the distributions of your <a href="#" id="adiv-ref-2" class="adiv">alpha diversity</a> (<i>Self</i>) versus all other individuals' <a href="#" id="adiv-ref-3" class="adiv">alpha diversity</a> (<i>Other</i>), for each body site. <a href="#" id="adiv-ref-4" class="adiv">Alpha diversity</a> refers to within-sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.
-<br/><br/>
-We present the <i>Observed Species</i> for each of your body sites across the sampling period, as well as the average <i>Observed Species</i> across all individuals. <i>Observed Species</i> is a measure of richness, and here it is a count of the distinct <a href="#" id="otu-ref-1" class="otus">Operational Taxonomic Units (OTUs)</a> in a sample. An anology in macro-scale ecology would be identifying the number of insect species in a square kilometer of rainforest: when sampling this square kilometer, the <i>Observed Species</i> would simply be the number of distinct insect species that you observe.
-<br/><br/>
-You should be able to answer several questions about your microbial communities from these plots:
-<ol>
-  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>
-  <li>Which of your body sites is most rich, and which is least rich? Do other individuals exhibit the same pattern of richness?</li>
-</ol>
-<ul>
-  %s
-</ul>
-<hr>
-<b>Advanced</b>: Measurements of <a href="#" id="adiv-ref-5" class="adiv">alpha diversity</a> are strongly affected by the sampling effort applied in a study.  For example, in macro-scale ecology, if you're interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If <a href="#" id="adiv-ref-6" class="adiv">alpha diversity</a> is computed in a study where 100 sequences are collected, you'll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.
-<br/><br/>
-Alpha rarefaction plots show the <a href="#" id="adiv-ref-7" class="adiv">alpha diversity</a> at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the <a href="#" id="adiv-ref-8" class="adiv">alpha diversity</a> (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>
-<br/><br/>
-Click <a href="./alpha_rarefaction/rarefaction_plots.html" target="_blank">here</a> to see your alpha rarefaction plots. After clicking the link, select the <tt>observed_species</tt> alpha diversity metric (the only one we computed here) from the first drop-down menu, and then a category from the second menu.
-
-"""
-
-def create_otu_category_significance_html(table_fps):
-    table_links_text = ''
-
-    for table_fp in table_fps:
-        body_site = splitext(basename(table_fp))[0].title()
-        table_links_text += '<li><a href="%s" target="_blank">%s</a></li>' %\
-            (table_fp, body_site)
-
-    return otu_category_significance_text % table_links_text
-
 otu_category_significance_text = """
 Here we present <a href="#" id="otu-ref-3" class="otus">Operational Taxonomic Units (OTUs)</a> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An <a href="#" id="otu-ref-4" class="otus">OTU</a> is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com" target="_blank">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else's) to those reference <a href="#" id="otu-ref-5" class="otus">OTUs</a>, and if a sequence read matched one of those sequences at at least 97%% identity, the read was considered an observation of that reference <a href="#" id="otu-ref-6" class="otus">OTU</a>. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to <a href="#" id="otu-ref-7" class="otus">OTUs</a>.
 <br/><br/>
 Here we present the <a href="#" id="otu-ref-8" class="otus">OTUs</a> that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
 <h3>Click on the following links to see what OTU abundances differed by body site:</h3>
-<ul>
-  %s
-</ul>
+%s
 """
-
-def format_otu_category_significance_tables_as_html(table_fps, alpha,
-                                                    output_dir,
-                                                    individual_titles,
-                                                    rep_set_fp=None):
-    if alpha < 0 or alpha > 1:
-        raise ValueError("Alpha must be between zero and one.")
-
-    otu_id_lookup = {}
-    if rep_set_fp is not None:
-        for seq_id, seq in MinimalFastaParser(open(rep_set_fp, 'U')):
-            seq_id = seq_id.strip().split()[0]
-            otu_id_lookup[seq_id] = seq
-
-    created_files = []
-    for table_fp in table_fps:
-        body_site = splitext(basename(table_fp))[0].split('otu_cat_sig_')[-1]
-        table_f = open(table_fp, 'U')
-
-        out_html_fp = join(output_dir, '%s.html' % body_site)
-        out_html_f = open(out_html_fp, 'w')
-        created_files.append(basename(out_html_fp))
-
-        html_row_text = ''
-        rep_seq_html = ''
-        processed_header = False
-        for line in table_f:
-            cells = map(lambda e: e.strip(), line.strip().split('\t'))
-
-            if not processed_header:
-                otu_id_idx = cells.index('OTU')
-                p_value_idx = cells.index('FDR_corrected')
-                taxonomy_idx = cells.index('Consensus Lineage')
-                individual_title0_idx = cells.index('%s_mean' % individual_titles[0])
-                individual_title1_idx = cells.index('%s_mean' % individual_titles[1])
-                processed_header = True
-            else:
-                otu_id = cells[otu_id_idx]
-                p_value = float(cells[p_value_idx])
-                taxonomy = cells[taxonomy_idx]
-                individual_title0_mean = float(cells[individual_title0_idx])
-                individual_title1_mean = float(cells[individual_title1_idx])
-
-                if p_value <= alpha:
-                    # Taken from qiime.plot_taxa_summary.
-                    taxa_links = []
-                    for tax_level in taxonomy.split(';'):
-                        # identify the taxa name (e.g., everything after the
-                        # first double underscore) - we only want to include this
-                        # in the google links for better search sensitivity
-                        tax_name = tax_level.split('__',1)[1]
-                        if len(tax_name) == 0:
-                            # if there is no taxa name (e.g., tax_level == "s__")
-                            # don't print anything for this level or any levels
-                            # below it (which all should have no name anyway)
-                            break
-                        else:
-                            taxa_links.append(
-                                    '<a href="javascript:gg(\'%s\');">%s</a>' %
-                                    (tax_name.replace(' ', '+'),
-                                     tax_level.replace(' ', '&nbsp;')))
-                    taxonomy = ';'.join(taxa_links).replace('"', '')
-                    if individual_title0_mean < individual_title1_mean:
-                        row_color = "#FF9900" # orange
-                    else:
-                        row_color = "#99CCFF" # blue
-
-                    # If we have a rep seq for the current OTU ID, create a
-                    # link. If not, simply display the OTU ID as text.
-                    otu_id_html = otu_id
-                    if otu_id in otu_id_lookup:
-                        rep_seq = otu_id_lookup[otu_id]
-
-                        # Splitting code taken from
-                        # http://code.activestate.com/recipes/496784-split-
-                        # string-into-n-size-pieces/
-                        rep_seq = '\n'.join([rep_seq[i:i+40]
-                            for i in range(0, len(rep_seq), 40)])
-
-                        rep_seq_div_id = '%s-rep-seq' % otu_id
-                        otu_id_html = ('<a href="#" id="%s" '
-                                       'onclick="openDialog(\'%s\', \'%s\'); '
-                                       'return false;">%s</a>' % (otu_id,
-                                       rep_seq_div_id, otu_id, otu_id))
-                        rep_seq_html += ('<div id="%s" class="rep-seq-dialog" '
-                                         'title="Representative Sequence for '
-                                         'OTU ID %s">\n<pre>&gt;%s\n%s</pre>\n'
-                                         '</div>\n' % (rep_seq_div_id, otu_id,
-                                                       otu_id, rep_seq))
-
-                    html_row_text += '<tr><td bgcolor=%s>%s</td><td>%s</td></tr>\n' % (
-                            row_color, otu_id_html, taxonomy)
-
-        out_html_f.write(otu_category_significance_table_text %
-                         (body_site, individual_titles[0], 
-                          individual_titles[1], individual_titles[0], 
-                          individual_titles[1], html_row_text, rep_seq_html))
-        out_html_f.close()
-        table_f.close()
-
-    return created_files
 
 otu_category_significance_table_text = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -598,67 +653,33 @@ otu_category_significance_table_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in %s samples (comparing self versus other)</h2> Click on the taxonomy links for each <a href="#" id="otu-ref-1" class="otus">OTU</a> to do a Google search for that taxonomic group. OTU IDs with an orange background are found in lower abundance in <i>%s</i> than in <i>%s</i>, and OTU IDs with a blue background are found in higher abundance in <i>%s</i> than in <i>%s</i>.  Click on the OTU ID to view the representative sequence for that OTU (try <a href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome" target="_blank">BLASTing</a> these!).
     <br/><br/>
-
-    <table class="data-table">
-      <tr>
-        <th>OTU ID</th>
-        <th>Taxonomy</th>
-      </tr>
-      %s
-    </table>
+    %s
     %s
   </div>
 </body>
 </html>
 """
 
-def format_participant_table(participants_f, url_prefix):
-    """Formats an HTML table of personal IDs with links to personal results.
+notification_email_subject = "Your personal microbiome results are ready!"
 
-    Returns the HTMl table as a string suitable for writing to a file. Personal
-    IDs will be sorted.
+notification_email_text = """
+Dear participant,
 
-    Arguments:
-        participants_f - file in same format as that accepted by
-            my_microbes.parse.parse_recipients. Email addresses are
-            ignored
-        url_prefix - URL to prefix each personal ID with to provide links to
-            personalized results (string)
-    """
-    personal_ids = sorted(parse_recipients(participants_f).keys())
-    url_prefix = url_prefix if url_prefix.endswith('/') else url_prefix + '/'
+We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
 
-    result = '<table class="data-table">\n<tr><th>Personal ID</th></tr>\n'
-    for personal_id in personal_ids:
-        url = url_prefix + personal_id + '/index.html'
-        result += '<tr><td><a href="%s">%s</a></td></tr>\n' % (url,
-                                                               personal_id)
-    result += '</table>\n'
+https://s3.amazonaws.com/my-microbes/index.html
 
-    return result
+Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
 
-def format_title(input_str):
-    """Return title-cased string, with underscores converted to spaces.
+Your personal ID is %s.
 
-    If input_str has a mapping in title_mapping, this will be used instead.
-    """
-    title_mapping = {'PD_whole_tree': 'Phylogenetic Diversity'}
+To view your personalized results, please visit the following link:
 
-    if input_str in title_mapping:
-        return title_mapping[input_str]
-    else:
-        return ' '.join(map(lambda e: e[0].upper() + e[1:],
-                            input_str.split('_')))
+https://s3.amazonaws.com/my-microbes/%s/index.html
 
-top_level_index_text = """
-This page contains the personalized microbiome results generated by the <a href="https://github.com/qiime/my-microbes/">My Microbes</a> system for participants in the Student Microbiome Project at the University of Colorado at Boulder, Northern Arizona University, and North Carolina State University. You should have received a personalized link to your microbiome data by email. If you're not a participant in the study, but interested in seeing data, you can see example data from one of the participants:
-<br/><br/>
-<a href="./NAU144/index.html">Personal microbiome data for individual NAU144</a>
-<br/><br/>
-In this study, we asked students to collect weekly samples from their forehead, tongue, palm, armpit, and gut for ten-weeks. After the samples were collected, we extracted DNA from those samples (over 3700 samples in all), and sequenced the 16S rRNA gene from the bacteria and the archaea in these samples. We then used that DNA sequence data to characterize the microbial communities living at each of the sites that were sampled, as well as the temporal variability in those microbial communities. For details on the 16S rRNA gene, and why it's useful in this type of study, you can refer to <a href="http://www.microbe.net/fact-sheet-ribosomal-rna-rrna-the-details/">this discussion</a>. Due to technical limitations we were unable to sequence the armpit samples. We additionally were not able to sequence samples from individuals who turned in fewer than six weeks of samples.
+The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 
-While producing this delivery system and the results presented has been a great deal of work, it is just the beginning. Analyses of these data are ongoing and interesting trends are beginning to emerge. We hope to publish our findings in the scientific literature within the year. As our analyses progress, we will send periodic updates and may have new results to share with you. Once again, we are grateful for your participation and hope you learned something along the way. Thank you!
+Thanks for participating in the study!
 
-Please direct any questions you have about this study or your personal microbiome data to <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
-
+The Student Microbiome Project Team
 """

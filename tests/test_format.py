@@ -21,11 +21,12 @@ from shutil import rmtree
 from cogent.util.misc import remove_files
 
 from my_microbes.format import (
-        format_otu_category_significance_tables_as_html,
+        _create_alpha_diversity_boxplots_links,
+        create_otu_category_significance_html_tables,
+        _create_otu_category_significance_links,
+        _format_otu_category_significance_tables_as_html,
         format_participant_table,
-        format_title,
-        create_alpha_diversity_boxplots_html,
-        create_otu_category_significance_html)
+        format_title)
 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
@@ -122,35 +123,39 @@ class FormatTests(TestCase):
         obs = format_participant_table(self.empty_recipients,
                                        'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
-        
-    def test_create_alpha_diversity_boxplots_html(self): 
-        """Test alpha diversity boxplots"""
-        input = ('pd.txt', 'chao.txt')
-        exp = expected_alpha_diversity_boxplots
-        self.assertEqual(create_alpha_diversity_boxplots_html(input), exp)
-    
-    def test_create_otu_category_significance_html(self): 
-        """Test create_otu_category_significance"""
-        input = ('gut.html', 'palm.html')
-        exp = otu_category_significance_text
-        self.assertEqual(create_otu_category_significance_html(input), exp)
-    
-    def test_format_otu_category_significance_tables_as_html(self): 
-        """test that a value error is raised if number not between 0 and 1 is passed"""
-        self.assertRaises(ValueError,
-                          format_otu_category_significance_tables_as_html,
-                          otu_category_significance_text, 10, 'output_dir',
-                          ['Self','Other'])
 
-        obs = format_otu_category_significance_tables_as_html(
+    def test_create_alpha_diversity_boxplots_links(self): 
+        """Test creating links to alpha diversity boxplots."""
+        filenames = ('pd.txt', 'chao.txt', 'observed_species.txt')
+        self.assertEqual(_create_alpha_diversity_boxplots_links(filenames),
+                         expected_alpha_diversity_boxplots_links)
+
+    def test_create_otu_category_significance_links(self): 
+        """Test creating links to OTU category significance tables."""
+        filenames = ('gut.html', 'palm.html')
+        self.assertEqual(_create_otu_category_significance_links(filenames),
+                         expected_otu_category_significance_links)
+
+    def test_create_otu_category_significance_html_tables(self):
+        obs = create_otu_category_significance_html_tables(
                 [self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp], 0.05,
                 self.output_dir,['Self','Other'], rep_set_fp=self.rep_seqs_fp)
-        self.assertEquals(obs, ['gut.html', 'palm.html'])
 
-        out_f = open(join(self.output_dir, 'gut.html'), 'U')
-        obs = out_f.read()
-        out_f.close()
-        self.assertEqual(obs, exp_otu_cat_sig_gut)
+        self.assertEqual(obs, ['gut.html', 'palm.html'])
+
+    def test_format_otu_category_significance_tables_as_html(self): 
+        """Test that an error is raised if alpha not between 0 and 1."""
+        self.assertRaises(ValueError,
+                          _format_otu_category_significance_tables_as_html,
+                          [self.otu_cat_sig_gut_fp, self.otu_cat_sig_palm_fp],
+                          10, ['Self','Other'])
+
+        exp = {'gut': (expected_otu_cat_sig_table_html,
+                       expected_otu_cat_sig_rep_seq_html)}
+        obs = _format_otu_category_significance_tables_as_html(
+                [self.otu_cat_sig_gut_fp], 0.05,
+                ['Self','Other'], rep_set_fp=self.rep_seqs_fp)
+        self.assertEqual(obs, exp)
 
     def test_format_title(self):
         """Tests converting string to title."""
@@ -163,145 +168,48 @@ class FormatTests(TestCase):
                          "Phylogenetic Diversity")
 
 
-expected_alpha_diversity_boxplots = """
-Here we present two plots showing the distributions of your alpha diversity (<i>Self</i>) versus all other individuals\' alpha diversity (<i>Other</i>), for each body site. Alpha diversity refers to within sample diversity, and can be a measure of the number of different types of organisms that are present in a sample (i.e., the richness of the sample), the shape of the distribution of counts of different organisms in a sample (i.e., the evenness of the sample), or some other property of a single sample.\n<br/><br/>\nThe two measures that we present here are <i>Observed Species</i>, which is a count of the distinct Operational Taxonomic Units (OTUs) in a sample, and <i>Shannon Evenness</i>, which is a measure of the how evenly distributed the counts of each OTU are in a given sample. In macro-scale ecology, Observed Species could give you a measure of insect species in a square kilometer of rainforest: when sampling this square kilometer, the observed species would be the number of distinct insect species that you observed. Evenness, on the other hand, would tell you whether you observed each of these distinct species a similar number of times, or whether you observed some many more times than others.\n<br/><br/>\nYou should be able to answer several questions about your microbial communities from these plots:\n<ol>\n  <li>How rich are the microbial communities at your different body sites relative to the average for that body site in this study (e.g., is your gut community more diverse than the average gut community in this study)?</li>\n  <li>Which of your body sites is most rich, and which is least rich? Do other individuals exhibit the same pattern of richness?</li>\n  <li>Which of your body sites exhibits the most even distribution of species, and which exhibits the least even distribution of species? Do other individuals exhibit the same pattern of evenness?</li>\n</ol>\n<ul>\n  <li><a href="pd.txt" target="_blank">Pd</a></li><li><a href="chao.txt" target="_blank">Chao</a></li>\n</ul>\n<hr>\n<b>Advanced</b>: Measurements of alpha diversity are strongly affected by the sampling effort applied in a study. For example, in macro-scale ecology, if you\'re interested in inferring the number of insect species in a rain forest, you would likely get a very different answer if you counted the number of insect species in a square meter versus a square kilometer. The area that you sampled would correspond to your sampling effort. In studies of the human microbiome based on DNA sequencing, the sampling effort corresponds to the number of sequences that are collected on a per-sample basis. If alpha diversity is computed in a study where 100 sequences are collected, you\'ll likely see many fewer taxa than in a study where 100,000 sequences are collected. To address this issue, ecologists use a tool called alpha rarefaction plots.\n<br/><br/>\nAlpha rarefaction plots show the alpha diversity at different depths of sampling (i.e., as if different numbers of sequences were collected). An alpha rarefaction plot presents the alpha diversity (y-axis) at different depths of sampling (or number of sequences collected; x-axis). From an alpha rarefaction plot, you should be able to answer the question: <i>If we were to collect more sequences per sample, do you expect that your answers to the above questions 1 through 3 would change?</i>\n<br/><br/>\nClick <a href="./alpha_rarefaction/rarefaction_plots.html" target="_blank">here</a> to see your alpha rarefaction plots. After clicking the link, select an alpha diversity metric from the first drop-down menu, and then a category from the second menu.
-
-"""
-
-otu_category_significance_text = """
-Here we present <i>Operational Taxonomic Units (or OTUs)</i> that seemed to differ in their average relative abundance when comparing you to all other individuals in the study. An OTU is a functional definition of a taxonomic group, often based on percent identity of 16S rRNA sequences. In this study, we began with a reference collection of 16S rRNA sequences (derived from the <a href="http://greengenes.secondgenome.com" target="_blank">Greengenes database</a>), and each of those sequences was used to define an Opertational Taxonomic Unit. We then compared all of the sequence reads that we obtained in this study (from your microbial communities and everyone else\'s) to those reference OTUs, and if a sequence read matched one of those sequences at at least 97% identity, the read was considered an observation of that reference OTU. This process is one strategy for <i>OTU picking</i>, or assigning sequence reads to OTUs.\n<br/><br/>\nHere we present the OTUs that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)\n\n<h3>Click on the following links to see what OTU abundances differed by body site:</h3>\n<ul>\n  <li><a href="gut.html" target="_blank">Gut</a></li><li><a href="palm.html" target="_blank">Palm</a></li>\n</ul>
-"""
-
-otu_cat_sig_gut_text = """OTU	prob	Bonferroni_corrected	FDR_corrected	Self_mean	Other_mean	Consensus Lineage
-198792	9.85322211031e-11	5.38971249434e-08	5.38971249434e-08	0.0000167	0.00249130434783	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__
-175844	9.11665166989e-10	4.98680846343e-07	2.49340423172e-07	0.0101	4.34782608696e-05	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__[Barnesiellaceae];  g__;  s__
-205836	1.13930778482e-09	6.23201358295e-07	2.07733786098e-07	0.00583	0.000726086956522	k__Bacteria;  p__Bacteroidetes;  c__Bacteroidia;  o__Bacteroidales;  f__Bacteroidaceae;  g__Bacteroides;  s__"""
+# Input test data.
+otu_cat_sig_gut_text = """OTU\tprob\tBonferroni_corrected\tFDR_corrected\tSelf_mean\tOther_mean\tConsensus Lineage
+198792\t9.85322211031e-11\t5.38971249434e-08\t5.38971249434e-08\t0.0000167\t0.00249130434783\tk__Bacteria;  p__Bacteroidetes;  s__
+175844\t9.11665166989e-10\t4.98680846343e-07\t2.49340423172e-07\t0.0101\t4.34782608696e-05\tk__foo; p__bar;  c__;  o__"""
 
 rep_seqs_text = """>175844 PC.635_779
-TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCCCGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAGTGAAACCATGCGGAAATACTATACTATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCAA"""
+TTGGACCGT"""
 
-exp_otu_cat_sig_gut = """
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-  <link href="../../support_files/css/themes/start/jquery-ui.css" rel="stylesheet">
-  <link href="../../support_files/css/main.css" rel="stylesheet">
+# Expected output.
+expected_alpha_diversity_boxplots_links = """<ul>
+<li><a href="pd.txt" target="_blank">Pd</a></li>
+<li><a href="chao.txt" target="_blank">Chao</a></li>
+<li><a href="observed_species.txt" target="_blank">Observed Species</a></li>
+</ul>
+"""
 
-  <script src="../../support_files/js/jquery.js"></script>
-  <script src="../../support_files/js/jquery-ui.js"></script>
-  <script language="javascript" type="text/javascript">
-    $(function() {
-      // Initialize all dialogs and make sure they are hidden.
-      $( ".rep-seq-dialog" ).dialog({autoOpen: false, width: 'auto'});
-    });
+expected_otu_category_significance_links = """<ul>
+<li><a href="gut.html" target="_blank">Gut</a></li>
+<li><a href="palm.html" target="_blank">Palm</a></li>
+</ul>
+"""
 
-    /*
-     * This function accepts a dialog id as a parameter, and opens the dialog
-     * box that is bound to that id. A second optional parameter, target, is
-     * the id of the element where the dialog should appear next to. If this
-     * parameter is null, the dialog will open at its default location,
-     * according to its configured options.
-     *
-     * For example, if the user clicks a link to view more info, the dialog
-     * should appear next to that link, instead of appearing in a location
-     * relative to the dialog element, which is hidden. Therefore, the id of
-     * the link that opens the dialog should be supplied as the second
-     * parameter.
-     */
-    function openDialog(dialog, target) {
-      var dialogId = "#" + dialog;
+expected_otu_cat_sig_table_html = """<table class="data-table">
+<tr>
+<th>OTU ID</th>
+<th>Taxonomy</th>
+</tr>
+<tr>
+<td bgcolor=#FF9900>198792</td>
+<td><a href=javascript:gg(\'Bacteria\');>k__Bacteria</a>;<a href=javascript:gg(\'Bacteroidetes\');>&nbsp;&nbsp;p__Bacteroidetes</a></td>
+</tr>
+<tr>
+<td bgcolor=#99CCFF><a href="#" id="175844" onclick="openDialog(\'175844-rep-seq\', \'175844\'); return false;">175844</a></td>
+<td><a href=javascript:gg(\'foo\');>k__foo</a>;<a href=javascript:gg(\'bar\');>&nbsp;p__bar</a></td>
+</tr>
+</table>
+"""
 
-      if (typeof(target) != "undefined") {
-        var targetId = "#" + target;
-        var scrollOffsets = getScrollXY();
-
-        // Move a little to the left.
-        var leftPos = ($(targetId).position().left - scrollOffsets[0] + 95);
-        var topPos = ($(targetId).position().top - scrollOffsets[1]);
-
-        $(dialogId).dialog("option", "position", [leftPos, topPos]);
-      }
-
-      $(dialogId).dialog("open");
-    }
-
-    /*
-     * Returns an array with the scrolling offsets (useful for displaying
-     * tooltips/dialogs in the same place even when the user has scrolled on
-     * the page and then opens a new dialog).
-     *
-     * Returns [scrollOffsetX, scrollOffsetY]. This function works in all
-     * browsers.
-     *
-     * Code taken from: http://stackoverflow.com/a/745126
-     */
-    function getScrollXY() {
-      var scrOfX = 0, scrOfY = 0;
-      if (typeof(window.pageYOffset) == 'number') {
-        // Netscape compliant.
-        scrOfY = window.pageYOffset;
-        scrOfX = window.pageXOffset;
-      }
-      else if (document.body && (document.body.scrollLeft ||
-                                 document.body.scrollTop)) {
-        // DOM compliant.
-        scrOfY = document.body.scrollTop;
-        scrOfX = document.body.scrollLeft;
-      }
-      else if (document.documentElement &&
-               (document.documentElement.scrollLeft ||
-                document.documentElement.scrollTop)) {
-        // IE6 standards compliant mode.
-        scrOfY = document.documentElement.scrollTop;
-        scrOfX = document.documentElement.scrollLeft;
-      }
-
-      return [scrOfX, scrOfY];
-    }
-
-    function gg(targetq) {
-      window.open("http://www.google.com/search?q=" + targetq, 'searchwin');
-    }
-  </script>
-</head>
-
-<body>
-  <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
-    <h2>Operational Taxonomic Units (OTUs) that differed in relative abundance in gut samples (comparing self
-    versus other)</h2>
-    Click on the taxonomy links for each OTU to do a Google search for that
-    taxonomic group. OTU IDs with an orange background are found in lower
-    abundance in <i>Self</i> than in <i>Other</i>, and OTU IDs with a blue
-    background are found in higher abundance in <i>Self</i> than in <i>Other</i>.
-    Click on the OTU ID to view the representative sequence for that OTU (try
-    <a target="_blank"
-    href="http://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&BLAST_PROGRAMS=megaBlast&PAGE_TYPE=BlastSearch&SHOW_DEFAULTS=on&LINK_LOC=blasthome" target="_blank">BLASTing</a> these!).
-    <br/><br/>
-
-    <table class="data-table">
-      <tr>
-        <th>OTU ID</th>
-        <th>Taxonomy</th>
-      </tr>
-      <tr><td bgcolor=#FF9900>198792</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
-<tr><td bgcolor=#99CCFF><a href="#" id="175844" onclick="openDialog('175844-rep-seq', '175844'); return false;">175844</a></td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('[Barnesiellaceae]');>&nbsp;&nbsp;f__[Barnesiellaceae]</a></td></tr>
-<tr><td bgcolor=#99CCFF>205836</td><td><a href=javascript:gg('Bacteria');>k__Bacteria</a>;<a href=javascript:gg('Bacteroidetes');>&nbsp;&nbsp;p__Bacteroidetes</a>;<a href=javascript:gg('Bacteroidia');>&nbsp;&nbsp;c__Bacteroidia</a>;<a href=javascript:gg('Bacteroidales');>&nbsp;&nbsp;o__Bacteroidales</a>;<a href=javascript:gg('Bacteroidaceae');>&nbsp;&nbsp;f__Bacteroidaceae</a>;<a href=javascript:gg('Bacteroides');>&nbsp;&nbsp;g__Bacteroides</a></td></tr>
-
-    </table>
-    <div id="175844-rep-seq" class="rep-seq-dialog" title="Representative Sequence for OTU ID 175844">
+expected_otu_cat_sig_rep_seq_html = """<div id="175844-rep-seq" class="rep-seq-dialog" title="Representative Sequence for OTU ID 175844">
 <pre>&gt;175844
-TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCT
-CAGAACCCCTATCCATCGTTGACTTGGTGGGCCGTTACCC
-CGCCAACTATCTAATGGAACGCATCCCCATCGATAACCGA
-AATTCTTTAATAGTGAAACCATGCGGAAATACTATACTAT
-CGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTA
-TCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTC
-GCCATCAA</pre>
+TTGGACCGT</pre>
 </div>
-
-  </div>
-</body>
-</html>
 """
 
 
