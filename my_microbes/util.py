@@ -40,7 +40,7 @@ from my_microbes.format import (create_index_html,
         create_alpha_diversity_boxplots_html,
         create_comparative_taxa_plots_html,
         create_otu_category_significance_html,
-        format_otu_category_significance_tables_as_html,
+        create_otu_category_significance_html_tables,
         format_title,
         get_personalized_notification_email_text,
         notification_email_subject)
@@ -335,7 +335,7 @@ def create_personal_results(output_dir,
 
             # Reformat otu category significance tables.
             otu_cat_sig_html_filenames = \
-                    format_otu_category_significance_tables_as_html(
+                    create_otu_category_significance_html_tables(
                             otu_cat_sig_output_fps, alpha, otu_cat_sig_dir, 
                             individual_titles, rep_set_fp=rep_set_fp)
 
