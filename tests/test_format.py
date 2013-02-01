@@ -25,7 +25,7 @@ from my_microbes.format import (
         create_otu_category_significance_html_tables,
         _create_otu_category_significance_links,
         _format_otu_category_significance_tables_as_html,
-        format_participant_table,
+        format_participant_list,
         format_title)
 
 class FormatTests(TestCase):
@@ -97,31 +97,28 @@ class FormatTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_format_participant_table(self):
-        """Test formatting an HTML table of study participants."""
+    def test_format_participant_list(self):
+        """Test formatting an HTML list of study participants."""
         # Test URL prefix without trailing slash.
-        exp = ('<table class="data-table">\n'
-               '<tr><th>Personal ID</th></tr>\n'
-               '<tr><td><a href="http://my-microbes.qiime.org/'
-                 'foo1/index.html">foo1</a></td></tr>\n'
-               '<tr><td><a href="http://my-microbes.qiime.org/'
-                 'foo2/index.html">foo2</a></td></tr>\n'
-               '</table>\n')
-        obs = format_participant_table(self.recipients,
-                                       'http://my-microbes.qiime.org')
+        exp = ('<ul>\n'
+               '  <li><a href="http://my-microbes.qiime.org/'
+               'foo1/index.html" target="_blank">foo1</a></li>\n'
+               '  <li><a href="http://my-microbes.qiime.org/'
+               'foo2/index.html" target="_blank">foo2</a></li>\n'
+               '</ul>\n')
+        obs = format_participant_list(self.recipients,
+                                      'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
 
         # Test URL prefix with trailing slash.
-        obs = format_participant_table(self.recipients,
-                                       'http://my-microbes.qiime.org/')
+        obs = format_participant_list(self.recipients,
+                                      'http://my-microbes.qiime.org/')
         self.assertEqual(obs, exp)
 
         # Test empty recipients file.
-        exp = ('<table class="data-table">\n'
-               '<tr><th>Personal ID</th></tr>\n'
-               '</table>\n')
-        obs = format_participant_table(self.empty_recipients,
-                                       'http://my-microbes.qiime.org')
+        exp = '<ul>\n</ul>\n'
+        obs = format_participant_list(self.empty_recipients,
+                                      'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
 
     def test_create_alpha_diversity_boxplots_links(self): 
