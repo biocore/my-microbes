@@ -535,10 +535,10 @@ comparative_taxa_plots_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>%s taxonomic composition plots (comparing self versus other)</h2>
     The two panels below show taxonomic composition plots for yourself and all
-    other individuals in the study, respectively. The x-axis in these plots contains the week
-    number that the samples were taken from so that you can see how the community
-    composition changes over time. The y-axis represents the relative abundance
-    of the specific taxonomic groups.
+    other individuals in the study, respectively. The x-axis in these plots
+    contains the week number that the samples were taken from so that you can
+    see how the community composition changes over time. The y-axis represents
+    the relative abundance of the specific taxonomic groups.
     <br/><br/>
 
     By default, the <i>Self</i> versus <i>Other</i> plots are positioned
