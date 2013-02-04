@@ -356,6 +356,9 @@ index_text = """
         </ol>
 
         While many of the results apparent in this <a href="#" id="ordination-ref-4" class="ordination">ordination</a> plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of <a href="#" id="bdiv-ref-7" class="bdiv">beta diversity</a> analyses and the uniqueness of our dataset.
+        <br/><br/>
+
+        <span class="error"><b>Note:</b></span> To view your beta diversity PCoA plots, you will need to have <a href="http://www.java.com" target="_blank">Java</a> installed and updated to the latest version.  Some browsers, such as Chrome and certain versions of Safari, have trouble displaying these plots. We recommend that you use <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a> to view these plots. Additionally, you may receive a security warning when clicking the links below that asks if you'd like to run the application. Please click <b>Run</b> to display the plots.
 
         <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots.</h3>
         <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
