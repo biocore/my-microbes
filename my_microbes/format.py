@@ -373,8 +373,11 @@ index_text = """
       <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
         <center>
           <p>
-            Thanks for participating in the study! Please direct any questions to
-            <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
+          The <a href="https://github.com/qiime/my-microbes/" target="_blank">My Microbes</a> system was developed in the <a href="http://www.caporaso.us" target="_blank">Caporaso Lab</a> at Northern Arizona University and the <a href="http://knightlab.colorado.edu" target="_blank">Knight Lab</a> at the University of Colorado, in collaboration with the <a href="http://www.colorado.edu/eeb/EEBprojects/FiererLab" target="_blank">Fierer Lab</a> at the University of Colorado and the <a href="http://robdunnlab.com" target="_blank">Dunn Lab</a> at North Carolina State.
+          </p>
+
+          <p>
+            Please direct any questions about this study, your personal microbiome data, or the <a href="https://github.com/qiime/my-microbes/" target="_blank">My Microbes</a> system to <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
           </p>
           <h3>Powered by:</h3>
           <table>
