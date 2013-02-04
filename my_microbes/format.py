@@ -356,6 +356,9 @@ index_text = """
         </ol>
 
         While many of the results apparent in this <a href="#" id="ordination-ref-4" class="ordination">ordination</a> plot were already known, the unprecedented number of indivduals and timepoints in the Student Microbiome Project data set allows us to address more sophisticated questions. For example, we are using these results to determine whether microbial communities of males or females more variable through time, if there are geographical differences in community composition that are visible across the three universities, and the affects of antibiotic usage and other <i>disturbances</i> on the composition of microbial communities. These are just a few examples that illustrate the utility of <a href="#" id="bdiv-ref-7" class="bdiv">beta diversity</a> analyses and the uniqueness of our dataset.
+        <br/><br/>
+
+        <span class="error"><b>Note:</b></span> To view your beta diversity PCoA plots, you will need to have <a href="http://www.java.com" target="_blank">Java</a> installed and updated to the latest version.  Some browsers, such as Chrome and certain versions of Safari, have trouble displaying these plots. We recommend that you use <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a> to view these plots. Additionally, you may receive a security warning when clicking the links below that asks if you'd like to run the application. Please click <b>Run</b> to display the plots.
 
         <h3>Click <a href="./beta_diversity/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots.</h3>
         <h3>Click <a href="./beta_diversity_time_series/unweighted_unifrac_pc_3D_PCoA_plots.html" target="_blank">here</a> to see your beta diversity PCoA plots with an explicit time series axis.</h3>
@@ -373,8 +376,11 @@ index_text = """
       <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
         <center>
           <p>
-            Thanks for participating in the study! Please direct any questions to
-            <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
+          The <a href="https://github.com/qiime/my-microbes/" target="_blank">My Microbes</a> system was developed in the <a href="http://www.caporaso.us" target="_blank">Caporaso Lab</a> at Northern Arizona University and the <a href="http://knightlab.colorado.edu" target="_blank">Knight Lab</a> at the University of Colorado, in collaboration with the <a href="http://www.colorado.edu/eeb/EEBprojects/FiererLab" target="_blank">Fierer Lab</a> at the University of Colorado and the <a href="http://robdunnlab.com" target="_blank">Dunn Lab</a> at North Carolina State.
+          </p>
+
+          <p>
+            Please direct any questions about this study, your personal microbiome data, or the <a href="https://github.com/qiime/my-microbes/" target="_blank">My Microbes</a> system to <a href="mailto:student.microbiome@gmail.com">student.microbiome@gmail.com</a>.
           </p>
           <h3>Powered by:</h3>
           <table>
@@ -532,9 +538,10 @@ comparative_taxa_plots_text = """
   <div class="ui-tabs ui-widget ui-widget-content ui-corner-all text">
     <h2>%s taxonomic composition plots (comparing self versus other)</h2>
     The two panels below show taxonomic composition plots for yourself and all
-    other individuals in the study, respectively. The x-axis contains the week
-    number that the samples were taken from so that you can see how the community
-    composition changes over time.
+    other individuals in the study, respectively. The x-axis in these plots
+    contains the week number that the samples were taken from so that you can
+    see how the community composition changes over time. The y-axis represents
+    the relative abundance of the specific taxonomic groups.
     <br/><br/>
 
     By default, the <i>Self</i> versus <i>Other</i> plots are positioned

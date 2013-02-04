@@ -34,7 +34,7 @@ a img {
 }
 
 /* if the user doesn't have javascript enabled */
-h2.error
+.error
 {
   color:#FF0000;
 }
