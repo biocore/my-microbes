@@ -13,7 +13,7 @@ from os.path import basename, join, splitext
 
 from cogent.parse.fasta import MinimalFastaParser
 
-from my_microbes.parse import parse_recipients
+from my_microbes.parse import _can_ignore
 
 # The following formatting functions are not unit-tested.
 def create_index_html(personal_id, output_fp,
@@ -216,13 +216,28 @@ def format_participant_list(participants_f, url_prefix):
     IDs will be sorted.
 
     Arguments:
-        participants_f - file in same format as that accepted by
-            my_microbes.parse.parse_recipients. Email addresses are
-            ignored
+        participants_f - file containing a single personal ID per line. If
+            additional tab-separated columns exist, they will be ignored (this
+            allows the file to be in the same format as that accepted by
+            my_microbes.parse.parse_recipients for convenience)
         url_prefix - URL to prefix each personal ID with to provide links to
             personalized results (string)
     """
-    personal_ids = sorted(parse_recipients(participants_f).keys())
+    personal_ids = []
+
+    for line in participants_f:
+        if not _can_ignore(line):
+            personal_id = line.strip().split('\t')[0].strip()
+
+            if personal_id in personal_ids:
+                raise ValueError("The personal ID '%s' has already been "
+                                 "encountered. Personal IDs must be unique." %
+                                 personal_id)
+
+            personal_ids.append(personal_id)
+
+    personal_ids.sort()
+
     url_prefix = url_prefix if url_prefix.endswith('/') else url_prefix + '/'
 
     result = '<ul>\n'

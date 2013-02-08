@@ -40,6 +40,12 @@ class FormatTests(TestCase):
 
         # An empty recipients file.
         self.empty_recipients = ["# a comment", " ", "\n\t\t\t\t"]
+
+        # Standard participants list.
+        self.participants = ["# a comment", " ", " foo1  ", "foo2"]
+
+        # Invalid (duplicate) participants list.
+        self.duplicate_participants = ["foo1", "foo2", "foo1"]
         
         # The prefix to use for temporary files. This prefix may be added to,
         # but all temp dirs and files created by the tests will have this
@@ -115,11 +121,21 @@ class FormatTests(TestCase):
                                       'http://my-microbes.qiime.org/')
         self.assertEqual(obs, exp)
 
+        # Test standard single-column format.
+        obs = format_participant_list(self.participants,
+                                      'http://my-microbes.qiime.org')
+        self.assertEqual(obs, exp)
+
         # Test empty recipients file.
         exp = '<ul>\n</ul>\n'
         obs = format_participant_list(self.empty_recipients,
                                       'http://my-microbes.qiime.org')
         self.assertEqual(obs, exp)
+
+        # Test invalid participants file.
+        self.assertRaises(ValueError, format_participant_list,
+                          self.duplicate_participants,
+                          'http://my-microbes.qiime.org')
 
     def test_create_alpha_diversity_boxplots_links(self): 
         """Test creating links to alpha diversity boxplots."""

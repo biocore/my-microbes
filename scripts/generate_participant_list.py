@@ -27,9 +27,7 @@ should also receive).
 This script is kept separate from the personal_results.py script because that
 script may be run many times (in parallel) over different subsets of personal
 IDs. This script can then be used once a final comprehensive list of
-participants has been prepared. For convenience, it accepts the same input file
-format as the notify_participants.py script, as this final list of participants
-will likely be the same list that you'll want to email.
+participants has been prepared.
 """
 
 script_info['script_usage'] = []
@@ -49,9 +47,11 @@ The script produces an output HTML file containing the list.
 script_info['required_options'] = [
     make_option('-p', '--participants', type='existing_filepath',
         help='the list of participants to include in the HTML list. This '
-        'should be in the same format as that accepted by '
-        'notify_participants.py\'s -r/--recipients option (provided for '
-        'convenience). The email address column will be ignored'),
+        'should be a file with a personal ID on each line. If additional '
+        'tab-separated columns exist (e.g. the file format accepted by '
+        'notify_participants.py\'s -r/--recipients option), only the first '
+        'column will be processed (this functionality is provided for '
+        'convenience)'),
     options_lookup['output_fp'],
     make_option('-u', '--url_prefix', type='string',
         help='the URL to prefix to each personal ID (used for personalized '
@@ -66,7 +66,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     participant_list = format_participant_list(open(opts.participants, 'U'),
-                                                opts.url_prefix)
+                                               opts.url_prefix)
 
     with open(opts.output_fp, 'w') as output_f:
         output_f.write(participant_list)
