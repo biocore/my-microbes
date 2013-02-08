@@ -13,7 +13,7 @@ from os.path import basename, join, splitext
 
 from cogent.parse.fasta import MinimalFastaParser
 
-from my_microbes.parse import parse_recipients
+from my_microbes.parse import _can_ignore
 
 # The following formatting functions are not unit-tested.
 def create_index_html(personal_id, output_fp,
@@ -116,7 +116,8 @@ def _format_otu_category_significance_tables_as_html(table_fps, alpha,
 
                 if not processed_header:
                     otu_id_idx = cells.index('OTU')
-                    p_value_idx = cells.index('FDR_corrected')
+                    fdr_p_value_idx = cells.index('FDR_corrected')
+                    bon_p_value_idx = cells.index('Bonferroni_corrected')
                     taxonomy_idx = cells.index('Consensus Lineage')
                     individual_title0_idx = cells.index('%s_mean' %
                                                         individual_titles[0])
@@ -126,7 +127,14 @@ def _format_otu_category_significance_tables_as_html(table_fps, alpha,
                     continue
 
                 otu_id = cells[otu_id_idx]
-                p_value = float(cells[p_value_idx])
+
+                # Sometimes the FDR-corrected p-value is 'NA', so in that
+                # case we'll use the Bonferroni-corrected p-value.
+                try:
+                    p_value = float(cells[fdr_p_value_idx])
+                except ValueError:
+                    p_value = float(cells[bon_p_value_idx])
+
                 taxonomy = cells[taxonomy_idx]
                 individual_title0_mean = float(cells[individual_title0_idx])
                 individual_title1_mean = float(cells[individual_title1_idx])
@@ -208,13 +216,28 @@ def format_participant_list(participants_f, url_prefix):
     IDs will be sorted.
 
     Arguments:
-        participants_f - file in same format as that accepted by
-            my_microbes.parse.parse_recipients. Email addresses are
-            ignored
+        participants_f - file containing a single personal ID per line. If
+            additional tab-separated columns exist, they will be ignored (this
+            allows the file to be in the same format as that accepted by
+            my_microbes.parse.parse_recipients for convenience)
         url_prefix - URL to prefix each personal ID with to provide links to
             personalized results (string)
     """
-    personal_ids = sorted(parse_recipients(participants_f).keys())
+    personal_ids = []
+
+    for line in participants_f:
+        if not _can_ignore(line):
+            personal_id = line.strip().split('\t')[0].strip()
+
+            if personal_id in personal_ids:
+                raise ValueError("The personal ID '%s' has already been "
+                                 "encountered. Personal IDs must be unique." %
+                                 personal_id)
+
+            personal_ids.append(personal_id)
+
+    personal_ids.sort()
+
     url_prefix = url_prefix if url_prefix.endswith('/') else url_prefix + '/'
 
     result = '<ul>\n'
