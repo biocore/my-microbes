@@ -116,7 +116,8 @@ def _format_otu_category_significance_tables_as_html(table_fps, alpha,
 
                 if not processed_header:
                     otu_id_idx = cells.index('OTU')
-                    p_value_idx = cells.index('FDR_corrected')
+                    fdr_p_value_idx = cells.index('FDR_corrected')
+                    bon_p_value_idx = cells.index('Bonferroni_corrected')
                     taxonomy_idx = cells.index('Consensus Lineage')
                     individual_title0_idx = cells.index('%s_mean' %
                                                         individual_titles[0])
@@ -126,7 +127,14 @@ def _format_otu_category_significance_tables_as_html(table_fps, alpha,
                     continue
 
                 otu_id = cells[otu_id_idx]
-                p_value = float(cells[p_value_idx])
+
+                # Sometimes the FDR-corrected p-value is 'NA', so in that
+                # case we'll use the Bonferroni-corrected p-value.
+                try:
+                    p_value = float(cells[fdr_p_value_idx])
+                except ValueError:
+                    p_value = float(cells[bon_p_value_idx])
+
                 taxonomy = cells[taxonomy_idx]
                 individual_title0_mean = float(cells[individual_title0_idx])
                 individual_title1_mean = float(cells[individual_title1_idx])

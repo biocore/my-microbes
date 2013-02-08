@@ -168,7 +168,7 @@ class FormatTests(TestCase):
 # Input test data.
 otu_cat_sig_gut_text = """OTU\tprob\tBonferroni_corrected\tFDR_corrected\tSelf_mean\tOther_mean\tConsensus Lineage
 198792\t9.85322211031e-11\t5.38971249434e-08\t5.38971249434e-08\t0.0000167\t0.00249130434783\tk__Bacteria;  p__Bacteroidetes;  s__
-175844\t9.11665166989e-10\t4.98680846343e-07\t2.49340423172e-07\t0.0101\t4.34782608696e-05\tk__foo; p__bar;  c__;  o__"""
+175844\t9.11665166989e-10\t4.98680846343e-07\tNA\t0.0101\t4.34782608696e-05\tk__foo; p__bar;  c__;  o__"""
 
 rep_seqs_text = """>175844 PC.635_779
 TTGGACCGT"""
