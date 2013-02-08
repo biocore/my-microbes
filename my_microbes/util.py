@@ -185,6 +185,10 @@ def create_personal_results(output_dir,
             per_body_site_dir = body_site_rarefied_otu_table_dir
 
     for person_of_interest in personal_ids:
+        # Files to clean up on a per-individual basis.
+        personal_raw_data_files = []
+        personal_raw_data_dirs = []
+
         create_dir(join(output_dir, person_of_interest))
 
         personal_mapping_file_fp = join(output_dir, person_of_interest,
@@ -199,7 +203,7 @@ def create_personal_results(output_dir,
         personal_mapping_f.write(
                 format_mapping_file(header, personal_mapping_data, comments))
         personal_mapping_f.close()
-        raw_data_files.append(personal_mapping_file_fp)
+        personal_raw_data_files.append(personal_mapping_file_fp)
 
         column_title_index = header.index(column_title)
         column_title_values = set([e[column_title_index]
@@ -246,8 +250,10 @@ def create_personal_results(output_dir,
                     rarefaction_dir)
             commands.append([(cmd_title, cmd)])
 
-            raw_data_dirs.append(join(rarefaction_dir, 'average_plots'))
-            raw_data_dirs.append(join(rarefaction_dir, 'average_tables'))
+            personal_raw_data_dirs.append(join(rarefaction_dir,
+                                               'average_plots'))
+            personal_raw_data_dirs.append(join(rarefaction_dir,
+                                               'average_tables'))
 
             command_handler(commands, status_update_callback, logger,
                             close_logger_on_success=False)
@@ -292,8 +298,8 @@ def create_personal_results(output_dir,
                     cat_values, time_series_category, area_plots_dir,
                     command_handler, status_update_callback, logger)
 
-            raw_data_files.extend(files_to_remove)
-            raw_data_dirs.extend(dirs_to_remove)
+            personal_raw_data_files.extend(files_to_remove)
+            personal_raw_data_dirs.extend(dirs_to_remove)
 
         # Generate OTU category significance tables (per body site).
         otu_cat_sig_output_fps = []
@@ -327,7 +333,7 @@ def create_personal_results(output_dir,
                                       column_title,
                                       otu_cat_output_fp))
                     commands.append([(cmd_title, cmd)])
-                    raw_data_files.append(otu_cat_output_fp)
+                    personal_raw_data_files.append(otu_cat_output_fp)
                     otu_cat_sig_output_fps.append(otu_cat_output_fp)
 
             command_handler(commands, status_update_callback, logger,
@@ -352,17 +358,19 @@ def create_personal_results(output_dir,
                 alpha_diversity_boxplots_html=alpha_diversity_boxplots_html,
                 otu_category_significance_html=otu_category_significance_html)
 
-    logger.close()
+        # Clean up the unnecessary raw data files and directories for the
+        # current individual. glob will only grab paths that exist.
+        if not retain_raw_data:
+            clean_up_raw_data_files(personal_raw_data_files,
+                                    personal_raw_data_dirs)
 
-    # Clean up the unnecessary raw data files and directories. glob will only
-    # grab paths that exist.
+
+    # Clean up any remaining raw data files that weren't created on a
+    # per-individual basis.
     if not retain_raw_data:
-        for raw_data_fp_glob in raw_data_files:
-            remove_files(glob(raw_data_fp_glob))
+        clean_up_raw_data_files(raw_data_files, raw_data_dirs)
 
-        for raw_data_dir_glob in raw_data_dirs:
-            for dir_to_remove in glob(raw_data_dir_glob):
-                rmtree(dir_to_remove)
+    logger.close()
 
     return output_directories
 
@@ -378,6 +386,14 @@ def get_project_dir():
     current_dir_path = dirname(current_file_path)
     # Return the directory containing the directory containing util.py
     return dirname(current_dir_path)
+
+def clean_up_raw_data_files(raw_data_files, raw_data_dirs):
+    for raw_data_fp_glob in raw_data_files:
+        remove_files(glob(raw_data_fp_glob))
+
+    for raw_data_dir_glob in raw_data_dirs:
+        for dir_to_remove in glob(raw_data_dir_glob):
+            rmtree(dir_to_remove)
 
 def _generate_alpha_diversity_boxplots(collated_adiv_dir, map_fp,
                                        split_category, comparison_category,
