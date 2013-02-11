@@ -9,7 +9,7 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
-from os.path import basename, join, splitext
+from os.path import basename, exists, join, splitext
 
 from cogent.parse.fasta import MinimalFastaParser
 
@@ -17,13 +17,19 @@ from my_microbes.parse import _can_ignore
 
 # The following formatting functions are not unit-tested.
 def create_index_html(personal_id, output_fp,
+                      taxa_summary_plots_html='',
                       alpha_diversity_boxplots_html='',
                       otu_category_significance_html=''):
     output_f = open(output_fp,'w')
     output_f.write(index_text % (personal_id, personal_id,
+                                 taxa_summary_plots_html,
                                  alpha_diversity_boxplots_html,
                                  otu_category_significance_html))
     output_f.close()
+
+def create_taxa_summary_plots_html(out_dir, personal_id, body_sites):
+    return taxa_summary_plots_text % _create_taxa_summary_plots_links(out_dir,
+            personal_id, body_sites)
 
 def create_alpha_diversity_boxplots_html(plot_fps):
     return alpha_diversity_boxplots_text % \
@@ -45,6 +51,40 @@ def get_personalized_notification_email_text(personal_id):
     return notification_email_text % (personal_id, personal_id)
 
 # The remaining functions are unit-tested.
+def _create_taxa_summary_plots_links(out_dir, personal_id, body_sites):
+    links_text = '<table cellpadding="5px">\n'
+    plots_prefix = join(out_dir, personal_id)
+
+    for body_site in body_sites:
+        row_text = '<tr>\n'
+        row_text += '<td><b>%s:</b></td>\n' % body_site.title()
+
+        self_plots_fp = join('time_series',
+                             'taxa_plots_Self_%s' % body_site,
+                             'taxa_summary_plots',
+                             'area_charts.html')
+
+        other_plots_fp = join('time_series',
+                              'taxa_plots_Other_%s' % body_site,
+                              'taxa_summary_plots',
+                              'area_charts.html')
+
+        self_vs_other_fp = join('time_series',
+                                '%s_comparative.html' % body_site)
+
+        if exists(join(plots_prefix, self_plots_fp)) and \
+           exists(join(plots_prefix, other_plots_fp)):
+            row_text += ('<td><a href="%s" target="_blank">Self</a></td>\n' %
+                        self_plots_fp)
+            row_text += ('<td><a href="%s" target="_blank">Other</a></td>\n' %
+                         other_plots_fp)
+            row_text += ('<td><a href="%s" target="_blank">Self versus Other'
+                         '</a></td>\n' % self_vs_other_fp)
+
+            links_text += row_text + '</tr>\n'
+
+    return links_text + '</table>\n'
+
 def _create_alpha_diversity_boxplots_links(plot_fps):
     plot_links_text = '<ul>\n'
 
@@ -324,44 +364,7 @@ index_text = """
 
     <div id="accordion">
       <h3 class="accordion-header"><a href="#taxonomic-composition">Which microbes live on my body?</a></h3>
-      <div>
-        Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
-        <br/><br/>
-        You should be able to answer several questions from these plots:
-        <ol>
-          <li>What was the dominant phylum in your gut on the first week that you donated a sample?</li>
-          <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time?</li>
-          <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?</li>
-          <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?</li>
-        </ol>
-
-        <h3>Click on the following links to see your taxonomic summary plots:</h3>
-        <table cellpadding="5px">
-          <tr>
-            <td><b>Tongue:</b></td>
-            <td><a href="time_series/taxa_plots_Self_tongue/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_tongue/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td><td><a href="time_series/tongue_comparative.html" target="_blank">Self versus Other</a></td>
-          </tr>
-          <tr>
-            <td><b>Palm:</b></td>
-            <td><a href="time_series/taxa_plots_Self_palm/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_palm/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
-            <td><a href="time_series/palm_comparative.html" target="_blank">Self versus Other</a></td>
-          </tr>
-          <tr>
-            <td><b>Gut:</b></td>
-            <td><a href="time_series/taxa_plots_Self_gut/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_gut/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
-            <td><a href="time_series/gut_comparative.html" target="_blank">Self versus Other</a></td>
-          </tr>
-          <tr>
-            <td><b>Forehead:</b></td>
-            <td><a href="time_series/taxa_plots_Self_forehead/taxa_summary_plots/area_charts.html" target="_blank">Self</a></td>
-            <td><a href="time_series/taxa_plots_Other_forehead/taxa_summary_plots/area_charts.html" target="_blank">Other</a></td>
-            <td><a href="time_series/forehead_comparative.html" target="_blank">Self versus Other</a></td>
-          </tr>
-        </table>
-      </div>
+      <div>%s</div>
 
       <h3 class="accordion-header"><a href="#beta-diversity">Are my microbes different from everyone else's?</a></h3>
       <div>
@@ -441,6 +444,21 @@ index_text = """
     </div>
  </body>
 </html>
+"""
+
+taxa_summary_plots_text = """
+Here we present the taxonomic composition of each body site (on the y-axis) over time (on the x-axis) for you (<i>Self</i>) versus the average of all other participants in the study (<i>Other</i>). The composition is provided at different taxonomic levels, from Phylum to Genus. This allows you to quickly get an idea of the temporal variability in your microbial communities, and determine which taxonomic groups are coming and going in your different body habitats.
+<br/><br/>
+You should be able to answer several questions from these plots:
+<ol>
+  <li>What was the dominant phylum in your gut on the first week that you donated a sample?</li>
+  <li>Was the dominant phylum in your gut the same over all weeks, or did it change with time?</li>
+  <li>Was the dominant phylum in each of your body sites the same as the average across the other individuals?</li>
+  <li>Does the composition of each of your body sites look consistent over time, or do certain groups appear to bloom and then die off?</li>
+</ol>
+
+<h3>Click on the following links to see your taxonomic summary plots. If results for a body site are not listed, there were not enough weeks of samples to generate the plots:</h3>
+%s
 """
 
 alpha_diversity_boxplots_text = """
@@ -642,7 +660,7 @@ Here we present <a href="#" id="otu-ref-3" class="otus">Operational Taxonomic Un
 <br/><br/>
 Here we present the <a href="#" id="otu-ref-8" class="otus">OTUs</a> that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
-<h3>Click on the following links to see what OTU abundances differed by body site:</h3>
+<h3>Click on the following links to see what OTU abundances differed by body site. If results for a body site are not listed, there were not enough samples to perform the necessary computation:</h3>
 %s
 """
 

@@ -27,6 +27,8 @@ from qiime.util import create_dir, get_qiime_temp_dir, MetadataMap
 from qiime.workflow import print_commands
 
 from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
+                              _count_num_samples,
+                              _count_per_individual_samples,
                               create_personal_mapping_file,
                               create_personal_results,
                               get_personal_ids,
@@ -63,10 +65,10 @@ class UtilTests(TestCase):
         self.dirs_to_remove.append(self.output_dir)
 
         # Data that will be used by the tests.
-        self.metadata_map = MetadataMap.parseMetadataMap(
-                mapping_str.split('\n'))
+        self.metadata_map_f = mapping_str.split('\n')
+        self.metadata_map = MetadataMap.parseMetadataMap(self.metadata_map_f)
         self.mapping_data, self.mapping_header = parse_mapping_file(
-                mapping_str.split('\n'))[:2]
+                self.metadata_map_f)[:2]
 
         self.mapping_fp = join(self.input_dir, 'map.txt')
         mapping_f = open(self.mapping_fp, 'w')
@@ -74,10 +76,11 @@ class UtilTests(TestCase):
         mapping_f.close()
         self.files_to_remove.append(self.mapping_fp)
 
+        self.personal_metadata_map_f = personal_mapping_str.split('\n')
         self.personal_metadata_map = MetadataMap.parseMetadataMap(
-                personal_mapping_str.split('\n'))
+                self.personal_metadata_map_f)
         self.personal_mapping_data = parse_mapping_file(
-                personal_mapping_str.split('\n'))[0]
+                self.personal_metadata_map_f)[0]
 
         self.rarefaction_lines = collated_alpha_div_str.split('\n')
         self.na_rarefaction_lines = collated_alpha_div_na_str.split('\n')
@@ -101,6 +104,8 @@ class UtilTests(TestCase):
         otu_table_f.write(otu_table_str)
         otu_table_f.close()
         self.files_to_remove.append(self.otu_table_fp)
+
+        self.otu_table_f = otu_table_str.split('\n')
 
         self.prefs_fp = join(self.input_dir, 'prefs.txt')
         prefs_f = open(self.prefs_fp, 'w')
@@ -328,6 +333,18 @@ class UtilTests(TestCase):
                 'BodySite', 'Self')
         self.assertEqual(obs, ([], []))
 
+    def test_count_num_samples(self):
+        """Test counting number of samples in OTU table."""
+        obs = _count_num_samples(self.otu_table_f)
+        self.assertEqual(obs, 8)
+
+    def test_count_per_individual_samples(self):
+        """Test counting number of individual's samples in OTU table."""
+        obs = _count_per_individual_samples(self.otu_table_f,
+                self.personal_metadata_map_f, 'PersonalID', 'NAU456')
+        self.assertEqual(obs, 2)
+
+
 mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tDescription
 S1\tPalm\tNAU123\t1\tS1
 S2\tTongue\tNAU456\t2\tS2
@@ -366,7 +383,7 @@ S6\t1\t2
 S7\t1\t2
 S8\t1\t2"""
 
-otu_table_str = """foobarbaz"""
+otu_table_str = """{"rows": [{"id": "0", "metadata": null}], "format": "Biological Observation Matrix 0.9dev", "data": [[1, 2, 3, 4, 5, 6, 7, 8]], "columns": [{"id": "S1", "metadata": null}, {"id": "S2", "metadata": null}, {"id": "S3", "metadata": null}, {"id": "S4", "metadata": null}, {"id": "S5", "metadata": null}, {"id": "S6", "metadata": null}, {"id": "S7", "metadata": null}, {"id": "S8", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [1, 8], "format_url": "http://biom-format.org", "date": "2011-12-21T00:49:15.978315", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
 
 prefs_str = """foobarbaz"""
 
