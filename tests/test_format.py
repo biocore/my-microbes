@@ -24,6 +24,7 @@ from my_microbes.format import (
         _create_alpha_diversity_boxplots_links,
         create_otu_category_significance_html_tables,
         _create_otu_category_significance_links,
+        _create_taxa_summary_plots_links,
         _format_otu_category_significance_tables_as_html,
         format_participant_list,
         format_title)
@@ -136,6 +137,11 @@ class FormatTests(TestCase):
         self.assertRaises(ValueError, format_participant_list,
                           self.duplicate_participants,
                           'http://my-microbes.qiime.org')
+
+    def test_create_taxa_summary_plots_links(self):
+        obs = _create_taxa_summary_plots_links('/foobarbaz', 'foo123',
+                                               ['tongue', 'forehead'])
+        self.assertEqual(obs, '<table cellpadding="5px">\n</table>\n')
 
     def test_create_alpha_diversity_boxplots_links(self): 
         """Test creating links to alpha diversity boxplots."""
