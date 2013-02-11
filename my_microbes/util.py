@@ -322,12 +322,29 @@ def create_personal_results(output_dir,
             # Keep track of each output file that is created because we need to
             # parse these later on.
             commands = []
+            valid_body_sites = []
             for cat_value in cat_values:
                 body_site_otu_table_fp = join(per_body_site_dir,
                         add_filename_suffix(rarefied_otu_table_fp,
                                             '_%s' % cat_value))
 
                 if exists(body_site_otu_table_fp):
+                    # Make sure we have at least one sample for Self, otherwise
+                    # otu_category_significance.py crashes with a division by
+                    # zero error.
+                    with open(body_site_otu_table_fp, 'U') as \
+                         body_site_otu_table_f, \
+                         open(personal_mapping_file_fp, 'U') as \
+                         personal_mapping_file_f:
+                        personal_sample_count = _count_per_individual_samples(
+                                body_site_otu_table_f, personal_mapping_file_f,
+                                personal_id_column, person_of_interest)
+
+                        if personal_sample_count < 1:
+                            continue
+                        else:
+                            valid_body_sites.append(cat_value)
+
                     otu_cat_output_fp = join(otu_cat_sig_dir,
                                              'otu_cat_sig_%s.txt' % cat_value)
 
@@ -340,8 +357,16 @@ def create_personal_results(output_dir,
                                       column_title,
                                       otu_cat_output_fp))
                     commands.append([(cmd_title, cmd)])
+
                     personal_raw_data_files.append(otu_cat_output_fp)
                     otu_cat_sig_output_fps.append(otu_cat_output_fp)
+
+            # Hack to allow print-only mode.
+            if command_handler is not print_commands and not valid_body_sites:
+                raise ValueError("None of the body sites for personal ID '%s' "
+                                 "could be processed because there were no "
+                                 "matching samples in the rarefied OTU table."
+                                 % person_of_interest)
 
             command_handler(commands, status_update_callback, logger,
                             close_logger_on_success=False)
@@ -602,9 +627,9 @@ def _generate_taxa_summary_plots(otu_table_fp, personal_map_fp, personal_id,
         # plot_taxa_summary.py will fail, so we'll skip this body site.
         weeks_otu_table_fp = join(ts_dir,
                                   '%s_otu_table_sorted.biom' % time_series_cat)
-
-        if _count_num_samples(weeks_otu_table_fp) < 2:
-            continue
+        with open(weeks_otu_table_fp, 'U') as weeks_otu_table_f:
+            if _count_num_samples(weeks_otu_table_f) < 2:
+                continue
 
         ts_fps1 = sorted(glob(join(ts_dir,
                 '%s_otu_table_sorted_L*.txt' % time_series_cat)))
@@ -618,8 +643,9 @@ def _generate_taxa_summary_plots(otu_table_fp, personal_map_fp, personal_id,
         weeks_otu_table_fp = join(ts_dir,
                                   '%s_otu_table_sorted.biom' % time_series_cat)
 
-        if _count_num_samples(weeks_otu_table_fp) < 2:
-            continue
+        with open(weeks_otu_table_fp, 'U') as weeks_otu_table_f:
+            if _count_num_samples(weeks_otu_table_f) < 2:
+                continue
 
         ts_fps2 = sorted(glob(join(ts_dir,
                 '%s_otu_table_sorted_L*.txt' % time_series_cat)))
@@ -680,9 +706,23 @@ def _generate_taxa_summary_plots(otu_table_fp, personal_map_fp, personal_id,
 
     return files_to_remove, dirs_to_remove
 
-def _count_num_samples(otu_table_fp):
+def _count_num_samples(otu_table_f):
     """Returns the number of samples in the OTU table."""
-    return len(parse_biom_table(open(otu_table_fp, 'U')).SampleIds)
+    return len(parse_biom_table(otu_table_f).SampleIds)
+
+def _count_per_individual_samples(otu_table_f, map_f, pid_col, pid):
+    """Returns the number of samples in the OTU table for the individual."""
+    otu_table = parse_biom_table(otu_table_f)
+    mapping_data, header, comments = parse_mapping_file(map_f)
+    sid_idx = header.index('SampleID')
+    pid_idx = header.index(pid_col)
+
+    sids = []
+    for row in mapping_data:
+        if row[pid_idx] == pid:
+            sids.append(row[sid_idx])
+
+    return len(set(sids) & set(otu_table.SampleIds))
 
 def notify_participants(recipients_f, email_settings_f, dry_run=True):
     """Sends an email to each participant in the study.

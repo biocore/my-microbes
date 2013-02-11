@@ -139,6 +139,7 @@ class FormatTests(TestCase):
                           'http://my-microbes.qiime.org')
 
     def test_create_taxa_summary_plots_links(self):
+        """Test creating links to taxa summary plots."""
         obs = _create_taxa_summary_plots_links('/foobarbaz', 'foo123',
                                                ['tongue', 'forehead'])
         self.assertEqual(obs, '<table cellpadding="5px">\n</table>\n')

@@ -660,7 +660,7 @@ Here we present <a href="#" id="otu-ref-3" class="otus">Operational Taxonomic Un
 <br/><br/>
 Here we present the <a href="#" id="otu-ref-8" class="otus">OTUs</a> that were most different in abundance in your microbial communities relative to those from other individuals. (These are not necessarily statistically significant, but rather just the most different.)
 
-<h3>Click on the following links to see what OTU abundances differed by body site:</h3>
+<h3>Click on the following links to see what OTU abundances differed by body site. If results for a body site are not listed, there were not enough samples to perform the necessary computation:</h3>
 %s
 """
 
