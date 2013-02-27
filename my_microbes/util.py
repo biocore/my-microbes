@@ -743,7 +743,7 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
     email_settings = parse_email_settings(email_settings_f)
 
     sender = email_settings['sender']
-    password = email_settings['password']
+    email_password = email_settings['password']
     server = email_settings['smtp_server']
     port = email_settings['smtp_port']
 
@@ -753,27 +753,31 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
         print("Running script in dry-run mode. No emails will be sent. Here's "
               "what I would have done:\n")
         print("Sender information:\n\nFrom address: %s\nPassword: %s\nSMTP "
-              "server: %s\nPort: %s\n" % (sender, password, server, port))
+              "server: %s\nPort: %s\n" % (sender, email_password, server,
+                                          port))
         print "Sending emails to %d recipient(s)." % num_recipients
 
         if num_recipients > 0:
             # Sort so that we will grab the same recipient each time this is
             # run over the same input files.
             sample_recipient = sorted(recipients.items())[0]
+            personal_id = sample_recipient[0]
+            password, addresses = sample_recipient[1]
 
             print "\nSample email:\n"
-            print "To: %s" % ', '.join(sample_recipient[1])
+            print "To: %s" % ', '.join(addresses)
             print "From: %s" % sender
             print "Subject: %s" % notification_email_subject
             print "Body:\n%s\n" % get_personalized_notification_email_text(
-                    sample_recipient[0])
+                    personal_id, password)
     else:
-        for personal_id, addresses in recipients.items():
+        for personal_id, (password, addresses) in recipients.items():
             personalized_text = \
-                    get_personalized_notification_email_text(personal_id)
+                    get_personalized_notification_email_text(personal_id,
+                                                             password)
             print "Sending email to %s (%s)... " % (personal_id,
                                                     ', '.join(addresses)),
-            send_email(server, port, sender, password, addresses,
+            send_email(server, port, sender, email_password, addresses,
                        notification_email_subject, personalized_text)
             print "success!"
 

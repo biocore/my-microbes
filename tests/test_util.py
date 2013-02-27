@@ -114,8 +114,8 @@ class UtilTests(TestCase):
         prefs_f.close()
         self.files_to_remove.append(self.prefs_fp)
 
-        self.recipients = ["# a comment", " ", " foo1\tfoo1@bar.baz  ",
-                            "foo2\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
+        self.recipients = ["# a comment", " ", " foo1\t123456\tfoo1@bar.baz  ",
+                "foo2\t654321\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
 
         self.email_settings = ["# A comment", "# Another comment",
                 "smtp_server\tsome.smtp.server", "smtp_port\t42",
@@ -418,15 +418,18 @@ Dear participant,
 
 We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
 
-https://s3.amazonaws.com/my-microbes/index.html
+http://my-microbes.qiime.org
 
 Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
 
-Your personal ID is foo1.
+Your personal ID is: foo1
+Your randomly generated password is: 123456
 
 To view your personalized results, please visit the following link:
 
-https://s3.amazonaws.com/my-microbes/foo1/index.html
+http://my-microbes.qiime.org/foo1/index.html
+
+Use your personal ID as the username and the password listed above to log in. The username and password are case-sensitive.
 
 The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 
