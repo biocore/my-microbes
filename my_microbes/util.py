@@ -20,8 +20,10 @@ from glob import glob
 from os import makedirs
 from os.path import (abspath, basename, dirname, exists, join, normpath,
                      splitext)
+from random import choice, randint
 from shutil import copytree, rmtree
 from smtplib import SMTP
+from string import digits, letters
 
 from biom.parse import parse_biom_table
 
@@ -44,6 +46,7 @@ from my_microbes.format import (create_index_html,
         create_otu_category_significance_html,
         create_otu_category_significance_html_tables,
         create_taxa_summary_plots_html,
+        format_htaccess_file,
         format_title,
         get_personalized_notification_email_text,
         notification_email_subject)
@@ -740,7 +743,7 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
     email_settings = parse_email_settings(email_settings_f)
 
     sender = email_settings['sender']
-    password = email_settings['password']
+    email_password = email_settings['password']
     server = email_settings['smtp_server']
     port = email_settings['smtp_port']
 
@@ -750,27 +753,31 @@ def notify_participants(recipients_f, email_settings_f, dry_run=True):
         print("Running script in dry-run mode. No emails will be sent. Here's "
               "what I would have done:\n")
         print("Sender information:\n\nFrom address: %s\nPassword: %s\nSMTP "
-              "server: %s\nPort: %s\n" % (sender, password, server, port))
+              "server: %s\nPort: %s\n" % (sender, email_password, server,
+                                          port))
         print "Sending emails to %d recipient(s)." % num_recipients
 
         if num_recipients > 0:
             # Sort so that we will grab the same recipient each time this is
             # run over the same input files.
             sample_recipient = sorted(recipients.items())[0]
+            personal_id = sample_recipient[0]
+            password, addresses = sample_recipient[1]
 
             print "\nSample email:\n"
-            print "To: %s" % ', '.join(sample_recipient[1])
+            print "To: %s" % ', '.join(addresses)
             print "From: %s" % sender
             print "Subject: %s" % notification_email_subject
             print "Body:\n%s\n" % get_personalized_notification_email_text(
-                    sample_recipient[0])
+                    personal_id, password)
     else:
-        for personal_id, addresses in recipients.items():
+        for personal_id, (password, addresses) in recipients.items():
             personalized_text = \
-                    get_personalized_notification_email_text(personal_id)
+                    get_personalized_notification_email_text(personal_id,
+                                                             password)
             print "Sending email to %s (%s)... " % (personal_id,
                                                     ', '.join(addresses)),
-            send_email(server, port, sender, password, addresses,
+            send_email(server, port, sender, email_password, addresses,
                        notification_email_subject, personalized_text)
             print "success!"
 
@@ -826,3 +833,55 @@ def send_email(host, port, sender, password, recipients, subject, body,
     server.login(sender, password)
     server.sendmail(sender, recipients, msg.as_string())
     server.quit()
+
+def generate_passwords(pids_f, results_dir, password_dir, out_dir):
+    """Creates PID -> password mapping, .htaccess files, and .htpasswd file."""
+    htpasswd_f = open(join(out_dir, '.htpasswd'), 'w')
+    pid_passwd_f = open(join(out_dir, 'personal_ids_with_passwords.txt'), 'w')
+
+    for line in pids_f:
+        pid = line.strip()
+        pid_dir = join(results_dir, pid)
+
+        if not exists(pid_dir):
+            raise ValueError("The '%s' directory does not exist. Cannot "
+                             "create a password for an individual without "
+                             "results." % pid_dir)
+
+        htaccess_f = open(join(pid_dir, '.htaccess'), 'w')
+        htaccess_f.write(format_htaccess_file(password_dir, pid))
+        htaccess_f.close()
+
+        password, encrypted_password = generate_random_password()
+        htpasswd_f.write('%s:%s\n' % (pid, encrypted_password))
+        pid_passwd_f.write('%s\t%s\n' % (pid, password))
+
+    htpasswd_f.close()
+    pid_passwd_f.close()
+
+def generate_random_password(min_len=8, max_len=12):
+    """Returns a random alphanumeric password of random length.
+
+    Returns both unencrypted and encrypted password. Encryption is performed
+    via Apache's htpasswd command, using their custom MD5 algorithm.
+
+    Length will be randomly chosen from within the specified bounds
+    (inclusive).
+    """
+    # Modified from
+    # http://code.activestate.com/recipes/59873-random-password-generation
+    chars = letters + digits
+    length = randint(min_len, max_len)
+    password = ''.join([choice(chars) for i in range(length)])
+
+    # This is hackish but should work for now...
+    stdout, stderr, ret_val = qiime_system_call('htpasswd -nbm foobarbaz %s' %
+                                                password)
+    if ret_val != 0:
+        raise ValueError("Error executing htpasswd command. Do you have this "
+                         "command on your machine?")
+
+    # Will be in the form foobarbaz:<encrypted password>
+    encrypted_password = stdout.strip().split('foobarbaz:', 1)[1]
+
+    return password, encrypted_password

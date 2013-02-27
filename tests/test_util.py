@@ -31,6 +31,7 @@ from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               _count_per_individual_samples,
                               create_personal_mapping_file,
                               create_personal_results,
+                              generate_random_password,
                               get_personal_ids,
                               get_project_dir,
                               notify_participants)
@@ -113,8 +114,8 @@ class UtilTests(TestCase):
         prefs_f.close()
         self.files_to_remove.append(self.prefs_fp)
 
-        self.recipients = ["# a comment", " ", " foo1\tfoo1@bar.baz  ",
-                            "foo2\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
+        self.recipients = ["# a comment", " ", " foo1\t123456\tfoo1@bar.baz  ",
+                "foo2\t654321\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
 
         self.email_settings = ["# A comment", "# Another comment",
                 "smtp_server\tsome.smtp.server", "smtp_port\t42",
@@ -344,6 +345,14 @@ class UtilTests(TestCase):
                 self.personal_metadata_map_f, 'PersonalID', 'NAU456')
         self.assertEqual(obs, 2)
 
+    def test_generate_random_password(self):
+        """Test generating random password (encrypted and unencrypted)."""
+        obs = generate_random_password()
+        self.assertTrue(len(obs[0]) >= 8 and len(obs[0]) <= 12)
+
+        obs = generate_random_password(1, 1)
+        self.assertEqual(len(obs[0]), 1)
+
 
 mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tDescription
 S1\tPalm\tNAU123\t1\tS1
@@ -409,15 +418,18 @@ Dear participant,
 
 We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
 
-https://s3.amazonaws.com/my-microbes/index.html
+http://my-microbes.qiime.org
 
 Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
 
-Your personal ID is foo1.
+Your personal ID is: foo1
+Your randomly generated password is: 123456
 
 To view your personalized results, please visit the following link:
 
-https://s3.amazonaws.com/my-microbes/foo1/index.html
+http://my-microbes.qiime.org/foo1/index.html
+
+Use your personal ID as the username and the password listed above to log in. The username and password are case-sensitive.
 
 The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 

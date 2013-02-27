@@ -25,6 +25,7 @@ from my_microbes.format import (
         create_otu_category_significance_html_tables,
         _create_otu_category_significance_links,
         _create_taxa_summary_plots_links,
+        format_htaccess_file,
         _format_otu_category_significance_tables_as_html,
         format_participant_list,
         format_title)
@@ -187,6 +188,16 @@ class FormatTests(TestCase):
         self.assertEqual(format_title("PD_whole_tree"),
                          "Phylogenetic Diversity")
 
+    def test_format_htaccess_file(self):
+        """Tests correctly formatting a .htaccess file."""
+        # With trailing slash.
+        obs = format_htaccess_file('/foo/bar/baz/', 'NAU123')
+        self.assertEqual(obs, expected_htaccess_file)
+
+        # Without trailing slash.
+        obs = format_htaccess_file('/foo/bar/baz', 'NAU123')
+        self.assertEqual(obs, expected_htaccess_file)
+
 
 # Input test data.
 otu_cat_sig_gut_text = """OTU\tprob\tBonferroni_corrected\tFDR_corrected\tSelf_mean\tOther_mean\tConsensus Lineage
@@ -230,6 +241,14 @@ expected_otu_cat_sig_rep_seq_html = """<div id="175844-rep-seq" class="rep-seq-d
 <pre>&gt;175844
 TTGGACCGT</pre>
 </div>
+"""
+
+expected_htaccess_file = """AuthUserFile /foo/bar/baz/.htpasswd
+AuthGroupFile /dev/null
+AuthName "NAU123 Personal Results"
+AuthType Basic
+
+require user NAU123
 """
 
 
