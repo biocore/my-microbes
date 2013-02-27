@@ -289,6 +289,17 @@ def format_participant_list(participants_f, url_prefix):
 
     return result
 
+def format_htaccess_file(password_dir, pid):
+    result = ''
+
+    result += 'AuthUserFile %s\n' % join(password_dir, '.htpasswd')
+    result += 'AuthGroupFile /dev/null\n'
+    result += 'AuthName "%s Personal Results"\n' % pid
+    result += 'AuthType Basic\n\n'
+    result += 'require user %s\n' % pid
+
+    return result
+
 # Text for various HTML pages.
 index_text = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

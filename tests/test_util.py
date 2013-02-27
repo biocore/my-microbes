@@ -31,6 +31,7 @@ from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               _count_per_individual_samples,
                               create_personal_mapping_file,
                               create_personal_results,
+                              generate_random_password,
                               get_personal_ids,
                               get_project_dir,
                               notify_participants)
@@ -343,6 +344,14 @@ class UtilTests(TestCase):
         obs = _count_per_individual_samples(self.otu_table_f,
                 self.personal_metadata_map_f, 'PersonalID', 'NAU456')
         self.assertEqual(obs, 2)
+
+    def test_generate_random_password(self):
+        """Test generating random password (encrypted and unencrypted)."""
+        obs = generate_random_password()
+        self.assertTrue(len(obs[0]) >= 8 and len(obs[0]) <= 12)
+
+        obs = generate_random_password(1, 1)
+        self.assertEqual(len(obs[0]), 1)
 
 
 mapping_str = """#SampleID\tBodySite\tPersonalID\tWeeksSinceStart\tDescription
