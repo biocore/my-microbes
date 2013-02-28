@@ -27,8 +27,9 @@ class ParseTests(TestCase):
         """Define some sample data that will be used by the tests."""
         # Standard recipients file with two recipients, one with multiple email
         # addresses.
-        self.recipients1 = ["# a comment", " ", " foo1\tfoo@bar.baz  ",
-                            "foo2\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
+        self.recipients1 = ["# a comment", " ",
+                            " foo1\tabcABC123\tfoo@bar.baz  ",
+                            "foo2\t1skdiwoadk\t foo2@bar.baz,  foo3@bar.baz,foo4@bar.baz "]
 
         # An empty recipients file.
         self.recipients2 = ["# a comment", " ", "\n\t\t\t\t"]
@@ -39,17 +40,17 @@ class ParseTests(TestCase):
                             "foo2\tfoo2@bar.baz\t foo3@bar.baz"]
 
         # Non-unique personal IDs.
-        self.recipients4 = ["foo1\tfoo@bar.baz",
-                            "foo2\tfoo2@bar.baz, foo3@bar.baz",
-                            "foo1\tfoo4@bar.baz"]
+        self.recipients4 = ["foo1\tskwowkdklw\tfoo@bar.baz",
+                            "foo2\tslkfjwo229309\tfoo2@bar.baz, foo3@bar.baz",
+                            "foo1\tslkjdskl9929\tfoo4@bar.baz"]
 
         # Empty fields.
         self.recipients5 = ["foo1\tfoo@bar.baz",
-                            "\tfoo2@bar.baz, foo3@bar.baz"]
+                            "\tsdlkfjsdkj\tfoo2@bar.baz, foo3@bar.baz"]
 
         # Invalid email addresses.
-        self.recipients6 = ["# a comment...", "foo1\tfoo@bar.baz", "  ",
-                            "foo2\tfoo.bar.baz"]
+        self.recipients6 = ["# a comment...", "foo1\tskskwo2\tfoo@bar.baz",
+                            "  ", "foo2\tljwojiio\tfoo.bar.baz"]
 
         # Standard email settings.
         self.email_settings1 = ["# A comment", "# Another comment",
@@ -76,8 +77,9 @@ class ParseTests(TestCase):
 
     def test_parse_recipients_standard(self):
         """Test parsing a standard recipients file."""
-        exp = {'foo1': ['foo@bar.baz'],
-               'foo2': ['foo2@bar.baz', 'foo3@bar.baz', 'foo4@bar.baz']}
+        exp = {'foo1': ('abcABC123', ['foo@bar.baz']),
+               'foo2': ('1skdiwoadk',
+                        ['foo2@bar.baz', 'foo3@bar.baz', 'foo4@bar.baz'])}
         obs = parse_recipients(self.recipients1)
         self.assertEqual(obs, exp)
 

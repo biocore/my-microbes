@@ -46,9 +46,9 @@ def create_otu_category_significance_html(table_fps):
     return otu_category_significance_text % \
             _create_otu_category_significance_links(table_fps)
 
-def get_personalized_notification_email_text(personal_id):
+def get_personalized_notification_email_text(personal_id, password):
     """Returns the text for the body of an email based on personal ID."""
-    return notification_email_text % (personal_id, personal_id)
+    return notification_email_text % (personal_id, password, personal_id)
 
 # The remaining functions are unit-tested.
 def _create_taxa_summary_plots_links(out_dir, personal_id, body_sites):
@@ -286,6 +286,17 @@ def format_participant_list(participants_f, url_prefix):
         result += '  <li><a href="%s" target="_blank">%s</a></li>\n' % (
                 url, personal_id)
     result += '</ul>\n'
+
+    return result
+
+def format_htaccess_file(password_dir, pid):
+    result = ''
+
+    result += 'AuthUserFile %s\n' % join(password_dir, '.htpasswd')
+    result += 'AuthGroupFile /dev/null\n'
+    result += 'AuthName "%s Personal Results"\n' % pid
+    result += 'AuthType Basic\n\n'
+    result += 'require user %s\n' % pid
 
     return result
 
@@ -703,15 +714,18 @@ Dear participant,
 
 We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
 
-https://s3.amazonaws.com/my-microbes/index.html
+http://my-microbes.qiime.org
 
 Each participant in the study was given a unique, anonymous personal ID, which can be used to link each of your weekly samples back to you.
 
-Your personal ID is %s.
+Your personal ID is: %s
+Your randomly generated password is: %s
 
 To view your personalized results, please visit the following link:
 
-https://s3.amazonaws.com/my-microbes/%s/index.html
+http://my-microbes.qiime.org/%s/index.html
+
+Use your personal ID as the username and the password listed above to log in. The username and password are case-sensitive.
 
 The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 

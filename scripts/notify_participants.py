@@ -58,8 +58,9 @@ script_info['required_options'] = [
     make_option('-r', '--recipients', type='existing_filepath',
         help='the list of recipients to email. Should be a TSV file '
         'with a line for each recipient. The first column should be the '
-        'personal ID and the second column should be one or more email '
-        'addresses (comma-separated).'),
+        'personal ID, the second column should be their password, and the '
+        'third column should be one or more email addresses '
+        '(comma-separated).'),
     make_option('-s', '--email_settings', type='existing_filepath',
         help='the email account information to send the email from. Should be '
         'a two-column TSV file containing the following keys: smtp_server, '
