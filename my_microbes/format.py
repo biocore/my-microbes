@@ -294,7 +294,7 @@ def format_htaccess_file(password_dir, pid):
 
     result += 'AuthUserFile %s\n' % join(password_dir, '.htpasswd')
     result += 'AuthGroupFile /dev/null\n'
-    result += 'AuthName "%s Personal Results"\n' % pid
+    result += 'AuthName "Please log in to view your personalized results"\n'
     result += 'AuthType Basic\n\n'
     result += 'require user %s\n' % pid
 
