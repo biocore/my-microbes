@@ -245,7 +245,7 @@ TTGGACCGT</pre>
 
 expected_htaccess_file = """AuthUserFile /foo/bar/baz/.htpasswd
 AuthGroupFile /dev/null
-AuthName "NAU123 Personal Results"
+AuthName "Please log in to view your personalized results"
 AuthType Basic
 
 require user NAU123
