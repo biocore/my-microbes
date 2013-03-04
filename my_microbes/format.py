@@ -712,7 +712,7 @@ notification_email_subject = "Your personal microbiome results are ready!"
 notification_email_text = """
 Dear participant,
 
-We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the "My Microbes" delivery system:
+We are pleased to announce that the results of the Student Microbiome Project (SMP) have been processed, and your personalized results are available via the My Microbes delivery system:
 
 http://my-microbes.qiime.org
 
@@ -726,6 +726,10 @@ To view your personalized results, please visit the following link:
 http://my-microbes.qiime.org/%s/index.html
 
 Use your personal ID as the username and the password listed above to log in. The username and password are case-sensitive.
+
+We recommend using either the Firefox or Safari web browsers to view your results. Parts of the site WILL NOT WORK with Internet Explorer.
+
+IMPORTANT: In order to protect your privacy, please remember to *completely* exit your browser when done viewing your results. This is particularly important when using a computer that is shared with other users besides yourself.
 
 The website has additional details on how to view and interpret your results. If you have any questions, please send an email to student.microbiome@gmail.com.
 
