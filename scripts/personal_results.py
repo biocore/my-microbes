@@ -13,9 +13,6 @@ from os import makedirs
 from os.path import exists, join
 
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.workflow import (call_commands_serially, no_status_updates,
-                            print_commands, print_to_stdout)
-
 from my_microbes.util import create_personal_results
 
 script_info = {}
