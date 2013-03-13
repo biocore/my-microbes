@@ -8,3 +8,8 @@ python scripts/personal_results.py -m test_data/map.txt -i test_data/bdiv/unweig
 ```
 
 This assumes that you're in the my-microbes directory, and that directory is in your ``PYTHONPATH``.
+
+Dependencies
+============
+
+This release _only_ works with [QIIME](http://qiime.org) 1.6.0
