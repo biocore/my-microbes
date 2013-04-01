@@ -335,18 +335,19 @@ def create_personal_results(output_dir,
                     # Make sure we have at least one sample for Self, otherwise
                     # otu_category_significance.py crashes with a division by
                     # zero error.
-                    with open(body_site_otu_table_fp, 'U') as \
-                         body_site_otu_table_f, \
-                         open(personal_mapping_file_fp, 'U') as \
-                         personal_mapping_file_f:
-                        personal_sample_count = _count_per_individual_samples(
-                                body_site_otu_table_f, personal_mapping_file_f,
-                                personal_id_column, person_of_interest)
+                    body_site_otu_table_f = open(body_site_otu_table_fp, 'U')
+                    personal_mapping_file_f = open(personal_mapping_file_fp,
+                                                   'U')
+                    personal_sample_count = _count_per_individual_samples(
+                            body_site_otu_table_f, personal_mapping_file_f,
+                            personal_id_column, person_of_interest)
+                    body_site_otu_table_f.close()
+                    personal_mapping_file_f.close()
 
-                        if personal_sample_count < 1:
-                            continue
-                        else:
-                            valid_body_sites.append(cat_value)
+                    if personal_sample_count < 1:
+                        continue
+                    else:
+                        valid_body_sites.append(cat_value)
 
                     otu_cat_output_fp = join(otu_cat_sig_dir,
                                              'otu_cat_sig_%s.txt' % cat_value)
