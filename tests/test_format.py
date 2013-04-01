@@ -5,7 +5,7 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Jai Ram Rideout", "John Chase"]
 __license__ = "GPL"
-__version__ = "0.1.0"
+__version__ = "0.1.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
