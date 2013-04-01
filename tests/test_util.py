@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["John Chase", "Greg Caporaso", "Jai Ram Rideout",
     "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "0.1.0"
+__version__ = "0.1.0-dev"
 __maintainer__ = "John Chase"
 __email__ = "jc33@nau.edu"
 
