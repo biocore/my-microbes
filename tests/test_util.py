@@ -24,7 +24,7 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir, get_qiime_temp_dir, MetadataMap
-from qiime.workflow import print_commands
+from qiime.workflow.util import print_commands
 
 from my_microbes.util import (_collect_alpha_diversity_boxplot_data,
                               _count_num_samples,

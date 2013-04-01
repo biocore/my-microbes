@@ -36,7 +36,7 @@ from qiime.parse import parse_mapping_file, parse_rarefaction
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
 from qiime.util import (add_filename_suffix, create_dir, MetadataMap,
                         qiime_system_call)
-from qiime.workflow import (call_commands_serially, generate_log_fp,
+from qiime.workflow.util import (call_commands_serially, generate_log_fp,
                             no_status_updates, print_commands, print_to_stdout,
                             WorkflowError, WorkflowLogger)
 
